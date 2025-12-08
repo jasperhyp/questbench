@@ -27,7 +27,7 @@ import itertools as it
 import json
 from typing import Any, Dict, Iterable, List, Set, Tuple
 
-from questbench.SimpleLogic import ruleset
+from SimpleLogic import ruleset
 
 
 def union(all_dicts: Iterable[Dict[str, Any]]):
