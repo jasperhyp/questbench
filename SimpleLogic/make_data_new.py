@@ -22,7 +22,7 @@ import os
 import random
 
 import pandas as pd
-from Reasoning.external.questbench.SimpleLogic import holdout_utils_new
+from SimpleLogic import holdout_utils_new
 from SimpleLogic import ruleset
 import tqdm
 
@@ -33,7 +33,7 @@ def main(arguments) -> None:
   # Load constructed rulesets
   rulesets = []
   for item_file in glob.glob(
-      os.path.join(arguments.sl_dir, "*_heldout_fixed.jsonl")
+      os.path.join(arguments.sl_dir, "*_heldout_fixed_new.jsonl")
   ):
     print(item_file)
     with open(item_file, "r") as f:

@@ -18,9 +18,10 @@
 import argparse
 import glob
 import json
+from time import time
 
-from SimpleLogic import derivation
-from Reasoning.external.questbench.SimpleLogic import holdout_utils_new
+from SimpleLogic import derivation_new
+from SimpleLogic import holdout_utils_new
 from SimpleLogic import ruleset
 
 
@@ -30,9 +31,9 @@ def main(arguments) -> None:
   end_idx = int(arguments.end_idx)
   for item_file in files_to_rules_dicts:
     write_file = item_file.replace(
-        ".txt", f"_{start_idx}_{end_idx}_heldout_fixed.jsonl"
+        ".txt", f"_{start_idx}_{end_idx}_heldout_fixed_new.jsonl"
     )
-    heldout_files = item_file.replace(".txt", "*heldout_fixed.jsonl")
+    heldout_files = item_file.replace(".txt", "*heldout_fixed_new.jsonl")
     rules_dicts_existing = []
     for existing_file in glob.glob(heldout_files):
       with open(existing_file, "r") as f:
@@ -61,52 +62,93 @@ def main(arguments) -> None:
           rules_dict["query"],
       ) in existing_rules_dicts_rules_queries:
         continue
-      valid = derivation.get_derivations(rules_dict)  # NOTE: Generate all A^{(y)} and A^{(\neg y)}. Costly, but constant in k
+      print(f"\n================Processing {r}/{len(rules_dicts)}=================")
+      
+      valid = derivation_new.get_derivations(rules_dict)  # NOTE: Generate all A^{(y)} and A^{(\neg y)}. Costly, but constant in k
       if not valid:
         continue
-      holdout_utils_new.make_heldout_ruleset(rules_dict)  # TODO: Iterates through the product of every A^{(y)} and A^{(\neg y)} derivation to find a pair that are identical in every assignment except for exactly k variables
+      
+      # Generate heldout sets with max_k
+      start = time()
+      holdout_utils_new.make_heldout_ruleset(rules_dict, max_k=arguments.max_k)  # TODO: Iterates through the product of every A^{(y)} and A^{(\neg y)} derivation to find a pair that are identical in every assignment except for exactly k variables
+      print(f"\nTOTAL Time to make heldout sets: {time() - start:.2f} seconds\n")
+      
+      # CHANGED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      # with open(write_file, "a") as wf:
+      #   wf.write(
+      #       json.dumps({
+      #           "rules": rule_tree_rules.serialize(),
+      #           "query": rules_dict["query"],
+      #           "depth": rules_dict["depth"],
+      #           "true_derivations": [
+      #               derive.serialize()
+      #               for derive in rules_dict["true_derivations"]
+      #           ],
+      #           "false_derivations": [
+      #               derive.serialize()
+      #               for derive in rules_dict["false_derivations"]
+      #           ],
+      #           "heldout_set_to_q": rules_dict["heldout_set_to_q"],
+      #           "heldout_set_to_subset_qs": rules_dict[
+      #               "heldout_set_to_subset_qs"
+      #           ],
+      #       })
+      #       + "\n"
+      #   )
+      #   rules_dicts_existing.append(
+      #       json.dumps({
+      #           "rules": rule_tree_rules.serialize(),
+      #           "query": rules_dict["query"],
+      #           "depth": rules_dict["depth"],
+      #           "true_derivations": [
+      #               derive.serialize()
+      #               for derive in rules_dict["true_derivations"]
+      #           ],
+      #           "false_derivations": [
+      #               derive.serialize()
+      #               for derive in rules_dict["false_derivations"]
+      #           ],
+      #           "heldout_set_to_q": rules_dict["heldout_set_to_q"],
+      #           "heldout_set_to_subset_qs": rules_dict[
+      #               "heldout_set_to_subset_qs"
+      #           ],
+      #       })
+      #       + "\n"
+      #   )
+      #   print(f"Wrote {r}/{len(rules_dicts)} to " + write_file)
+      # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      
+      # ADDED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      output_dict = {
+          "rules": rule_tree_rules.serialize(),
+          "query": rules_dict["query"],
+          "depth": rules_dict["depth"],
+          "true_derivations": [
+              derive.serialize()
+              for derive in rules_dict["true_derivations"]
+          ],
+          "false_derivations": [
+              derive.serialize()
+              for derive in rules_dict["false_derivations"]
+          ],
+          "heldout_set_to_q": rules_dict["heldout_set_to_q"],
+          "heldout_set_to_subset_qs": rules_dict[
+              "heldout_set_to_subset_qs"
+          ],
+      }
+      
+      # Add heldout_k_sets if available (from new holdout_utils)
+      if "heldout_k_sets" in rules_dict:
+          output_dict["heldout_k_sets"] = rules_dict["heldout_k_sets"]
+
       with open(write_file, "a") as wf:
-        wf.write(
-            json.dumps({
-                "rules": rule_tree_rules.serialize(),
-                "query": rules_dict["query"],
-                "depth": rules_dict["depth"],
-                "true_derivations": [
-                    derive.serialize()
-                    for derive in rules_dict["true_derivations"]
-                ],
-                "false_derivations": [
-                    derive.serialize()
-                    for derive in rules_dict["false_derivations"]
-                ],
-                "heldout_set_to_q": rules_dict["heldout_set_to_q"],
-                "heldout_set_to_subset_qs": rules_dict[
-                    "heldout_set_to_subset_qs"
-                ],
-            })
-            + "\n"
-        )
-        rules_dicts_existing.append(
-            json.dumps({
-                "rules": rule_tree_rules.serialize(),
-                "query": rules_dict["query"],
-                "depth": rules_dict["depth"],
-                "true_derivations": [
-                    derive.serialize()
-                    for derive in rules_dict["true_derivations"]
-                ],
-                "false_derivations": [
-                    derive.serialize()
-                    for derive in rules_dict["false_derivations"]
-                ],
-                "heldout_set_to_q": rules_dict["heldout_set_to_q"],
-                "heldout_set_to_subset_qs": rules_dict[
-                    "heldout_set_to_subset_qs"
-                ],
-            })
-            + "\n"
-        )
+        wf.write(json.dumps(output_dict) + "\n")
+        wf.flush() # Robustness: ensure data is written to disk
+        
+        # Add to existing set to avoid re-processing in case of restart (in-memory)
+        rules_dicts_existing.append(json.dumps(output_dict) + "\n")
         print(f"Wrote {r}/{len(rules_dicts)} to " + write_file)
+      # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
 if __name__ == "__main__":
@@ -114,5 +156,6 @@ if __name__ == "__main__":
   parser.add_argument("--sl_dir", type=str, default="n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP")
   parser.add_argument("--start_idx", type=int, default=0)
   parser.add_argument("--end_idx", type=int)
+  parser.add_argument("--max_k", type=int, default=4)
   args = parser.parse_args()
   main(args)

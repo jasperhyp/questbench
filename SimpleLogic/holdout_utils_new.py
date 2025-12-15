@@ -21,127 +21,100 @@ import json
 
 import tqdm
 
-from SimpleLogic import derivation
+from SimpleLogic import derivation_new
 from SimpleLogic import ruleset
 
 
-def get_vars_from_literals(literals):
-  """Extract variable names from a set of literals (e.g. {'not a'} -> {'a'})."""
-  vars_set = set()
-  for l in literals:
-    if l.startswith("not "):
-      vars_set.add(l[4:])
-    else:
-      vars_set.add(l)
-  return vars_set
-
-
-def verify_k_sufficiency(
-    k_vars,
-    base_assignment,
-    true_derivations,
-    false_derivations,
-):
-  """Verifies if k_vars is a k-sufficient set given a base assignment.
-
-  Implements the 'Mask and Verify' logic:
-  1. Generate all 2^k assignments for k_vars.
-  2. For each assignment, check if (base + assignment) implies True or False.
-  3. It must imply True for some assignments and False for others (mixed results),
-     but every assignment must yield a definitive result (no ambiguity).
+def check_sufficiency(rule_tree, context, vars_to_check, target):
+  """Checks if vars_to_check are sufficient to determine target given context.
 
   Args:
-    k_vars: Set[str] variables to test.
-    base_assignment: Set[str] known literals (context).
-    true_derivations: List[Set[str]] all full assignments implying True.
-    false_derivations: List[Set[str]] all full assignments implying False.
+    rule_tree: RuleTree
+    context: Set[str] of facts (e.g. {"a", "not b"})
+    vars_to_check: Set[str] of variable names (e.g. {"c", "d"})
+    target: str target variable name
 
   Returns:
-    bool: True if k_vars is k-sufficient.
+    bool: True if for all consistent assignments of vars_to_check, the target's
+      truth value is determined. False otherwise.
   """
-  # Sort vars to ensure deterministic iteration order for binary string generation
-  sorted_vars = sorted(list(k_vars))
-  
-  has_true_outcome = False
-  has_false_outcome = False
-
-  # Iterate 2^k assignments
-  for i in range(1 << len(sorted_vars)):
-    current_assignment = set(base_assignment)
-    
-    # Construct specific assignment for k_vars
-    for idx, var in enumerate(sorted_vars):
-      if (i >> idx) & 1:
-        current_assignment.add(var)
+  var_list = list(vars_to_check)
+  # Iterate over all possible truth value assignments for vars_to_check
+  for values in it.product([True, False], repeat=len(var_list)):
+    assignment_facts = set()
+    for i, val in enumerate(values):
+      if val:
+        assignment_facts.add(var_list[i])
       else:
-        current_assignment.add(f"not {var}")
-    
-    # Check if this fully specified state implies True or False
-    implies_true = False
-    for t_deriv in true_derivations:
-      if t_deriv.issubset(current_assignment):
-        implies_true = True
-        break
-    
-    implies_false = False
-    for f_deriv in false_derivations:
-      if f_deriv.issubset(current_assignment):
-        implies_false = True
-        break
-    
-    # Constraint 1: Completeness - must imply something
-    if not implies_true and not implies_false:
-      return False
-    
-    # Constraint 2: Consistency - cannot imply both (should be handled by CSP generation, but good sanity check)
-    if implies_true and implies_false:
-      return False
+        assignment_facts.add(ruleset.negate(var_list[i]))
 
-    if implies_true:
-      has_true_outcome = True
-    if implies_false:
-      has_false_outcome = True
+    full_facts = context.union(assignment_facts)
 
-  # Constraint 3: Sensitivity - must be able to reach both True and False outcomes
-  # (Otherwise, the base_assignment was already sufficient, or these vars don't matter)
-  if not (has_true_outcome and has_false_outcome):
-    return False
+    # Split into true/false for get_all_inferrable_facts
+    true_facts = {f for f in full_facts if not f.startswith("not ")}
+    false_facts = {f for f in full_facts if f.startswith("not ")}
+
+    # Check for immediate contradiction in the input facts
+    contradiction = False
+    for f in true_facts:
+      if ruleset.negate(f) in full_facts:
+        contradiction = True
+        break
+    if contradiction:
+      continue  # Vacuously true if the assignment is impossible
+
+    inferred = get_all_inferrable_facts(rule_tree, true_facts, false_facts)
+
+    # Check for consistency in inferred facts
+    for f in inferred:
+      if ruleset.negate(f) in inferred:
+        contradiction = True
+        break
+    if contradiction:
+      continue
+
+    # If consistent, check if target is determined
+    if target not in inferred and ruleset.negate(target) not in inferred:
+      return False
 
   return True
 
-def make_heldout_ruleset(rules_dict, k_max=1):
-  """Hold out k words required for deriving the target word's truth value.
 
-  Uses 'Parity Hunter' heuristics to efficiently find 1, 2, and 3-sufficient sets.
-  
-  Args:
-    rules_dict: Dict[str, Any]
-    k_max: int, max size of heldout set to search for (default 1, supports up to 3)
+def make_heldout_ruleset(rules_dict, max_k=4):
+  """Hold out k words required for deriving the target word's truth value.
 
   Keeps only those derivations that are not already derived by the full set.
   Adds field to rules_dict called `heldout_set_to_q` and
   `heldout_set_to_subset_qs`
   `heldout_set_to_q` maps a heldout set to a dict of the form
-  {k-sufficient set: sufficient words (& string): {true_derivation, false_derivation}}
-  where k-sufficient set is missing k word that is required for deriving the
+  {1-sufficient set: sufficient word: {true_derivation, false_derivation}}
+  where 1-sufficient set is missing 1 word that is required for deriving the
   target word's truth value, and sufficient word is a word that when known, can
   derive the target word's truth value. The true/false derivations are the
   derivations of the target word's truth value after adding the sufficient word
   to the heldout set.
   `heldout_set_to_subset_qs` maps a 1-sufficient set to a list of heldout sets
   that are subsets of the heldout set, but not the heldout set itself.
-  """
-  assert k_max in [1, 2, 3], "k_max must be 1, 2, or 3."
+
+  Also generates k-sufficient sets for k=2 to max_k.
   
+  Args:
+    rules_dict: Dict[str, Any]
+    max_k: int, max size of heldout set to search for (default 1, supports up to 3)
+  """
+  assert max_k in [1, 2, 3, 4], "k_max must be 1, 2, 3, or 4."
+  
+  print("Generating k=1")
+  # UNCHANGED: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   true_derivations = {}
   for derive in rules_dict['true_derivations']:
-    if not isinstance(derive, derivation.ConjunctionRule):
-      derive = derivation.ConjunctionRule.deserialize(derive)
+    if not isinstance(derive, derivation_new.ConjunctionRule):
+      derive = derivation_new.ConjunctionRule.deserialize(derive)
     true_derivations[frozenset(derive.leaf_words.keys())] = derive
   false_derivations = {}
   for derive in rules_dict['false_derivations']:
-    if not isinstance(derive, derivation.ConjunctionRule):
-      derive = derivation.ConjunctionRule.deserialize(derive)
+    if not isinstance(derive, derivation_new.ConjunctionRule):
+      derive = derivation_new.ConjunctionRule.deserialize(derive)
     false_derivations[frozenset(derive.leaf_words.keys())] = derive
 
   heldout_set_to_q_depth_expansions = {}
@@ -153,57 +126,24 @@ def make_heldout_ruleset(rules_dict, k_max=1):
       it.product(true_derivations, false_derivations),
       total=len(true_derivations) * len(false_derivations),
   ):
-    # FIXME
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    # # find pairs that differ on exactly 1 var
-    # differ_word = None
-    # for k in true_derive:
-    #   if ruleset.negate(k) in false_derive:
-    #     if differ_word is None:
-    #       differ_word = k
-    #     elif differ_word != k:
-    #       differ_word = None
-    #       break
-    # if differ_word is None:
-    #   continue
+    # find pairs that differ on exactly 1 var
+    differ_word = None
+    for k in true_derive:
+      if ruleset.negate(k) in false_derive:
+        if differ_word is None:
+          differ_word = k
+        elif differ_word != k:
+          differ_word = None
+          break
+    if differ_word is None:
+      continue
 
-    # heldout_set = true_derive.union(false_derive)
-    # heldout_set -= {differ_word, ruleset.negate(differ_word)}
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    # # Identify all conflicting variables
-    # differing_words = set()
-    # for k in true_derive:
-    #   if ruleset.negate(k) in false_derive:
-    #     base_var = k if not k.startswith("not ") else k[4:]
-    #     differing_words.add(base_var)
-            
-    # # Only proceed if we have exactly k differences
-    # if len(differing_words) != k_sufficient:
-    #   continue
-    
-    # # For k=1 we still want a single literal key (with polarity),
-    # # matching the original behavior (differ_word).
-    # differ_word = None
-    # if k_sufficient == 1:
-    #   base = next(iter(differing_words))
-    #   # In the original code differ_word is the literal in true_derive.
-    #   differ_word = base if base in true_derive else ruleset.negate(base)
-      
-    # # Construct the base heldout set (Context)
-    # # Remove all conflicting vars (both positive and negative forms)
-    # heldout_set = true_derive.union(false_derive)
-    # for word in differing_words:
-    #     heldout_set -= {word, ruleset.negate(word)}
-    
-    
-    
-    
-    
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    heldout_set = true_derive.union(false_derive)
+    heldout_set -= {differ_word, ruleset.negate(differ_word)}
+    # NOTE: heldout_set means context (Assigned)
 
     # can already derive heldout set
     # 1. Check if Context ALREADY implies the answer (0-sufficient)
-    # UNCHANGED
     skip_this = False
     if heldout_set in true_derivations or heldout_set in false_derivations:
       skip_this = True
@@ -219,81 +159,14 @@ def make_heldout_ruleset(rules_dict, k_max=1):
     if skip_this:
       continue
     
-    # FIXME
     # 2. Check Strict K-Sufficiency (Ensure k-1 vars are NOT sufficient)
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    # if heldout_set not in heldout_set_to_q_depth_expansions:
-    #   heldout_set_to_q_depth_expansions[heldout_set] = {}
-    # # add variable with direction that implies query word is true
-    # heldout_set_to_q_depth_expansions[heldout_set][differ_word] = {
-    #     'true_derivation': true_derivations[true_derive].serialize(),
-    #     'false_derivation': false_derivations[false_derive].serialize(),
-    # }
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    
-    # ---------------------------------------------------------------------
-    # Strict k-sufficiency for k>1:
-    #    No proper subset of the k missing variables, under any
-    #    polarity assignment, should be sufficient to derive the query.
-    #
-    #    For k=1 there is no non-empty proper subset, so we keep
-    #    the original behavior and skip this check.
-    # ---------------------------------------------------------------------
-    # if k_sufficient > 1:
-    #   is_strictly_k = True
-    #   base_list = sorted(differing_words)
-
-    #   # r = subset size, 1..k-1
-    #   for r in range(1, k_sufficient):
-    #     for subset in it.combinations(base_list, r):
-    #       # Enumerate all 2^r polarity assignments for this subset.
-    #       for polarity_bits in it.product([0, 1], repeat=r):
-    #         subset_lits = set()
-    #         for var, bit in zip(subset, polarity_bits):
-    #           lit = var if bit == 1 else ruleset.negate(var)
-    #           subset_lits.add(lit)
-
-    #         test_context = heldout_set.union(subset_lits)
-
-    #         # Does this partial information derive the query (true or false)?
-    #         solves_true = any(td <= test_context for td in true_derivations)
-    #         solves_false = any(fd <= test_context for fd in false_derivations)
-
-    #         if solves_true or solves_false:
-    #           is_strictly_k = False
-    #           break
-
-    #       if not is_strictly_k:
-    #         break
-    #     if not is_strictly_k:
-    #       break
-
-    #   if not is_strictly_k:
-    #     continue
-      
-    # if heldout_set not in heldout_set_to_q_depth_expansions:
-    #   heldout_set_to_q_depth_expansions[heldout_set] = {}
-    
-    # # Store the set of variables as a combined string key
-    # # e.g., "happy & smart"
-    # if k_sufficient == 1:
-    #   q_key = differ_word
-    # else:
-    #   # A simple combined name for the multi-variable question.
-    #   q_key = " & ".join(sorted(differing_words))
-
-    # heldout_set_to_q_depth_expansions[heldout_set][q_key] = {
-    #     'true_derivation': true_derivations[true_derive].serialize(),
-    #     'false_derivation': false_derivations[false_derive].serialize(),
-    # }
-    
-    
-    
-    
-    
-    
-    
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    if heldout_set not in heldout_set_to_q_depth_expansions:
+      heldout_set_to_q_depth_expansions[heldout_set] = {}
+    # add variable with direction that implies query word is true
+    heldout_set_to_q_depth_expansions[heldout_set][differ_word] = {
+        'true_derivation': true_derivations[true_derive].serialize(),
+        'false_derivation': false_derivations[false_derive].serialize(),
+    }
 
   rules_dict['heldout_set_to_q'] = {
       json.dumps(list(heldout_set)): heldout_set_to_q_depth_expansions[
@@ -322,6 +195,91 @@ def make_heldout_ruleset(rules_dict, k_max=1):
       json.dumps(list(heldout_set)): list(heldout_set_to_subset_qs[heldout_set])
       for heldout_set in heldout_set_to_subset_qs
   }
+  # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  # --- Extension for k-sufficient sets ---
+  # Initialize with 1-sufficient sets found above
+  k_sufficient_sets = {1: []}
+  for heldout_set, val in heldout_set_to_q_depth_expansions.items():
+    for word in val:
+      var_name = word.split("not ")[1] if word.startswith("not ") else word
+      k_sufficient_sets[1].append((heldout_set, {var_name}))
+
+  rule_tree_obj = rules_dict['rules']
+  if not isinstance(rule_tree_obj, ruleset.RuleTree):
+    # Should typically be RuleTree if called within pipeline, but ensure safety
+    rule_tree_obj = ruleset.RuleTree.deserialize(rules_dict['rules'])
+
+  for k in range(2, max_k + 1):
+    k_sufficient_sets[k] = []
+    seen_sigs = set()
+    prev_items = k_sufficient_sets[k - 1]
+
+    for context_prev, s_prev in tqdm.tqdm(prev_items, desc=f"Generating k={k}"):
+      # Iterate through each fact in the previous context
+      for fact in list(context_prev):
+        var_name = fact.split("not ")[1] if fact.startswith("not ") else fact
+
+        # Construct candidate next sets
+        context_k = context_prev - {fact}
+        s_k = s_prev | {var_name}
+
+        # Avoid processing same (context, s_set) pair multiple times
+        sig = (frozenset(context_k), frozenset(s_k))
+        if sig in seen_sigs:
+          continue
+        seen_sigs.add(sig)
+
+        # We construct the "flipped" version of the removed fact
+        # to check sufficiency conditions
+        flipped_fact = ruleset.negate(fact)
+
+        # Condition 1: A_k + Known(S_{k-1}) + flipped_fact => Known(y)
+        # s_prev corresponds to S_{k-1}
+        if not check_sufficiency(
+            rule_tree_obj,
+            context_k | {flipped_fact},
+            s_prev,
+            rules_dict['query'],
+        ):
+          continue
+
+        # Condition 2: A_k + Known(S_{k-1}) => not Known(y)
+        # This means S_{k-1} is NOT sufficient for the reduced context A_k
+        if check_sufficiency(
+            rule_tree_obj, context_k, s_prev, rules_dict['query']
+        ):
+          continue
+
+        # Condition 3: Minimality
+        # For all Z subset S_{k-1} (size k-2):
+        # A_k + Known(Z) + flipped_fact => not Known(y)
+        minimality_fail = False
+        for z in s_prev:
+          z_subset = s_prev - {z}
+          if check_sufficiency(
+              rule_tree_obj,
+              context_k | {flipped_fact},
+              z_subset,
+              rules_dict['query'],
+          ):
+            minimality_fail = True
+            break
+        if minimality_fail:
+          continue
+
+        k_sufficient_sets[k].append((context_k, s_k))
+
+  # Store k-sufficient sets in the rules_dict
+  rules_dict['heldout_k_sets'] = {}
+  for k in range(1, max_k + 1):
+    res_map = {}
+    for context, s_set in k_sufficient_sets[k]:
+      c_str = json.dumps(sorted(list(context)))
+      if c_str not in res_map:
+        res_map[c_str] = []
+      res_map[c_str].append(sorted(list(s_set)))
+    rules_dict['heldout_k_sets'][str(k)] = res_map
 
 
 def get_all_inferrable_facts(rule_tree, true_facts, false_facts):

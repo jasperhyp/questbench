@@ -77,6 +77,9 @@ class ConjunctionRule:
     self.leaf_words = leaf_words
     self.leaf_words_list = sorted(leaf_words.keys())
     # assume unknown / hard to derive (implies these words are true)
+    # OPTIMIZATION: Cache the set of leaves for fast comparison
+    self.leaf_set = set(self.leaf_words.keys())
+    
     self.ancestor_words = ancestor_words
     # maps (conjunction of ancestor words) -> downstream word
     self.derivation = derivation
@@ -104,40 +107,47 @@ class ConjunctionRule:
 
   def contradicts(self, lst: Iterable[str]):
     for word in lst:
-      if (
-          ruleset.negate(word) in self.leaf_words
-          or ruleset.negate(word) in self.ancestor_words
-      ):
+      neg = ruleset.negate(word)
+      if (neg in self.leaf_words) or (neg in self.ancestor_words):
         return True
     return False
 
   def __eq__(self, other):
     if isinstance(other, ConjunctionRule):
-      assert hasattr(other, "leaf_words")
-      return set(self.leaf_words.keys()) == set(other.leaf_words.keys())
+      # assert hasattr(other, "leaf_words")
+      # return set(self.leaf_words.keys()) == set(other.leaf_words.keys())
+      return self.leaf_set == other.leaf_set
     elif isinstance(other, Iterable):
-      return set(self.leaf_words.keys()) == set(other)
+      # return set(self.leaf_words.keys()) == set(other)
+      return self.leaf_set == set(other)
     else:
       return False
 
   def __hash__(self):
-    return hash(str(self))
+    if not hasattr(self, '_hash'):
+        self._hash = hash(frozenset(self.leaf_set))
+    return self._hash
+    # return hash(str(self))
 
   def __lt__(self, other):
     if isinstance(other, ConjunctionRule):
-      assert hasattr(other, "leaf_words")
-      return set(self.leaf_words.keys()) < set(other.leaf_words.keys())
+      # assert hasattr(other, "leaf_words")
+      # return set(self.leaf_words.keys()) < set(other.leaf_words.keys())
+      return self.leaf_set < other.leaf_set
     elif isinstance(other, Iterable):
-      return set(self.leaf_words.keys()) < set(other)
+      # return set(self.leaf_words.keys()) < set(other)
+      return self.leaf_set < set(other)
     else:
       return False
 
   def __le__(self, other):
     if isinstance(other, ConjunctionRule):
-      assert hasattr(other, "leaf_words")
-      return set(self.leaf_words.keys()) <= set(other.leaf_words.keys())
+      # assert hasattr(other, "leaf_words")
+      # return set(self.leaf_words.keys()) <= set(other.leaf_words.keys())
+      return self.leaf_set <= other.leaf_set
     elif isinstance(other, Iterable):
-      return set(self.leaf_words.keys()) <= set(other)
+      # return set(self.leaf_words.keys()) <= set(other)
+      return self.leaf_set <= set(other)
     else:
       return False
 
@@ -176,7 +186,7 @@ def backderive_nextlayer_rules(
     prev_layer_rules: Set[ConjunctionRule],
     all_query_rules: Set[ConjunctionRule],
     max_depth: int = 5,
-) -> Tuple[Set[ConjunctionRule], Set[ConjunctionRule]]:
+) -> Tuple[Set[ConjunctionRule], Set[ConjunctionRule], bool]:
   """Backderive the next layer of rules for forming a target query.
 
   Each layer corresponds to a depth in the rule tree. goes through each rule
@@ -201,9 +211,11 @@ def backderive_nextlayer_rules(
   """
   print()
   print(max_depth)
+  len_break = False
+  
   start = time()
   if max_depth == 0:
-    return set(), all_query_rules
+    return set(), all_query_rules, len_break
 
   curr_layer_rules = []
   for _, prev_layer_rule in enumerate(prev_layer_rules):
@@ -280,53 +292,125 @@ def backderive_nextlayer_rules(
       )
     curr_layer_rules.extend(prev_rule_expansions_linearized)
   print(f"Time for product expansions: {time() - start:.2f} seconds")
-  start = time()
-
-  # now delete rules which are supersets of other rules
-  # only add rules which are subsets of other rules
-  ancestor_query_rules_pruned = set()  # if 2 derivations, keep first
-  for _, rule in enumerate(all_query_rules):
-    # check if any other rule is a subset of rule
-    has_subset = False
-    for _, rule2 in enumerate(curr_layer_rules):
-      if rule == rule2:
-        continue
-      if rule2 < rule:
-        has_subset = True
-        break
-    if not has_subset:
-      ancestor_query_rules_pruned.add(rule)
-  print(f"Time for pruning ancestors: {time() - start:.2f} seconds")
   
-  # TODO: Profile below
-  curr_layer_rules_pruned = set()  # if 2 derivations, keep first
-  start = time()
-  for r, rule in enumerate(curr_layer_rules):
-    # check if any other rule is a subset of rule (rule -> other rule)
-    has_subset = False
-    st = time()
-    for _, rule2 in enumerate(curr_layer_rules + list(all_query_rules)):
-      if rule == rule2:
-        continue
-      if rule2 < rule:
-        has_subset = True
-        break
-    if not has_subset:
-      curr_layer_rules_pruned.add(rule)
-    if r % 1000 == 0:
-      print(f"{r} / {len(curr_layer_rules)}")
-      print(f"  Time for checking: {time() - st:.2f} seconds")
-  # curr_layer_rules = uniq_query_rules
-  print(f"Time for pruning current layer: {time() - start:.2f} seconds")
+  # TODO
+  # if len(curr_layer_rules) > 100000:
+  if len(curr_layer_rules) > 500000:
+    len_break = True
+    return set(), all_query_rules, len_break
   start = time()
 
-  all_query_rules = ancestor_query_rules_pruned.union(curr_layer_rules_pruned)
-  # expand current set of rules into next layer
-  _, all_query_rules = backderive_nextlayer_rules(
-      rule_tree, curr_layer_rules_pruned, all_query_rules, max_depth - 1
+  # OLD >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  # # now delete rules which are supersets of other rules
+  # # only add rules which are subsets of other rules
+  # ancestor_query_rules_pruned = set()  # if 2 derivations, keep first
+  # for _, rule in enumerate(all_query_rules):
+  #   # check if any other rule is a subset of rule
+  #   has_subset = False
+  #   for _, rule2 in enumerate(curr_layer_rules):
+  #     if rule == rule2:
+  #       continue
+  #     if rule2 < rule:
+  #       has_subset = True
+  #       break
+  #   if not has_subset:
+  #     ancestor_query_rules_pruned.add(rule)
+  # print(f"Time for pruning ancestors: {time() - start:.2f} seconds")
+  
+  # # NOTE: Very costly step, skipping when curr_layer_rules is large for now
+  # curr_layer_rules_pruned = set()  # if 2 derivations, keep first
+  # start = time()
+  # for r, rule in enumerate(curr_layer_rules):
+  #   # check if any other rule is a subset of rule (rule -> other rule)
+  #   has_subset = False
+  #   st = time()
+  #   for _, rule2 in enumerate(curr_layer_rules + list(all_query_rules)):
+  #     if rule == rule2:
+  #       continue
+  #     if rule2 < rule:
+  #       has_subset = True
+  #       break
+  #   if not has_subset:
+  #     curr_layer_rules_pruned.add(rule)
+  #   if r % 1000 == 0:
+  #     print(f"{r} / {len(curr_layer_rules)}")
+  #     print(f"  Time for checking: {time() - st:.2f} seconds")
+  # # curr_layer_rules = uniq_query_rules
+  # print(f"Time for pruning current layer: {time() - start:.2f} seconds")
+  # start = time()
+
+  # all_query_rules = ancestor_query_rules_pruned.union(curr_layer_rules_pruned)
+  # # expand current set of rules into next layer
+  # _, all_query_rules, len_break = backderive_nextlayer_rules(
+  #     rule_tree, curr_layer_rules_pruned, all_query_rules, max_depth - 1
+  # )
+
+  # return curr_layer_rules_pruned, all_query_rules, len_break
+  # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  # TODO: NEW
+  # OPTIMIZED PRUNING START
+  print(f"Generated {len(curr_layer_rules)} candidates. Deduplicating...")
+  
+  # 1. Deduplicate candidates immediately
+  unique_candidates = set(curr_layer_rules)
+  print(f"Unique candidates: {len(unique_candidates)}")
+
+  # 2. Combine with existing minimal rules to ensure global minimality
+  # We assume all_query_rules are already minimal relative to each other.
+  all_candidates = list(all_query_rules) + list(unique_candidates)
+  
+  # 3. Sort by size (number of leaves). Smallest rules are checked first.
+  # If a rule is a superset of a smaller existing rule, it is redundant.
+  
+  all_candidates.sort(key=lambda r: len(r.leaf_set))
+  print("Sorting time: {:.2f} seconds".format(time() - start))
+  start = time()
+
+  final_minimal_rules = []
+  
+  print("Pruning supersets...")
+  for i, rule in enumerate(all_candidates):
+    is_redundant = False
+    # Check if 'rule' is a superset of any rule we have already decided to keep.
+    # Since we sorted by size, 'kept' is always <= size of 'rule'.
+    for kept in final_minimal_rules:
+      # Optimization: Quick length check (though sort handles most)
+      if len(kept.leaf_set) > len(rule.leaf_set):
+          break # Should not happen due to sort
+          
+      # If kept is a subset of rule, rule is redundant (adds no value).
+      if kept.leaf_set.issubset(rule.leaf_set):
+        is_redundant = True
+        break
+    
+    if not is_redundant:
+      final_minimal_rules.append(rule)
+      
+    if i % 10000 == 0:
+      print(f"Processed {i}/{len(all_candidates)} rules...")
+      print(f"Time so far: {time() - start:.2f} seconds")
+      start = time()
+
+  print(f"Pruning complete. Kept {len(final_minimal_rules)} minimal rules.")
+  print("Pruning time: {:.2f} seconds".format(time() - start))
+
+  # Reconstruct the set for fast lookups
+  final_minimal_set = set(final_minimal_rules)
+  
+  # Identify strictly NEW rules to recurse on.
+  # This avoids re-processing rules that were already in 'all_query_rules'.
+  curr_layer_rules_pruned = final_minimal_set - all_query_rules
+  
+  # Update the global set of valid rules
+  all_query_rules_new = final_minimal_set
+
+  # Recursion
+  _, all_query_rules_final, len_break = backderive_nextlayer_rules(
+      rule_tree, curr_layer_rules_pruned, all_query_rules_new, max_depth - 1
   )
 
-  return curr_layer_rules_pruned, all_query_rules
+  return curr_layer_rules_pruned, all_query_rules_final, len_break
 
 
 def get_derivations(rules_dict):
@@ -349,7 +433,7 @@ def get_derivations(rules_dict):
     # can take 3 mins each, need some more efficient mechanism...
     print("\n------- Deriving true derivations -------")
     start = time()
-    _, rules_dict["true_derivations"] = backderive_nextlayer_rules(
+    _, rules_dict["true_derivations"], len_break = backderive_nextlayer_rules(
         rule_tree=rules_dict["rules"],
         prev_layer_rules={
             ConjunctionRule(
@@ -360,6 +444,8 @@ def get_derivations(rules_dict):
         max_depth=len(rules_dict["rules"].nodes),
     )
     print(f"TOTAL TIME: {time() - start:.2f} seconds")
+    if len_break:
+      return False
     
     # remove target
     rules_dict["true_derivations"] = [
@@ -370,7 +456,7 @@ def get_derivations(rules_dict):
   if not rules_dict.get("false_derivations", []):
     print("\n------- Deriving false derivations -------")
     start = time()
-    _, rules_dict["false_derivations"] = backderive_nextlayer_rules(
+    _, rules_dict["false_derivations"], len_break = backderive_nextlayer_rules(
         rule_tree=rules_dict["rules"],
         prev_layer_rules={
             ConjunctionRule(
@@ -385,6 +471,8 @@ def get_derivations(rules_dict):
         max_depth=len(rules_dict["rules"].nodes),
     )
     print(f"TOTAL TIME: {time() - start:.2f} seconds")
+    if len_break:
+      return False
     
     # remove target
     rules_dict["false_derivations"] = [
