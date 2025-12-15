@@ -17,6 +17,7 @@
 
 import copy
 import itertools as it
+import collections
 import json
 
 import tqdm
@@ -214,6 +215,12 @@ def make_heldout_ruleset(rules_dict, max_k=4):
     k_sufficient_sets[k] = []
     seen_sigs = set()
     prev_items = k_sufficient_sets[k - 1]
+    
+    # Pre-group the previous sets by context to speed up the global minimality check
+    # context (frozenset) -> list of s_sets (set)
+    context_to_s_sets = collections.defaultdict(list)
+    for context_prev, s_prev in prev_items:
+        context_to_s_sets[context_prev].append(s_prev)
 
     for context_prev, s_prev in tqdm.tqdm(prev_items, desc=f"Generating k={k}"):
       # Iterate through each fact in the previous context
@@ -244,29 +251,45 @@ def make_heldout_ruleset(rules_dict, max_k=4):
         ):
           continue
 
-        # Condition 2: A_k + Known(S_{k-1}) => not Known(y)
-        # This means S_{k-1} is NOT sufficient for the reduced context A_k
-        if check_sufficiency(
-            rule_tree_obj, context_k, s_prev, rules_dict['query']
-        ):
-          continue
+        # Condition 2 & 4 combined (Global Minimality & Underspecification):
+        # We need to ensure that NO set of size k-1 (associated with context_prev)
+        # determines y under the new reduced context A_k.
+        # This covers:
+        #   - Underspecification: s_prev itself shouldn't solve it.
+        #   - Global Minimality: No other sibling set s_other should solve it either.
+        
+        found_shortcut = False
+        # Check all sufficient sets of the parent context (size k-1)
+        # A sufficient set that solves context_k should also solve context_prev
+        # because context_k is a subset of context_prev.
+        for s_other in context_to_s_sets[context_prev]:
+            # If s_other solves the problem under context_k, then A_k 
+            # is solvable with k-1 vars, so S_k (size k) is not minimal.
+            if check_sufficiency(
+                rule_tree_obj, context_k, s_other, rules_dict['query']
+            ):
+                found_shortcut = True
+                break
+        
+        if found_shortcut:
+            continue
 
-        # Condition 3: Minimality
-        # For all Z subset S_{k-1} (size k-2):
-        # A_k + Known(Z) + flipped_fact => not Known(y)
-        minimality_fail = False
-        for z in s_prev:
-          z_subset = s_prev - {z}
-          if check_sufficiency(
-              rule_tree_obj,
-              context_k | {flipped_fact},
-              z_subset,
-              rules_dict['query'],
-          ):
-            minimality_fail = True
-            break
-        if minimality_fail:
-          continue
+        # # Condition 3: Local minimality -- UNNECESSARY AFTER HAVING GLOBAL MINIMALITY
+        # # For all Z subset S_{k-1} (size k-2):
+        # # A_k + Known(Z) + flipped_fact => not Known(y)
+        # minimality_fail = False
+        # for z in s_prev:
+        #   z_subset = s_prev - {z}
+        #   if check_sufficiency(
+        #       rule_tree_obj,
+        #       context_k | {flipped_fact},
+        #       z_subset,
+        #       rules_dict['query'],
+        #   ):
+        #     minimality_fail = True
+        #     break
+        # if minimality_fail:
+        #   continue
 
         k_sufficient_sets[k].append((context_k, s_k))
 
