@@ -1,0 +1,3511 @@
+  0%|          | 0/40 [00:00<?, ?it/s]  0%|          | 0/40 [00:00<?, ?it/s]
+
+================Processing 4402/7000=================
+
+------- Deriving true derivations -------
+
+60
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 9
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+59
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 326
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.01 seconds
+
+58
+Time for product expansions: 0.09 seconds
+Time for pruning ancestors: 0.06 seconds
+0 / 11740
+  Time for checking: 0.00 seconds
+1000 / 11740
+  Time for checking: 0.00 seconds
+2000 / 11740
+  Time for checking: 0.00 seconds
+3000 / 11740
+  Time for checking: 0.00 seconds
+4000 / 11740
+  Time for checking: 0.00 seconds
+5000 / 11740
+  Time for checking: 0.00 seconds
+6000 / 11740
+  Time for checking: 0.00 seconds
+7000 / 11740
+  Time for checking: 0.00 seconds
+8000 / 11740
+  Time for checking: 0.00 seconds
+9000 / 11740
+  Time for checking: 0.00 seconds
+10000 / 11740
+  Time for checking: 0.00 seconds
+11000 / 11740
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 4.32 seconds
+
+57
+Time for product expansions: 0.03 seconds
+Time for pruning ancestors: 0.04 seconds
+0 / 4363
+  Time for checking: 0.00 seconds
+1000 / 4363
+  Time for checking: 0.00 seconds
+2000 / 4363
+  Time for checking: 0.00 seconds
+3000 / 4363
+  Time for checking: 0.00 seconds
+4000 / 4363
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.81 seconds
+
+56
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.01 seconds
+0 / 1019
+  Time for checking: 0.00 seconds
+1000 / 1019
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.04 seconds
+
+55
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 667
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.04 seconds
+
+54
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 269
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.01 seconds
+
+53
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 84
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+52
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 53
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+51
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 11
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+50
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+49
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+48
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+47
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+46
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+44
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+43
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+42
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 5.48 seconds
+
+------- Deriving false derivations -------
+
+60
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 6
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+59
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 518
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.03 seconds
+
+58
+Time for product expansions: 4.53 seconds
+TOTAL TIME: 4.83 seconds
+
+================Processing 4422/7000=================
+
+------- Deriving true derivations -------
+
+50
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 5
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+49
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 11
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+48
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 144
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+47
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 147
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+46
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 121
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 11
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+44
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 5
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+43
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 4
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+42
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 0.01 seconds
+
+------- Deriving false derivations -------
+
+50
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 8
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+49
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 937
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.09 seconds
+
+48
+Time for product expansions: 5.11 seconds
+TOTAL TIME: 5.46 seconds
+
+================Processing 4437/7000=================
+
+------- Deriving true derivations -------
+
+56
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 3
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+55
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 42
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+54
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 442
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.02 seconds
+
+53
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.01 seconds
+0 / 1199
+  Time for checking: 0.00 seconds
+1000 / 1199
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.09 seconds
+
+52
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 707
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.03 seconds
+
+51
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 534
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.02 seconds
+
+50
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 89
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+49
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 16
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+48
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 6
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+47
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 2
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+46
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+44
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+43
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+42
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 0.20 seconds
+
+------- Deriving false derivations -------
+
+56
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 3
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+55
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 153
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+54
+Time for product expansions: 0.50 seconds
+Time for pruning ancestors: 0.96 seconds
+0 / 64657
+  Time for checking: 0.01 seconds
+1000 / 64657
+  Time for checking: 0.00 seconds
+2000 / 64657
+  Time for checking: 0.00 seconds
+3000 / 64657
+  Time for checking: 0.00 seconds
+4000 / 64657
+  Time for checking: 0.00 seconds
+5000 / 64657
+  Time for checking: 0.00 seconds
+6000 / 64657
+  Time for checking: 0.00 seconds
+7000 / 64657
+  Time for checking: 0.00 seconds
+8000 / 64657
+  Time for checking: 0.00 seconds
+9000 / 64657
+  Time for checking: 0.01 seconds
+10000 / 64657
+  Time for checking: 0.00 seconds
+11000 / 64657
+  Time for checking: 0.00 seconds
+12000 / 64657
+  Time for checking: 0.00 seconds
+13000 / 64657
+  Time for checking: 0.00 seconds
+14000 / 64657
+  Time for checking: 0.00 seconds
+15000 / 64657
+  Time for checking: 0.00 seconds
+16000 / 64657
+  Time for checking: 0.00 seconds
+17000 / 64657
+  Time for checking: 0.00 seconds
+18000 / 64657
+  Time for checking: 0.00 seconds
+19000 / 64657
+  Time for checking: 0.00 seconds
+20000 / 64657
+  Time for checking: 0.00 seconds
+21000 / 64657
+  Time for checking: 0.00 seconds
+22000 / 64657
+  Time for checking: 0.00 seconds
+23000 / 64657
+  Time for checking: 0.00 seconds
+24000 / 64657
+  Time for checking: 0.00 seconds
+25000 / 64657
+  Time for checking: 0.00 seconds
+26000 / 64657
+  Time for checking: 0.00 seconds
+27000 / 64657
+  Time for checking: 0.00 seconds
+28000 / 64657
+  Time for checking: 0.00 seconds
+29000 / 64657
+  Time for checking: 0.00 seconds
+30000 / 64657
+  Time for checking: 0.00 seconds
+31000 / 64657
+  Time for checking: 0.00 seconds
+32000 / 64657
+  Time for checking: 0.01 seconds
+33000 / 64657
+  Time for checking: 0.00 seconds
+34000 / 64657
+  Time for checking: 0.00 seconds
+35000 / 64657
+  Time for checking: 0.00 seconds
+36000 / 64657
+  Time for checking: 0.01 seconds
+37000 / 64657
+  Time for checking: 0.00 seconds
+38000 / 64657
+  Time for checking: 0.01 seconds
+39000 / 64657
+  Time for checking: 0.00 seconds
+40000 / 64657
+  Time for checking: 0.00 seconds
+41000 / 64657
+  Time for checking: 0.01 seconds
+42000 / 64657
+  Time for checking: 0.01 seconds
+43000 / 64657
+  Time for checking: 0.01 seconds
+44000 / 64657
+  Time for checking: 0.00 seconds
+45000 / 64657
+  Time for checking: 0.01 seconds
+46000 / 64657
+  Time for checking: 0.01 seconds
+47000 / 64657
+  Time for checking: 0.00 seconds
+48000 / 64657
+  Time for checking: 0.01 seconds
+49000 / 64657
+  Time for checking: 0.01 seconds
+50000 / 64657
+  Time for checking: 0.01 seconds
+51000 / 64657
+  Time for checking: 0.01 seconds
+52000 / 64657
+  Time for checking: 0.01 seconds
+53000 / 64657
+  Time for checking: 0.00 seconds
+54000 / 64657
+  Time for checking: 0.00 seconds
+55000 / 64657
+  Time for checking: 0.00 seconds
+56000 / 64657
+  Time for checking: 0.00 seconds
+57000 / 64657
+  Time for checking: 0.00 seconds
+58000 / 64657
+  Time for checking: 0.00 seconds
+59000 / 64657
+  Time for checking: 0.00 seconds
+60000 / 64657
+  Time for checking: 0.00 seconds
+61000 / 64657
+  Time for checking: 0.00 seconds
+62000 / 64657
+  Time for checking: 0.00 seconds
+63000 / 64657
+  Time for checking: 0.01 seconds
+64000 / 64657
+  Time for checking: 0.01 seconds
+Time for pruning current layer: 307.35 seconds
+
+53
+Time for product expansions: 25.70 seconds
+TOTAL TIME: 335.93 seconds
+
+================Processing 4445/7000=================
+
+================Processing 4485/7000=================
+
+================Processing 4509/7000=================
+
+================Processing 4517/7000=================
+
+------- Deriving true derivations -------
+
+56
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 2
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+55
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 225
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+54
+Time for product expansions: 0.13 seconds
+Time for pruning ancestors: 0.13 seconds
+0 / 17017
+  Time for checking: 0.00 seconds
+1000 / 17017
+  Time for checking: 0.00 seconds
+2000 / 17017
+  Time for checking: 0.00 seconds
+3000 / 17017
+  Time for checking: 0.00 seconds
+4000 / 17017
+  Time for checking: 0.00 seconds
+5000 / 17017
+  Time for checking: 0.00 seconds
+6000 / 17017
+  Time for checking: 0.00 seconds
+7000 / 17017
+  Time for checking: 0.00 seconds
+8000 / 17017
+  Time for checking: 0.00 seconds
+9000 / 17017
+  Time for checking: 0.00 seconds
+10000 / 17017
+  Time for checking: 0.00 seconds
+11000 / 17017
+  Time for checking: 0.00 seconds
+12000 / 17017
+  Time for checking: 0.00 seconds
+13000 / 17017
+  Time for checking: 0.00 seconds
+14000 / 17017
+  Time for checking: 0.00 seconds
+15000 / 17017
+  Time for checking: 0.00 seconds
+16000 / 17017
+  Time for checking: 0.00 seconds
+17000 / 17017
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 13.28 seconds
+
+53
+Time for product expansions: 0.57 seconds
+Time for pruning ancestors: 2.08 seconds
+0 / 70164
+  Time for checking: 0.00 seconds
+1000 / 70164
+  Time for checking: 0.00 seconds
+2000 / 70164
+  Time for checking: 0.00 seconds
+3000 / 70164
+  Time for checking: 0.00 seconds
+4000 / 70164
+  Time for checking: 0.00 seconds
+5000 / 70164
+  Time for checking: 0.00 seconds
+6000 / 70164
+  Time for checking: 0.00 seconds
+7000 / 70164
+  Time for checking: 0.00 seconds
+8000 / 70164
+  Time for checking: 0.00 seconds
+9000 / 70164
+  Time for checking: 0.00 seconds
+10000 / 70164
+  Time for checking: 0.00 seconds
+11000 / 70164
+  Time for checking: 0.00 seconds
+12000 / 70164
+  Time for checking: 0.00 seconds
+13000 / 70164
+  Time for checking: 0.00 seconds
+14000 / 70164
+  Time for checking: 0.00 seconds
+15000 / 70164
+  Time for checking: 0.00 seconds
+16000 / 70164
+  Time for checking: 0.00 seconds
+17000 / 70164
+  Time for checking: 0.00 seconds
+18000 / 70164
+  Time for checking: 0.00 seconds
+19000 / 70164
+  Time for checking: 0.00 seconds
+20000 / 70164
+  Time for checking: 0.00 seconds
+21000 / 70164
+  Time for checking: 0.00 seconds
+22000 / 70164
+  Time for checking: 0.00 seconds
+23000 / 70164
+  Time for checking: 0.01 seconds
+24000 / 70164
+  Time for checking: 0.00 seconds
+25000 / 70164
+  Time for checking: 0.00 seconds
+26000 / 70164
+  Time for checking: 0.00 seconds
+27000 / 70164
+  Time for checking: 0.00 seconds
+28000 / 70164
+  Time for checking: 0.00 seconds
+29000 / 70164
+  Time for checking: 0.00 seconds
+30000 / 70164
+  Time for checking: 0.00 seconds
+31000 / 70164
+  Time for checking: 0.00 seconds
+32000 / 70164
+  Time for checking: 0.00 seconds
+33000 / 70164
+  Time for checking: 0.00 seconds
+34000 / 70164
+  Time for checking: 0.00 seconds
+35000 / 70164
+  Time for checking: 0.00 seconds
+36000 / 70164
+  Time for checking: 0.00 seconds
+37000 / 70164
+  Time for checking: 0.00 seconds
+38000 / 70164
+  Time for checking: 0.00 seconds
+39000 / 70164
+  Time for checking: 0.00 seconds
+40000 / 70164
+  Time for checking: 0.00 seconds
+41000 / 70164
+  Time for checking: 0.00 seconds
+42000 / 70164
+  Time for checking: 0.01 seconds
+43000 / 70164
+  Time for checking: 0.00 seconds
+44000 / 70164
+  Time for checking: 0.00 seconds
+45000 / 70164
+  Time for checking: 0.00 seconds
+46000 / 70164
+  Time for checking: 0.00 seconds
+47000 / 70164
+  Time for checking: 0.00 seconds
+48000 / 70164
+  Time for checking: 0.01 seconds
+49000 / 70164
+  Time for checking: 0.00 seconds
+50000 / 70164
+  Time for checking: 0.00 seconds
+51000 / 70164
+  Time for checking: 0.00 seconds
+52000 / 70164
+  Time for checking: 0.00 seconds
+53000 / 70164
+  Time for checking: 0.00 seconds
+54000 / 70164
+  Time for checking: 0.00 seconds
+55000 / 70164
+  Time for checking: 0.01 seconds
+56000 / 70164
+  Time for checking: 0.00 seconds
+57000 / 70164
+  Time for checking: 0.00 seconds
+58000 / 70164
+  Time for checking: 0.00 seconds
+59000 / 70164
+  Time for checking: 0.00 seconds
+60000 / 70164
+  Time for checking: 0.00 seconds
+61000 / 70164
+  Time for checking: 0.00 seconds
+62000 / 70164
+  Time for checking: 0.00 seconds
+63000 / 70164
+  Time for checking: 0.00 seconds
+64000 / 70164
+  Time for checking: 0.00 seconds
+65000 / 70164
+  Time for checking: 0.00 seconds
+66000 / 70164
+  Time for checking: 0.00 seconds
+67000 / 70164
+  Time for checking: 0.00 seconds
+68000 / 70164
+  Time for checking: 0.01 seconds
+69000 / 70164
+  Time for checking: 0.00 seconds
+70000 / 70164
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 152.52 seconds
+
+52
+Time for product expansions: 0.11 seconds
+Time for pruning ancestors: 0.48 seconds
+0 / 13096
+  Time for checking: 0.00 seconds
+1000 / 13096
+  Time for checking: 0.00 seconds
+2000 / 13096
+  Time for checking: 0.00 seconds
+3000 / 13096
+  Time for checking: 0.00 seconds
+4000 / 13096
+  Time for checking: 0.00 seconds
+5000 / 13096
+  Time for checking: 0.00 seconds
+6000 / 13096
+  Time for checking: 0.00 seconds
+7000 / 13096
+  Time for checking: 0.00 seconds
+8000 / 13096
+  Time for checking: 0.00 seconds
+9000 / 13096
+  Time for checking: 0.00 seconds
+10000 / 13096
+  Time for checking: 0.00 seconds
+11000 / 13096
+  Time for checking: 0.00 seconds
+12000 / 13096
+  Time for checking: 0.00 seconds
+13000 / 13096
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 4.90 seconds
+
+51
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.04 seconds
+0 / 1619
+  Time for checking: 0.00 seconds
+1000 / 1619
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.14 seconds
+
+50
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.01 seconds
+0 / 483
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.02 seconds
+
+49
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 137
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+48
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 59
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+47
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 17
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+46
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 8
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 12
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+44
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 3
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+43
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 3
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+42
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 174.55 seconds
+
+------- Deriving false derivations -------
+
+56
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 6
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+55
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 288
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.01 seconds
+
+54
+Time for product expansions: 3.34 seconds
+TOTAL TIME: 3.61 seconds
+
+================Processing 4524/7000=================
+
+------- Deriving true derivations -------
+
+48
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 2
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+47
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 134
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+46
+Time for product expansions: 0.08 seconds
+Time for pruning ancestors: 0.01 seconds
+0 / 10703
+  Time for checking: 0.00 seconds
+1000 / 10703
+  Time for checking: 0.00 seconds
+2000 / 10703
+  Time for checking: 0.00 seconds
+3000 / 10703
+  Time for checking: 0.00 seconds
+4000 / 10703
+  Time for checking: 0.00 seconds
+5000 / 10703
+  Time for checking: 0.00 seconds
+6000 / 10703
+  Time for checking: 0.00 seconds
+7000 / 10703
+  Time for checking: 0.00 seconds
+8000 / 10703
+  Time for checking: 0.00 seconds
+9000 / 10703
+  Time for checking: 0.00 seconds
+10000 / 10703
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 2.22 seconds
+
+45
+Time for product expansions: 0.13 seconds
+Time for pruning ancestors: 0.33 seconds
+0 / 16866
+  Time for checking: 0.00 seconds
+1000 / 16866
+  Time for checking: 0.00 seconds
+2000 / 16866
+  Time for checking: 0.00 seconds
+3000 / 16866
+  Time for checking: 0.00 seconds
+4000 / 16866
+  Time for checking: 0.00 seconds
+5000 / 16866
+  Time for checking: 0.00 seconds
+6000 / 16866
+  Time for checking: 0.00 seconds
+7000 / 16866
+  Time for checking: 0.00 seconds
+8000 / 16866
+  Time for checking: 0.00 seconds
+9000 / 16866
+  Time for checking: 0.00 seconds
+10000 / 16866
+  Time for checking: 0.00 seconds
+11000 / 16866
+  Time for checking: 0.00 seconds
+12000 / 16866
+  Time for checking: 0.00 seconds
+13000 / 16866
+  Time for checking: 0.00 seconds
+14000 / 16866
+  Time for checking: 0.00 seconds
+15000 / 16866
+  Time for checking: 0.00 seconds
+16000 / 16866
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 11.56 seconds
+
+44
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.02 seconds
+0 / 1442
+  Time for checking: 0.00 seconds
+1000 / 1442
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.10 seconds
+
+43
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 297
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.01 seconds
+
+42
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 143
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 75
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 26
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 18
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 5
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 14.52 seconds
+
+------- Deriving false derivations -------
+
+48
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 4
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+47
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 95
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+46
+Time for product expansions: 0.09 seconds
+Time for pruning ancestors: 0.11 seconds
+0 / 11487
+  Time for checking: 0.00 seconds
+1000 / 11487
+  Time for checking: 0.00 seconds
+2000 / 11487
+  Time for checking: 0.00 seconds
+3000 / 11487
+  Time for checking: 0.00 seconds
+4000 / 11487
+  Time for checking: 0.00 seconds
+5000 / 11487
+  Time for checking: 0.00 seconds
+6000 / 11487
+  Time for checking: 0.00 seconds
+7000 / 11487
+  Time for checking: 0.00 seconds
+8000 / 11487
+  Time for checking: 0.00 seconds
+9000 / 11487
+  Time for checking: 0.00 seconds
+10000 / 11487
+  Time for checking: 0.00 seconds
+11000 / 11487
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 9.29 seconds
+
+45
+Time for product expansions: 4.64 seconds
+TOTAL TIME: 14.38 seconds
+
+================Processing 4528/7000=================
+
+------- Deriving true derivations -------
+
+60
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+59
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+58
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+57
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+56
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+55
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+54
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+53
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+52
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+51
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+50
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+49
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+48
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+47
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+46
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+44
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+43
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+42
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 0.00 seconds
+
+------- Deriving false derivations -------
+
+60
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 3
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+59
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 23
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+58
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 532
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.03 seconds
+
+57
+Time for product expansions: 0.12 seconds
+Time for pruning ancestors: 0.69 seconds
+0 / 13657
+  Time for checking: 0.00 seconds
+1000 / 13657
+  Time for checking: 0.00 seconds
+2000 / 13657
+  Time for checking: 0.00 seconds
+3000 / 13657
+  Time for checking: 0.00 seconds
+4000 / 13657
+  Time for checking: 0.00 seconds
+5000 / 13657
+  Time for checking: 0.00 seconds
+6000 / 13657
+  Time for checking: 0.00 seconds
+7000 / 13657
+  Time for checking: 0.00 seconds
+8000 / 13657
+  Time for checking: 0.00 seconds
+9000 / 13657
+  Time for checking: 0.00 seconds
+10000 / 13657
+  Time for checking: 0.00 seconds
+11000 / 13657
+  Time for checking: 0.00 seconds
+12000 / 13657
+  Time for checking: 0.00 seconds
+13000 / 13657
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 28.25 seconds
+
+56
+Time for product expansions: 1.47 seconds
+Time for pruning ancestors: 37.74 seconds
+0 / 81186
+  Time for checking: 0.03 seconds
+1000 / 81186
+  Time for checking: 0.00 seconds
+2000 / 81186
+  Time for checking: 0.00 seconds
+3000 / 81186
+  Time for checking: 0.00 seconds
+4000 / 81186
+  Time for checking: 0.01 seconds
+5000 / 81186
+  Time for checking: 0.00 seconds
+6000 / 81186
+  Time for checking: 0.00 seconds
+7000 / 81186
+  Time for checking: 0.00 seconds
+8000 / 81186
+  Time for checking: 0.00 seconds
+9000 / 81186
+  Time for checking: 0.00 seconds
+10000 / 81186
+  Time for checking: 0.00 seconds
+11000 / 81186
+  Time for checking: 0.00 seconds
+12000 / 81186
+  Time for checking: 0.02 seconds
+13000 / 81186
+  Time for checking: 0.01 seconds
+14000 / 81186
+  Time for checking: 0.01 seconds
+15000 / 81186
+  Time for checking: 0.01 seconds
+16000 / 81186
+  Time for checking: 0.01 seconds
+17000 / 81186
+  Time for checking: 0.03 seconds
+18000 / 81186
+  Time for checking: 0.02 seconds
+19000 / 81186
+  Time for checking: 0.01 seconds
+20000 / 81186
+  Time for checking: 0.02 seconds
+21000 / 81186
+  Time for checking: 0.02 seconds
+22000 / 81186
+  Time for checking: 0.02 seconds
+23000 / 81186
+  Time for checking: 0.02 seconds
+24000 / 81186
+  Time for checking: 0.02 seconds
+25000 / 81186
+  Time for checking: 0.01 seconds
+26000 / 81186
+  Time for checking: 0.00 seconds
+27000 / 81186
+  Time for checking: 0.00 seconds
+28000 / 81186
+  Time for checking: 0.01 seconds
+29000 / 81186
+  Time for checking: 0.01 seconds
+30000 / 81186
+  Time for checking: 0.01 seconds
+31000 / 81186
+  Time for checking: 0.01 seconds
+32000 / 81186
+  Time for checking: 0.02 seconds
+33000 / 81186
+  Time for checking: 0.01 seconds
+34000 / 81186
+  Time for checking: 0.02 seconds
+35000 / 81186
+  Time for checking: 0.02 seconds
+36000 / 81186
+  Time for checking: 0.01 seconds
+37000 / 81186
+  Time for checking: 0.03 seconds
+38000 / 81186
+  Time for checking: 0.00 seconds
+39000 / 81186
+  Time for checking: 0.01 seconds
+40000 / 81186
+  Time for checking: 0.01 seconds
+41000 / 81186
+  Time for checking: 0.01 seconds
+42000 / 81186
+  Time for checking: 0.01 seconds
+43000 / 81186
+  Time for checking: 0.01 seconds
+44000 / 81186
+  Time for checking: 0.02 seconds
+45000 / 81186
+  Time for checking: 0.01 seconds
+46000 / 81186
+  Time for checking: 0.01 seconds
+47000 / 81186
+  Time for checking: 0.01 seconds
+48000 / 81186
+  Time for checking: 0.02 seconds
+49000 / 81186
+  Time for checking: 0.02 seconds
+50000 / 81186
+  Time for checking: 0.02 seconds
+51000 / 81186
+  Time for checking: 0.00 seconds
+52000 / 81186
+  Time for checking: 0.02 seconds
+53000 / 81186
+  Time for checking: 0.01 seconds
+54000 / 81186
+  Time for checking: 0.01 seconds
+55000 / 81186
+  Time for checking: 0.02 seconds
+56000 / 81186
+  Time for checking: 0.02 seconds
+57000 / 81186
+  Time for checking: 0.00 seconds
+58000 / 81186
+  Time for checking: 0.00 seconds
+59000 / 81186
+  Time for checking: 0.02 seconds
+60000 / 81186
+  Time for checking: 0.02 seconds
+61000 / 81186
+  Time for checking: 0.01 seconds
+62000 / 81186
+  Time for checking: 0.00 seconds
+63000 / 81186
+  Time for checking: 0.02 seconds
+64000 / 81186
+  Time for checking: 0.01 seconds
+65000 / 81186
+  Time for checking: 0.01 seconds
+66000 / 81186
+  Time for checking: 0.01 seconds
+67000 / 81186
+  Time for checking: 0.02 seconds
+68000 / 81186
+  Time for checking: 0.01 seconds
+69000 / 81186
+  Time for checking: 0.01 seconds
+70000 / 81186
+  Time for checking: 0.01 seconds
+71000 / 81186
+  Time for checking: 0.02 seconds
+72000 / 81186
+  Time for checking: 0.01 seconds
+73000 / 81186
+  Time for checking: 0.00 seconds
+74000 / 81186
+  Time for checking: 0.02 seconds
+75000 / 81186
+  Time for checking: 0.01 seconds
+76000 / 81186
+  Time for checking: 0.02 seconds
+77000 / 81186
+  Time for checking: 0.02 seconds
+78000 / 81186
+  Time for checking: 0.02 seconds
+79000 / 81186
+  Time for checking: 0.00 seconds
+80000 / 81186
+  Time for checking: 0.01 seconds
+81000 / 81186
+  Time for checking: 0.01 seconds
+Time for pruning current layer: 874.30 seconds
+
+55
+Time for product expansions: 2.13 seconds
+TOTAL TIME: 944.95 seconds
+
+================Processing 4531/7000=================
+
+================Processing 4534/7000=================
+
+------- Deriving true derivations -------
+
+52
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+51
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 30
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+50
+Time for product expansions: 0.20 seconds
+Time for pruning ancestors: 0.07 seconds
+0 / 23300
+  Time for checking: 0.00 seconds
+1000 / 23300
+  Time for checking: 0.00 seconds
+2000 / 23300
+  Time for checking: 0.00 seconds
+3000 / 23300
+  Time for checking: 0.00 seconds
+4000 / 23300
+  Time for checking: 0.00 seconds
+5000 / 23300
+  Time for checking: 0.00 seconds
+6000 / 23300
+  Time for checking: 0.00 seconds
+7000 / 23300
+  Time for checking: 0.00 seconds
+8000 / 23300
+  Time for checking: 0.00 seconds
+9000 / 23300
+  Time for checking: 0.01 seconds
+10000 / 23300
+  Time for checking: 0.00 seconds
+11000 / 23300
+  Time for checking: 0.00 seconds
+12000 / 23300
+  Time for checking: 0.00 seconds
+13000 / 23300
+  Time for checking: 0.00 seconds
+14000 / 23300
+  Time for checking: 0.00 seconds
+15000 / 23300
+  Time for checking: 0.00 seconds
+16000 / 23300
+  Time for checking: 0.00 seconds
+17000 / 23300
+  Time for checking: 0.00 seconds
+18000 / 23300
+  Time for checking: 0.00 seconds
+19000 / 23300
+  Time for checking: 0.01 seconds
+20000 / 23300
+  Time for checking: 0.00 seconds
+21000 / 23300
+  Time for checking: 0.00 seconds
+22000 / 23300
+  Time for checking: 0.00 seconds
+23000 / 23300
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 31.45 seconds
+
+49
+Time for product expansions: 6.59 seconds
+TOTAL TIME: 38.65 seconds
+
+================Processing 4547/7000=================
+
+================Processing 4552/7000=================
+
+------- Deriving true derivations -------
+
+46
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 2
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 36
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+44
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1350
+  Time for checking: 0.00 seconds
+1000 / 1350
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.08 seconds
+
+43
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1411
+  Time for checking: 0.00 seconds
+1000 / 1411
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.07 seconds
+
+42
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 825
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.02 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 98
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 150
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 92
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 85
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 41
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 47
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 35
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 10
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 0.22 seconds
+
+------- Deriving false derivations -------
+
+46
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 8
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 504
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.03 seconds
+
+44
+Time for product expansions: 0.81 seconds
+Time for pruning ancestors: 2.05 seconds
+0 / 99898
+  Time for checking: 0.02 seconds
+1000 / 99898
+  Time for checking: 0.00 seconds
+2000 / 99898
+  Time for checking: 0.00 seconds
+3000 / 99898
+  Time for checking: 0.00 seconds
+4000 / 99898
+  Time for checking: 0.00 seconds
+5000 / 99898
+  Time for checking: 0.01 seconds
+6000 / 99898
+  Time for checking: 0.00 seconds
+7000 / 99898
+  Time for checking: 0.00 seconds
+8000 / 99898
+  Time for checking: 0.00 seconds
+9000 / 99898
+  Time for checking: 0.00 seconds
+10000 / 99898
+  Time for checking: 0.00 seconds
+11000 / 99898
+  Time for checking: 0.00 seconds
+12000 / 99898
+  Time for checking: 0.02 seconds
+13000 / 99898
+  Time for checking: 0.00 seconds
+14000 / 99898
+  Time for checking: 0.00 seconds
+15000 / 99898
+  Time for checking: 0.00 seconds
+16000 / 99898
+  Time for checking: 0.00 seconds
+17000 / 99898
+  Time for checking: 0.00 seconds
+18000 / 99898
+  Time for checking: 0.01 seconds
+19000 / 99898
+  Time for checking: 0.00 seconds
+20000 / 99898
+  Time for checking: 0.00 seconds
+21000 / 99898
+  Time for checking: 0.00 seconds
+22000 / 99898
+  Time for checking: 0.00 seconds
+23000 / 99898
+  Time for checking: 0.00 seconds
+24000 / 99898
+  Time for checking: 0.00 seconds
+25000 / 99898
+  Time for checking: 0.01 seconds
+26000 / 99898
+  Time for checking: 0.01 seconds
+27000 / 99898
+  Time for checking: 0.00 seconds
+28000 / 99898
+  Time for checking: 0.01 seconds
+29000 / 99898
+  Time for checking: 0.01 seconds
+30000 / 99898
+  Time for checking: 0.01 seconds
+31000 / 99898
+  Time for checking: 0.02 seconds
+32000 / 99898
+  Time for checking: 0.01 seconds
+33000 / 99898
+  Time for checking: 0.01 seconds
+34000 / 99898
+  Time for checking: 0.01 seconds
+35000 / 99898
+  Time for checking: 0.01 seconds
+36000 / 99898
+  Time for checking: 0.01 seconds
+37000 / 99898
+  Time for checking: 0.01 seconds
+38000 / 99898
+  Time for checking: 0.01 seconds
+39000 / 99898
+  Time for checking: 0.00 seconds
+40000 / 99898
+  Time for checking: 0.01 seconds
+41000 / 99898
+  Time for checking: 0.00 seconds
+42000 / 99898
+  Time for checking: 0.01 seconds
+43000 / 99898
+  Time for checking: 0.02 seconds
+44000 / 99898
+  Time for checking: 0.00 seconds
+45000 / 99898
+  Time for checking: 0.00 seconds
+46000 / 99898
+  Time for checking: 0.00 seconds
+47000 / 99898
+  Time for checking: 0.01 seconds
+48000 / 99898
+  Time for checking: 0.00 seconds
+49000 / 99898
+  Time for checking: 0.00 seconds
+50000 / 99898
+  Time for checking: 0.00 seconds
+51000 / 99898
+  Time for checking: 0.00 seconds
+52000 / 99898
+  Time for checking: 0.00 seconds
+53000 / 99898
+  Time for checking: 0.00 seconds
+54000 / 99898
+  Time for checking: 0.00 seconds
+55000 / 99898
+  Time for checking: 0.00 seconds
+56000 / 99898
+  Time for checking: 0.00 seconds
+57000 / 99898
+  Time for checking: 0.00 seconds
+58000 / 99898
+  Time for checking: 0.00 seconds
+59000 / 99898
+  Time for checking: 0.01 seconds
+60000 / 99898
+  Time for checking: 0.01 seconds
+61000 / 99898
+  Time for checking: 0.00 seconds
+62000 / 99898
+  Time for checking: 0.00 seconds
+63000 / 99898
+  Time for checking: 0.01 seconds
+64000 / 99898
+  Time for checking: 0.00 seconds
+65000 / 99898
+  Time for checking: 0.00 seconds
+66000 / 99898
+  Time for checking: 0.00 seconds
+67000 / 99898
+  Time for checking: 0.01 seconds
+68000 / 99898
+  Time for checking: 0.02 seconds
+69000 / 99898
+  Time for checking: 0.01 seconds
+70000 / 99898
+  Time for checking: 0.00 seconds
+71000 / 99898
+  Time for checking: 0.01 seconds
+72000 / 99898
+  Time for checking: 0.00 seconds
+73000 / 99898
+  Time for checking: 0.01 seconds
+74000 / 99898
+  Time for checking: 0.00 seconds
+75000 / 99898
+  Time for checking: 0.00 seconds
+76000 / 99898
+  Time for checking: 0.01 seconds
+77000 / 99898
+  Time for checking: 0.02 seconds
+78000 / 99898
+  Time for checking: 0.00 seconds
+79000 / 99898
+  Time for checking: 0.01 seconds
+80000 / 99898
+  Time for checking: 0.00 seconds
+81000 / 99898
+  Time for checking: 0.01 seconds
+82000 / 99898
+  Time for checking: 0.00 seconds
+83000 / 99898
+  Time for checking: 0.01 seconds
+84000 / 99898
+  Time for checking: 0.01 seconds
+85000 / 99898
+  Time for checking: 0.00 seconds
+86000 / 99898
+  Time for checking: 0.01 seconds
+87000 / 99898
+  Time for checking: 0.00 seconds
+88000 / 99898
+  Time for checking: 0.00 seconds
+89000 / 99898
+  Time for checking: 0.00 seconds
+90000 / 99898
+  Time for checking: 0.00 seconds
+91000 / 99898
+  Time for checking: 0.00 seconds
+92000 / 99898
+  Time for checking: 0.00 seconds
+93000 / 99898
+  Time for checking: 0.01 seconds
+94000 / 99898
+  Time for checking: 0.00 seconds
+95000 / 99898
+  Time for checking: 0.01 seconds
+96000 / 99898
+  Time for checking: 0.02 seconds
+97000 / 99898
+  Time for checking: 0.01 seconds
+98000 / 99898
+  Time for checking: 0.01 seconds
+99000 / 99898
+  Time for checking: 0.02 seconds
+Time for pruning current layer: 598.23 seconds
+
+43
+Time for product expansions: 2.91 seconds
+TOTAL TIME: 604.24 seconds
+
+================Processing 4557/7000=================
+
+================Processing 4591/7000=================
+
+------- Deriving true derivations -------
+
+52
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 2
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+51
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 3
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+50
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 33
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+49
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 940
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.09 seconds
+
+48
+Time for product expansions: 0.06 seconds
+Time for pruning ancestors: 0.18 seconds
+0 / 6342
+  Time for checking: 0.00 seconds
+1000 / 6342
+  Time for checking: 0.00 seconds
+2000 / 6342
+  Time for checking: 0.00 seconds
+3000 / 6342
+  Time for checking: 0.00 seconds
+4000 / 6342
+  Time for checking: 0.00 seconds
+5000 / 6342
+  Time for checking: 0.00 seconds
+6000 / 6342
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 2.85 seconds
+
+47
+Time for product expansions: 0.03 seconds
+Time for pruning ancestors: 0.14 seconds
+0 / 3046
+  Time for checking: 0.00 seconds
+1000 / 3046
+  Time for checking: 0.00 seconds
+2000 / 3046
+  Time for checking: 0.00 seconds
+3000 / 3046
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.80 seconds
+
+46
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.06 seconds
+0 / 941
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.10 seconds
+
+45
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.02 seconds
+0 / 298
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.02 seconds
+
+44
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.01 seconds
+0 / 95
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+43
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 49
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+42
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 18
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+41
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 3
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+40
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 1
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+39
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+38
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+37
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+36
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+35
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+34
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+33
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+32
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+31
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+30
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+29
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+28
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+27
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+26
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+25
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+24
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+23
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+22
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+21
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+20
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+19
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+18
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+17
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+16
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+15
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+14
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+13
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+12
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+11
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+10
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+9
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+8
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+7
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+6
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+5
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+4
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+3
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+2
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+1
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+0
+TOTAL TIME: 4.41 seconds
+
+------- Deriving false derivations -------
+
+52
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 2
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+51
+Time for product expansions: 0.00 seconds
+Time for pruning ancestors: 0.00 seconds
+0 / 33
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.00 seconds
+
+50
+Time for product expansions: 0.01 seconds
+Time for pruning ancestors: 0.01 seconds
+0 / 1615
+  Time for checking: 0.00 seconds
+1000 / 1615
+  Time for checking: 0.00 seconds
+Time for pruning current layer: 0.32 seconds
+
+49
+Time for product expansions: 1.66 seconds
+TOTAL TIME: 2.11 seconds
+
+================Processing 4597/7000=================

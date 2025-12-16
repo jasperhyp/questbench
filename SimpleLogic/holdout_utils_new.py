@@ -257,8 +257,7 @@ def make_heldout_ruleset(rules_dict, max_k=4):
         # This covers:
         #   - Underspecification: s_prev itself shouldn't solve it.
         #   - Global Minimality: No other sibling set s_other should solve it either.
-        
-        found_shortcut = False
+        is_lower_k_sufficient = False
         # Check all sufficient sets of the parent context (size k-1)
         # A sufficient set that solves context_k should also solve context_prev
         # because context_k is a subset of context_prev.
@@ -268,10 +267,10 @@ def make_heldout_ruleset(rules_dict, max_k=4):
             if check_sufficiency(
                 rule_tree_obj, context_k, s_other, rules_dict['query']
             ):
-                found_shortcut = True
+                is_lower_k_sufficient = True
                 break
         
-        if found_shortcut:
+        if is_lower_k_sufficient:
             continue
 
         # # Condition 3: Local minimality -- UNNECESSARY AFTER HAVING GLOBAL MINIMALITY

@@ -30,6 +30,37 @@ import tqdm
 tqdm = tqdm.tqdm
 
 
+def find_matching_derivation(derivations_list, context_set, solution_vars):
+    """
+    Reconstructs the derivation trace by finding the first rule in the list
+    whose leaf nodes are satisfied by the (Context U Solution).
+    """
+    for d in derivations_list:
+        # d is the serialized derivation dictionary
+        # d['leaf_words'] contains the premises required for this derivation
+        leaves = d['leaf_words'].keys()
+        
+        is_match = True
+        for leaf in leaves:
+            # 1. Is the leaf literal exactly in the known facts?
+            if leaf in context_set:
+                continue
+            
+            # 2. Is the leaf's variable one of the ones we are asking about?
+            # (If we ask about 'A', we know 'A' or 'not A', fulfilling the leaf requirement)
+            var_name = leaf.split("not ")[-1] if leaf.startswith("not ") else leaf
+            if var_name in solution_vars:
+                continue
+                
+            # If neither, this derivation relies on information we don't have
+            is_match = False
+            break
+        
+        if is_match:
+            return d['derivation'] # Return the trace structure [[premises, conclusion], ...]
+    return None
+  
+
 def main(arguments) -> None:
   # Load constructed rulesets
   rulesets = []
@@ -251,7 +282,7 @@ def main(arguments) -> None:
     # We prefer 'heldout_k_sets' if it exists.
     k_data_source = {}
     
-    if "heldout_k_sets" in rs:
+    if "heldout_k_sets" in rs and rs["heldout_k_sets"]:
       # Use the new structure: {"1": {ctx: [[v]]}, "2": {ctx: [[v1,v2]]}}
       k_data_source = rs["heldout_k_sets"]
     elif "heldout_set_to_q" in rs:
@@ -270,7 +301,7 @@ def main(arguments) -> None:
       for context_str, valid_sets in context_map.items():
         all_problems.append((int(k_str), context_str, valid_sets))
 
-    # 3. Subsample problems per ruleset
+    # 3. Subsample problems per ruleset (Robustness from original make_data)
     if len(all_problems) > arguments.max_problems_to_sample_per_ruleset:
       sampled_problems = random.sample(
           all_problems, arguments.max_problems_to_sample_per_ruleset
@@ -309,14 +340,14 @@ def main(arguments) -> None:
       gt_q_to_true_derivation = {}
       gt_q_to_false_derivation = {}
       
-      if k == 1 and "heldout_set_to_q" in rs and context_str in rs["heldout_set_to_q"]:
-        q_info = rs["heldout_set_to_q"][context_str]
-        # valid_sets is [[v1], [v2]...]; we look them up in the old dict
-        for v_list in valid_sets:
-            v = v_list[0] 
-            if v in q_info:
-                gt_q_to_true_derivation[v] = q_info[v]["true_derivation"]["derivation"]
-                gt_q_to_false_derivation[v] = q_info[v]["false_derivation"]["derivation"]
+      # if k == 1 and "heldout_set_to_q" in rs and context_str in rs["heldout_set_to_q"]:
+      #   q_info = rs["heldout_set_to_q"][context_str]
+      #   # valid_sets is [[v1], [v2]...]; we look them up in the old dict
+      #   for v_list in valid_sets:
+      #       v = v_list[0] 
+      #       if v in q_info:
+      #           gt_q_to_true_derivation[v] = q_info[v]["true_derivation"]["derivation"]
+      #           gt_q_to_false_derivation[v] = q_info[v]["false_derivation"]["derivation"]
 
       # valid_sets comes from JSON as list of lists, e.g. [['a', 'b'], ['c', 'd']]
       gt_qs = valid_sets
@@ -330,6 +361,39 @@ def main(arguments) -> None:
       
       if not clean_gt_qs:
           continue
+
+      # --- TRACE RECONSTRUCTION (Critical for FullInfo Eval) ---
+      gt_q_to_true_derivation = {}
+      gt_q_to_false_derivation = {}
+      context_set = set(known_facts)
+
+      for sol_list in clean_gt_qs:
+          solution_vars = set(sol_list)
+          
+          # Key Format: "var" for k=1, "('v1', 'v2')" for k>1
+          if len(sol_list) == 1:
+              sol_key = sol_list[0]
+          else:
+              sol_key = str(tuple(sorted(sol_list)))
+
+          # 1. Find Proof for True (A U S => y)
+          true_trace = find_matching_derivation(
+              rs.get("true_derivations", []), 
+              context_set, 
+              solution_vars
+          )
+          if true_trace:
+              gt_q_to_true_derivation[sol_key] = true_trace
+
+          # 2. Find Proof for False (A U S => not y)
+          false_trace = find_matching_derivation(
+              rs.get("false_derivations", []), 
+              context_set, 
+              solution_vars
+          )
+          if false_trace:
+              gt_q_to_false_derivation[sol_key] = false_trace
+      # ---------------------------------------------------------
 
       # All variables in the tree (potential search space)
       all_qs = set(
@@ -350,6 +414,9 @@ def main(arguments) -> None:
           first_key = list(gt_q_to_true_derivation.keys())[0]
           # derivation is a list of rule steps
           num_rules = len(gt_q_to_true_derivation[first_key])
+      elif gt_q_to_false_derivation:
+          first_key = list(gt_q_to_false_derivation.keys())[0]
+          num_rules = len(gt_q_to_false_derivation[first_key])
       
       num_total_rules = rule_tree.num_rules()
       num_words = rule_tree.num_words()

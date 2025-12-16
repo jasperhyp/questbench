@@ -320,11 +320,12 @@ def backderive_nextlayer_rules(
   # NOTE: Very costly step, skipping when curr_layer_rules is large for now
   curr_layer_rules_pruned = set()  # if 2 derivations, keep first
   start = time()
+  existing_rules_list = list(all_query_rules)
   for r, rule in enumerate(curr_layer_rules):
     # check if any other rule is a subset of rule (rule -> other rule)
     has_subset = False
     st = time()
-    for _, rule2 in enumerate(curr_layer_rules + list(all_query_rules)):
+    for _, rule2 in enumerate(curr_layer_rules + existing_rules_list):
       if rule == rule2:
         continue
       if rule2 < rule:
