@@ -202,8 +202,9 @@ def backderive_nextlayer_rules(
   print()
   print(max_depth)
   start = time()
+  len_break = False
   if max_depth == 0:
-    return set(), all_query_rules
+    return set(), all_query_rules, len_break
 
   curr_layer_rules = []
   for _, prev_layer_rule in enumerate(prev_layer_rules):
@@ -231,6 +232,8 @@ def backderive_nextlayer_rules(
         # skip expansion if it contains an ancestor word
         # --> excess information; there's some node we didn't need to expand
         # (either this node or prev time this came up)
+        # TODO: It seems this can create an issue where we miss valid derivations?
+        # More concretely, 
         if prev_layer_rule.list_has_ancestor(set(word_expansion.keys())):
           continue
         # cannot expand (word expansion has a not x, where x in rule,
@@ -281,6 +284,12 @@ def backderive_nextlayer_rules(
     curr_layer_rules.extend(prev_rule_expansions_linearized)
   print(f"Time for product expansions: {time() - start:.2f} seconds")
   start = time()
+  
+  # TODO
+  if len(curr_layer_rules) > 50000:
+    len_break = True
+    return set(), all_query_rules, len_break
+  start = time()
 
   # now delete rules which are supersets of other rules
   # only add rules which are subsets of other rules
@@ -301,6 +310,7 @@ def backderive_nextlayer_rules(
   # TODO: Profile below
   curr_layer_rules_pruned = set()  # if 2 derivations, keep first
   start = time()
+  st = time()
   for r, rule in enumerate(curr_layer_rules):
     # check if any other rule is a subset of rule (rule -> other rule)
     has_subset = False
@@ -316,17 +326,18 @@ def backderive_nextlayer_rules(
     if r % 1000 == 0:
       print(f"{r} / {len(curr_layer_rules)}")
       print(f"  Time for checking: {time() - st:.2f} seconds")
+      st = time()
   # curr_layer_rules = uniq_query_rules
   print(f"Time for pruning current layer: {time() - start:.2f} seconds")
   start = time()
 
   all_query_rules = ancestor_query_rules_pruned.union(curr_layer_rules_pruned)
   # expand current set of rules into next layer
-  _, all_query_rules = backderive_nextlayer_rules(
+  _, all_query_rules, len_break = backderive_nextlayer_rules(
       rule_tree, curr_layer_rules_pruned, all_query_rules, max_depth - 1
   )
 
-  return curr_layer_rules_pruned, all_query_rules
+  return curr_layer_rules_pruned, all_query_rules, len_break
 
 
 def get_derivations(rules_dict):
@@ -349,7 +360,7 @@ def get_derivations(rules_dict):
     # can take 3 mins each, need some more efficient mechanism...
     print("\n------- Deriving true derivations -------")
     start = time()
-    _, rules_dict["true_derivations"] = backderive_nextlayer_rules(
+    _, rules_dict["true_derivations"], len_break = backderive_nextlayer_rules(
         rule_tree=rules_dict["rules"],
         prev_layer_rules={
             ConjunctionRule(
@@ -360,6 +371,8 @@ def get_derivations(rules_dict):
         max_depth=len(rules_dict["rules"].nodes),
     )
     print(f"TOTAL TIME: {time() - start:.2f} seconds")
+    if len_break:
+      return False
     
     # remove target
     rules_dict["true_derivations"] = [
@@ -370,7 +383,7 @@ def get_derivations(rules_dict):
   if not rules_dict.get("false_derivations", []):
     print("\n------- Deriving false derivations -------")
     start = time()
-    _, rules_dict["false_derivations"] = backderive_nextlayer_rules(
+    _, rules_dict["false_derivations"], len_break = backderive_nextlayer_rules(
         rule_tree=rules_dict["rules"],
         prev_layer_rules={
             ConjunctionRule(
@@ -385,6 +398,8 @@ def get_derivations(rules_dict):
         max_depth=len(rules_dict["rules"].nodes),
     )
     print(f"TOTAL TIME: {time() - start:.2f} seconds")
+    if len_break:
+      return False
     
     # remove target
     rules_dict["false_derivations"] = [

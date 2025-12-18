@@ -64,7 +64,7 @@ def main(arguments) -> None:
   )
 
   for rs in tqdm(rulesets):
-    if ruleset.get("heldout_set_to_q", []):
+    if rs.get("heldout_set_to_q", []):
       rule_tree = ruleset.RuleTree.deserialize(rs["rules"])
       target_attr = rs["query"]
       heldout_set_to_q = rs["heldout_set_to_q"]
@@ -218,7 +218,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument(
       "--sl_dir",
-      default="data/Logic-Q/SL_RP/RP/RP/",
+      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP",
       help="Directory containing the SimpleLogic data.",
   )
   parser.add_argument(

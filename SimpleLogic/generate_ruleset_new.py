@@ -56,9 +56,9 @@ def main(arguments) -> None:
     for r, rules_dict in enumerate(rules_dicts):
       if r < start_idx or r >= end_idx:
         continue
-      rule_tree_rules = ruleset.RuleTree.deserialize(rules_dict["rules"])
+      rule_tree_rules = ruleset.RuleTree.deserialize(rules_dict["rules"])  # NOTE: [[[a, b, c], word], [[d, e, f], word], ...] --> RuleTree (.nodes[word_value].rules = sets of conjunctive normal forms, e.g., {{"not a", "not b", "not c", "word"}, {"not d", "not e", "not f", "word"}, ...})
       if (
-          json.dumps(rule_tree_rules.serialize()),
+          json.dumps(rule_tree_rules.serialize()),  # NOTE: .serialize() --> list of conjunctive normal forms, e.g., [["not a", "not b", "not c", "d"], ["not d", "not e", "not f", "g"], ...]
           rules_dict["query"],
       ) in existing_rules_dicts_rules_queries:
         continue
@@ -153,7 +153,7 @@ def main(arguments) -> None:
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("--sl_dir", type=str, default="n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP")
+  parser.add_argument("--sl_dir", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP")
   parser.add_argument("--start_idx", type=int, default=0)
   parser.add_argument("--end_idx", type=int)
   parser.add_argument("--max_k", type=int, default=4)

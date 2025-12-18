@@ -23,7 +23,6 @@ import random
 import ast
 
 import pandas as pd
-# from SimpleLogic import holdout_utils_new
 from SimpleLogic import ruleset
 import tqdm
 
@@ -281,7 +280,6 @@ def main(arguments) -> None:
     # 1. Identify where the problem data is stored
     # We prefer 'heldout_k_sets' if it exists.
     k_data_source = {}
-    
     if "heldout_k_sets" in rs and rs["heldout_k_sets"]:
       # Use the new structure: {"1": {ctx: [[v]]}, "2": {ctx: [[v1,v2]]}}
       k_data_source = rs["heldout_k_sets"]
@@ -334,11 +332,22 @@ def main(arguments) -> None:
       # 2. Cannot ask about variables already in the known facts (redundant)
       known_vars = {f.split("not ")[-1] for f in known_facts}
       invalid_qs.update(known_vars)
+      
+      # --- CLEANING GROUND TRUTH ---
+      # We TRUST 'valid_sets' from the input file (it contains minimal sets).
+      # We only filter out sets that accidentally contain already-known variables.
+      clean_gt_qs = []
+      for q_set in valid_sets:
+          if not set(q_set).intersection(invalid_qs):
+              clean_gt_qs.append(sorted(q_set))
+      
+      if not clean_gt_qs:
+          continue
 
       # Extract GT Derivations (Only available easily for k=1 via heldout_set_to_q)
       # For k>1, we leave these dicts empty.
-      gt_q_to_true_derivation = {}
-      gt_q_to_false_derivation = {}
+      # gt_q_to_true_derivation = {}
+      # gt_q_to_false_derivation = {}
       
       # if k == 1 and "heldout_set_to_q" in rs and context_str in rs["heldout_set_to_q"]:
       #   q_info = rs["heldout_set_to_q"][context_str]
@@ -349,19 +358,19 @@ def main(arguments) -> None:
       #           gt_q_to_true_derivation[v] = q_info[v]["true_derivation"]["derivation"]
       #           gt_q_to_false_derivation[v] = q_info[v]["false_derivation"]["derivation"]
 
-      # valid_sets comes from JSON as list of lists, e.g. [['a', 'b'], ['c', 'd']]
-      gt_qs = valid_sets
+      # # valid_sets comes from JSON as list of lists, e.g. [['a', 'b'], ['c', 'd']]
+      # gt_qs = valid_sets
       
-      # Basic Validation: Ensure GT sets don't overlap with invalid_qs
-      clean_gt_qs = []
-      for q_set in gt_qs:
-          # If any variable in the solution set is already known/invalid, skip this solution
-          if not set(q_set).intersection(invalid_qs):
-              clean_gt_qs.append(sorted(q_set))
+    #   # All variables in the tree (potential search space)
+    #   all_qs = set(
+    #       {q for q in rule_tree.nodes.keys() if not q.startswith("not ")}
+    #   )
       
-      if not clean_gt_qs:
-          continue
-
+    #   # Valid individual variables available for selection (the atoms)
+    #   valid_qs_atoms = sorted(list(
+    #       all_qs - invalid_qs - set(false_facts)
+    #   ))
+      
       # --- TRACE RECONSTRUCTION (Critical for FullInfo Eval) ---
       gt_q_to_true_derivation = {}
       gt_q_to_false_derivation = {}

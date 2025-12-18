@@ -13,11 +13,11 @@ export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 
-# 2. Loop from 0 to 6800 with increments of 200
-for start_idx in {0..6800..200}; do
+# 2. Loop from 0 to 6800 with increments of 100
+for start_idx in {0..6900..100}; do
 
-    # Calculate the end index (start + 200)
-    end_idx=$((start_idx + 200))
+    # Calculate the end index (start + 100)
+    end_idx=$((start_idx + 100))
 
     echo "Launching job: $start_idx -> $end_idx (Log: $LOG_DIR/run_${start_idx}_${end_idx}.log)"
 

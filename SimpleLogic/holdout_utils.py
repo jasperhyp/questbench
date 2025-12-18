@@ -21,8 +21,8 @@ import json
 
 import tqdm
 
-from questbench.SimpleLogic import derivation
-from questbench.SimpleLogic import ruleset
+from SimpleLogic import derivation
+from SimpleLogic import ruleset
 
 
 def make_heldout_ruleset(rules_dict):

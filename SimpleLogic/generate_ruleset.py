@@ -111,7 +111,7 @@ def main(arguments) -> None:
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("--sl_dir", type=str, default="data/Logic-Q/SL_RP/RP/RP")
+  parser.add_argument("--sl_dir", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP")
   parser.add_argument("--start_idx", type=int, default=0)
   parser.add_argument("--end_idx", type=int)
   args = parser.parse_args()

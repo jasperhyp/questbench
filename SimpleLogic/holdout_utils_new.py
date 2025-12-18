@@ -212,15 +212,21 @@ def make_heldout_ruleset(rules_dict, max_k=4):
     rule_tree_obj = ruleset.RuleTree.deserialize(rules_dict['rules'])
 
   for k in range(2, max_k + 1):
-    k_sufficient_sets[k] = []
+    temp_k_sets = []
     seen_sigs = set()
     prev_items = k_sufficient_sets[k - 1]
-    
+        
     # Pre-group the previous sets by context to speed up the global minimality check
     # context (frozenset) -> list of s_sets (set)
     context_to_s_sets = collections.defaultdict(list)
     for context_prev, s_prev in prev_items:
         context_to_s_sets[context_prev].append(s_prev)
+        
+    # Pre-collect all lower level contexts for global minimality
+    lower_k_contexts = set()
+    for j in range(1, k):
+        for context_prev, _ in k_sufficient_sets[j]:
+            lower_k_contexts.add(context_prev)
 
     for context_prev, s_prev in tqdm.tqdm(prev_items, desc=f"Generating k={k}"):
       # Iterate through each fact in the previous context
@@ -252,15 +258,23 @@ def make_heldout_ruleset(rules_dict, max_k=4):
           continue
 
         # Condition 2 & 4 combined (Global Minimality & Underspecification):
-        # We need to ensure that NO set of size k-1 (associated with context_prev)
-        # determines y under the new reduced context A_k.
-        # This covers:
-        #   - Underspecification: s_prev itself shouldn't solve it.
-        #   - Global Minimality: No other sibling set s_other should solve it either.
+        # We need to ensure that NO set of size k-1 determines y under the new reduced context A_k.
         is_lower_k_sufficient = False
+        
+        # Check A: Subset check
+        # If any subset of context_k is a known minimal context for size k-1 (or less),
+        # then context_k is solvable by size k-1 (monotonicity).
+        for c_existing in context_to_s_sets:
+            if c_existing <= context_k:
+                is_lower_k_sufficient = True
+                break
+        
+        if is_lower_k_sufficient:
+            continue
+
+        # Check B: Parent Context Check
         # Check all sufficient sets of the parent context (size k-1)
         # A sufficient set that solves context_k should also solve context_prev
-        # because context_k is a subset of context_prev.
         for s_other in context_to_s_sets[context_prev]:
             # If s_other solves the problem under context_k, then A_k 
             # is solvable with k-1 vars, so S_k (size k) is not minimal.
@@ -289,8 +303,12 @@ def make_heldout_ruleset(rules_dict, max_k=4):
         #     break
         # if minimality_fail:
         #   continue
+        
+        # NOTE: This set is to ensure sets at the same level won't be used for this check.
+        temp_k_sets.append((context_k, s_k))
 
-        k_sufficient_sets[k].append((context_k, s_k))
+    # k_sufficient_sets[k].append((context_k, s_k))
+    k_sufficient_sets[k] = temp_k_sets
 
   # Store k-sufficient sets in the rules_dict
   rules_dict['heldout_k_sets'] = {}

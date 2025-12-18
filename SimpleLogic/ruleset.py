@@ -42,7 +42,7 @@ def load_data(sl_dir: str):
           files_to_rulesets[item_file].extend(json.loads(line))
         except json.JSONDecodeError:
           continue
-    break
+    break  # TODO: This actually only reads in one file (prop_examples_11.txt)!
   return rulesets, files_to_rulesets
 
 
@@ -106,11 +106,13 @@ class RuleTree:
   Serialized as a list of rules of form [[x1, x2, ...], y] where x1, x2, ..., y
   are words and y is a word. There may be multiple rules implying the same word
   y. We store these as a set of rules.
-  For every rule (x1, x2, x3, ...) -> y, we also store the rules:
-    (x2, x3, ..., not y) -> not x1
-    (x1, x3, ..., not y) -> not x2
-    (x1, x2 ..., not y) -> not x3
+  # For every rule (x1, x2, x3, ...) -> y, we also store the rules:
+  #   (x2, x3, ..., not y) -> not x1
+  #   (x1, x3, ..., not y) -> not x2
+  #   (x1, x2 ..., not y) -> not x3
     ...
+    [Not explicitly stored, but stored with conjunctive normal forms:
+    (not x1 or not x2 or not x3 or ... or y)]
   These are necessary for backderiving the false derivations, and ensuring we
   capture all derivations of the target word's truth value.
 
