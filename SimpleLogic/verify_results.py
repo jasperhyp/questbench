@@ -110,8 +110,7 @@ def verify_row(data):
                 print(f"❌ FAIL: Subset {subset} is sufficient (Not Minimal).")
                 return False
 
-    # print(f"✅ Row Verified (k={data['k']})")
-    print(f"✅ Row Verified")
+    print(f"✅ Row Verified (k={data['k'] if 'k' in data else 'N/A'})")
     return True
 
 if __name__ == "__main__":
@@ -120,7 +119,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     
     args = ArgumentParser()
-    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/simplelogic_heldout_k_sufficient_data_test.csv", help="Path to the CSV file with results to verify.")
+    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/simplelogic_heldout_k_sufficient_data_test_test.csv", help="Path to the CSV file with results to verify.")
     arguments = args.parse_args()
 
     data = pd.read_csv(arguments.input_csv)

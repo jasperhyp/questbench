@@ -18,8 +18,8 @@
 import argparse
 import os
 from evaluators.gsm import GSMEvaluator
-from evaluators.planning import PlanningEvaluator
-from evaluators.simple_logic import SimpleLogicEvaluator
+# from evaluators.planning import PlanningEvaluator
+from evaluators.simple_logic_new import SimpleLogicEvaluator
 import pandas as pd
 
 
@@ -62,7 +62,8 @@ def main(user_args) -> None:
     )
     prompt_file = os.path.join(
         user_args.data_dir,
-        "Logic-Q/simplelogic_heldout_1k_prompts.csv",
+        # "Logic-Q/simplelogic_heldout_1k_prompts.csv",
+        "simplelogic_heldout_1k_prompts.csv",
     )
   elif domain_main_name == "GSM":
     assert user_args.domain_name.split("_")[1] in ["csp", "verbal"]
@@ -88,31 +89,31 @@ def main(user_args) -> None:
           user_args.data_dir,
           "GSM-Q/gsm_verbal_heldout_pilot_prompts.csv",
       )
-  elif domain_main_name == "Planning":
-    evaluator = PlanningEvaluator(
-        user_args.model_name,
-        domain_file=os.path.join(
-            user_args.data_dir,
-            "Planning-Q/task_pddls/blocks/domain.pddl",
-        ),
-        task_file_pattern=os.path.join(
-            user_args.data_dir,
-            "Planning-Q/task_pddls/blocks/task*.pddl",
-        ),
-        cache_file=cache_file,
-        use_cot=use_cot,
-        use_phys_constraints=use_phys_constraints,
-        fs_samples=fs_samples,
-        eval_mode=user_args.eval_mode,
-        batch_size=user_args.batch_size,
-        model_role_name=user_args.model_role_name,
-        parallel_model_calls=user_args.parallel_model_calls,
-        vllm_port=user_args.vllm_port,
-    )
-    prompt_file = os.path.join(
-        user_args.data_dir,
-        "Planning-Q/planning_heldout_prompts.csv",
-    )
+#   elif domain_main_name == "Planning":
+#     evaluator = PlanningEvaluator(
+#         user_args.model_name,
+#         domain_file=os.path.join(
+#             user_args.data_dir,
+#             "Planning-Q/task_pddls/blocks/domain.pddl",
+#         ),
+#         task_file_pattern=os.path.join(
+#             user_args.data_dir,
+#             "Planning-Q/task_pddls/blocks/task*.pddl",
+#         ),
+#         cache_file=cache_file,
+#         use_cot=use_cot,
+#         use_phys_constraints=use_phys_constraints,
+#         fs_samples=fs_samples,
+#         eval_mode=user_args.eval_mode,
+#         batch_size=user_args.batch_size,
+#         model_role_name=user_args.model_role_name,
+#         parallel_model_calls=user_args.parallel_model_calls,
+#         vllm_port=user_args.vllm_port,
+#     )
+#     prompt_file = os.path.join(
+#         user_args.data_dir,
+#         "Planning-Q/planning_heldout_prompts.csv",
+#     )
   else:
     raise SystemExit(f"Unknown domain: {domain_main_name}")
 
@@ -138,6 +139,7 @@ if __name__ == "__main__":
   parser.add_argument(
       "--model_name",
       type=str,
+      default="Qwen/Qwen3-30B-A3B-Thinking-2507-FP8",
       help=(
           "The name of the model to evaluate. Currently support `gpt-4o`,"
           " `o1-preview`, `gemini-1.5-flash`, `gemini-1.5-pro`, `gemma_2_2b`,"
@@ -147,11 +149,12 @@ if __name__ == "__main__":
   parser.add_argument(
       "--domain_name",
       type=str,
+      default="SL",
       choices=[
           "SL",
           "GSM_csp",
           "GSM_verbal",
-          "Planning",
+        #   "Planning",
       ],
       help=(
           "Domain name. `SL` is for Simple Logic, `GSM_csp` is for GSM-Q with"
@@ -162,6 +165,7 @@ if __name__ == "__main__":
   parser.add_argument(
       "--eval_mode",
       type=str,
+      default="mc",
       choices=[
           "mc",
           "isambig",
@@ -176,12 +180,14 @@ if __name__ == "__main__":
       ),
   )
   parser.add_argument(
-      "--data_file", type=str, help="The path to the data file.", default=None
+      "--data_file", type=str, help="The path to the data file.", 
+      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/simplelogic_heldout_k_sufficient_data_test.csv"
   )
   parser.add_argument(
       "--data_dir",
       type=str,
-      default="questbench_data",
+    #   default="questbench_data",
+      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP",
       help=(
           "Directory containing data. Default is `questbench_data` in the"
           " current directory."
@@ -206,13 +212,13 @@ if __name__ == "__main__":
   parser.add_argument(
       "--batch_size",
       type=int,
-      default=1,
+      default=8,
       help="Batch size for evaluation.",
   )
   parser.add_argument(
       "--model_role_name",
       type=str,
-      default="model",
+      default="assistant",
       help=(
           "The name of the model role. In Gemini, this should be `model`. In"
           " OpenAI, this should be `assistant`. You can use other role names as"
@@ -228,8 +234,8 @@ if __name__ == "__main__":
   parser.add_argument(
       "--vllm_port",
       type=int,
-      default=8000,
-      help="Port for the VLLM server. Default is 8000.",
+      default=8011,
+      help="Port for the VLLM server. Default is 8011.",
   )
   args = parser.parse_args()
   main(args)

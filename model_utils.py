@@ -19,12 +19,14 @@ from concurrent import futures
 import json
 import os
 from typing import Dict, List
+import numpy as np
 
+from openai import OpenAI
 import google.generativeai as genai
 import requests
 import tenacity
 from tenacity import retry
-import torch
+# import torch
 import transformers
 
 
@@ -71,6 +73,12 @@ GPT_COSTS = {
 
 
 CLAUDE_MODELS = ["claude-3-5-sonnet-20241022"]
+
+client = OpenAI(
+    base_url=f"http://0.0.0.0:8011/v1",
+    api_key="EMPTY",
+)
+tokenizer = transformers.AutoTokenizer.from_pretrained("Qwen/Qwen3-30B-A3B-Thinking-2507-FP8")
 
 
 def load_cache_file(cache_file):
@@ -267,6 +275,41 @@ def model_call_wrapper(
         raise e
         
     return get_batch_responses(get_response)
+  
+  elif "qwen" in model_name.lower():
+    # Use VLLM server for Gemma models
+    def get_response(messages):
+      # final_messages = process_gemma_messages(messages)
+      raw_prompt_text = tokenizer.apply_chat_template(
+        conversations=messages, add_generation_prompt=True, tokenize=False,
+        enable_reasoning=True, add_special_tokens=True
+      )
+      
+      data = {
+          "model": model_name,
+          "prompt": raw_prompt_text,
+          "logprobs": False,
+          "echo": False,
+          "temperature": 0.6,
+          "top_p": 0.95,
+          "max_tokens": 16384,
+      }
+      
+      # response = requests.post(model_url, json=data)
+      response = client.completions.create(**data)
+      # try:
+      # response_json = response.json()
+      # return response_json["choices"][0]["message"]["content"].strip()
+      response_text = response.choices[0].message["content"]
+      assert "<think>" in response_text
+      num_thinking_tokens = response.choices[0].logprobs.tokens.index("</think>")
+      return response.split("</think>")[-1], num_thinking_tokens
+      # except Exception as e:
+      #   print(response.text)
+      #   raise e
+        
+    return get_batch_responses(get_response)
+  
   elif model_name in CLAUDE_MODELS:
     def get_response(messages):
       for message in messages:
@@ -334,14 +377,15 @@ def cached_generate(
       generation_config=generation_config,
       parallel_model_calls=parallel_model_calls,
   )
-  for prompt, response in zip(new_batch_prompts, batch_responses):
+  for prompt, (response, num_thinking_tokens) in zip(new_batch_prompts, batch_responses):
     jsonified_prompt = jsonify_prompt(prompt)
-    cache[jsonified_prompt] = response
+    cache[jsonified_prompt] = (response, num_thinking_tokens)
     with open(cache_file, "a") as f:
       f.write(
           json.dumps({
               "prompt": jsonified_prompt,
-              "completion": cache[jsonified_prompt],
+              "completion": cache[jsonified_prompt][0],
+              "num_thinking_tokens": cache[jsonified_prompt][1],
           })
           + "\n"
       )
@@ -349,6 +393,7 @@ def cached_generate(
   assert len(batch_responses) == len(new_batch_prompts)
   batch_responses = []
   cost = 0.0
+  all_num_thinking_tokens = []
   for prompt in batch_prompts:
     jsonified_prompt = jsonify_prompt(prompt)
     if model_name in GPT_COSTS:
@@ -361,6 +406,7 @@ def cached_generate(
     elif model_name in CLAUDE_MODELS:
       text_output = cache[jsonified_prompt]["content"][0]["text"]
     else:
-      text_output = cache[jsonified_prompt]
+      text_output = cache[jsonified_prompt][0]
+      num_thinking_tokens.append(cache[jsonified_prompt][1])
     batch_responses.append(text_output)
-  return batch_responses, cost
+  return batch_responses, all_num_thinking_tokens

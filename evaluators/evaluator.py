@@ -45,9 +45,9 @@ class Evaluator:
       use_cot: bool = False,
       fs_samples: int = 0,
       eval_mode: str = "mc",
-      model_role_name: str = "model",
+      model_role_name: str = "assistant",
       parallel_model_calls: bool = True,
-      vllm_port: int = 8000,
+      vllm_port: int = 8011,
   ):
     self.model_name = model_name
     self.generation_config = {
@@ -67,6 +67,9 @@ class Evaluator:
         self.model_name = "google/gemma-2-27b-it"
       else:
         raise ValueError(f"Invalid model name: {self.model_name}")
+    elif "qwen" in self.model_name:
+      self.model_url = f"http://localhost:{vllm_port}/v1"
+      self.model_name = "Qwen/Qwen3-30B-A3B-Thinking-2507-FP8"
     elif self.model_name in GPT_COSTS:
       self.generation_config = {
           "temperature": 0.0,

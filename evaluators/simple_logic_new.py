@@ -85,13 +85,27 @@ class SimpleLogicEvaluator(Evaluator):
         **kwargs,
     )
 
-    self.vanilla_prompt = """Suppose you know the following rules about Alice:
+    self.vanilla_prompt_k1 = """Suppose you know the following rules about Alice:
     {rules_nl}
 
 You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
 If you do not have enough information yet, you may ask a question about an attribute of Alice, in the form of "Question: Is Alice [attribute]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
 Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
 Generate one of "Question: Is Alice [attribute]?" or "End questioning" and nothing else."""
+    self.vanilla_prompt_k2 = """Suppose you know the following rules about Alice:
+    {rules_nl}
+
+You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
+If you do not have enough information yet, you may ask questions about at most two attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
+Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
+Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]?" or "End questioning" and nothing else."""
+    self.vanilla_prompt_k3 = """Suppose you know the following rules about Alice:
+    {rules_nl}
+
+You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
+If you do not have enough information yet, you may ask questions about at most three attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
+Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
+Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]?" or "End questioning" and nothing else."""
     self.vanilla_isambig_prompt = """Suppose you know the following rules about Alice:
 {rules_nl}
 
@@ -158,7 +172,8 @@ Generate "Answer:" followed by the answer and nothing else."""
       self.request = self.fs_request
     else:
       if self.eval_mode == "mc":
-        self.system_prompt = self.vanilla_prompt
+        # self.system_prompt = self.vanilla_prompt
+        self.system_prompt = None
       elif self.eval_mode == "isambig":
         self.system_prompt = self.vanilla_isambig_prompt
       elif self.eval_mode == "fullinfo":
@@ -215,7 +230,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         cache_file=cache_file,
         generation_config=self.generation_config,
         parallel_model_calls=self.parallel_model_calls,
-    )
+    )  # cost is now a list of num thinking tokens per example
 
     batch_convos = []
     batch_correct = []
@@ -248,7 +263,8 @@ Generate "Answer:" followed by the answer and nothing else."""
           )
           if self.eval_mode == "mc":
             batch_prompts[i].append({
-                "role": "system",
+                # "role": "system",
+                "role": "user",
                 "content": (
                     "Could not parse response. Generate exactly one of"
                     ' "Question: Is Alice [attribute]?" or "End questioning"'
@@ -257,7 +273,8 @@ Generate "Answer:" followed by the answer and nothing else."""
             })
           elif self.eval_mode == "isambig":
             batch_prompts[i].append({
-                "role": "system",
+                # "role": "system",
+                "role": "user",
                 "content": (
                     'Wrong format. Please answer either "Answer: Yes" or'
                     ' "Answer: No" or "Answer: Not sure" and nothing else.'
@@ -265,7 +282,8 @@ Generate "Answer:" followed by the answer and nothing else."""
             })
           elif self.eval_mode == "fullinfo":
             batch_prompts[i].append({
-                "role": "system",
+                # "role": "system",
+                "role": "user",
                 "content": (
                     'Wrong format. Please answer either "Answer: Yes" or'
                     ' "Answer: No" and nothing else.'
@@ -290,13 +308,14 @@ Generate "Answer:" followed by the answer and nothing else."""
               re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)
               or "end questioning" in response.lower()
           ):
-            print("Could not parse response: {response}")
-            response = "None"
+            print(f"Could not parse response: {response}")
+            response = {"None"}
           else:
             if "end questioning" in response.lower():
-              response = "End questioning"
+              response = {"End questioning"}
             else:
-              response = re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)[0]
+              # response = re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)[0]
+              response = set(re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response))
         else:
           if not re.findall(r"(yes|not sure|no)", response.lower()):
             print(
@@ -326,7 +345,9 @@ Generate "Answer:" followed by the answer and nothing else."""
               )
       batch_responses[i] = response
       batch_convos.append(conversation)
-      batch_correct.append(response.strip() in batch_gt_queries[i])
+      
+      is_match = any(response == set(gt) for gt in batch_gt_queries[i]) if self.eval_mode == "mc" else response.strip() in batch_gt_queries[i]
+      batch_correct.append(is_match)
     return batch_convos, batch_responses, batch_correct, cost
 
   def parse_rules(self, rules):
@@ -397,8 +418,17 @@ Generate "Answer:" followed by the answer and nothing else."""
           batch_ids.append([])
 
         if self.fs_samples == 0:
+          if str(data["k"]) == "1":
+            system_prompt = self.vanilla_prompt_k1
+          elif str(data["k"]) == "2":
+            system_prompt = self.vanilla_prompt_k2
+          elif str(data["k"]) == "3":
+            system_prompt = self.vanilla_prompt_k3
+          else:
+            # raise Exception(f"Invalid k value: {data['k']}")
+            continue
           batch_system_prompts[-1].append(
-              self.system_prompt.format(rules_nl=rules_nl)
+              system_prompt.format(rules_nl=rules_nl)
           )
           batch_requests[-1].append(
               self.request.format(
@@ -466,8 +496,16 @@ Generate "Answer:" followed by the answer and nothing else."""
               batch_ids.append([])
 
             if self.fs_samples == 0:
+              if str(data["k"]) == "1":
+                system_prompt = self.vanilla_prompt_k1
+              elif str(data["k"]) == "2":
+                system_prompt = self.vanilla_prompt_k2
+              elif str(data["k"]) == "3":
+                system_prompt = self.vanilla_prompt_k3
+              else:
+                raise Exception(f"Invalid k value: {data['k']}")
               batch_system_prompts[-1].append(
-                  self.system_prompt.format(rules_nl=rules_nl)
+                  system_prompt.format(rules_nl=rules_nl)
               )
               batch_requests[-1].append(
                   self.request.format(
@@ -633,6 +671,7 @@ Generate "Answer:" followed by the answer and nothing else."""
 
     results = pd.DataFrame(
         columns=[
+            "k",
             "correct",
             "max_depth",
             "min_num_rules_needed",
@@ -647,7 +686,7 @@ Generate "Answer:" followed by the answer and nothing else."""
             "conversation",
         ]
     )
-    total_cost = 0
+    total_cost = []
 
     fs_turns = self.make_fewshot_turns(prompt_data)
     batch_ids, batch_system_prompts, batch_requests, batch_gt_queries = (
@@ -675,6 +714,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         datum = data.iloc[item_id]
 
         results.loc[len(results)] = [
+            datum["k"],
             batch_correct[i],
             datum["max_depth"],
             datum["min_num_rules_needed"],
