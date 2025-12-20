@@ -21,6 +21,7 @@ from evaluators.gsm import GSMEvaluator
 # from evaluators.planning import PlanningEvaluator
 from evaluators.simple_logic_new import SimpleLogicEvaluator
 import pandas as pd
+import json
 
 
 def main(user_args) -> None:
@@ -39,14 +40,22 @@ def main(user_args) -> None:
   if not os.path.exists(user_args.results_dir):
     os.makedirs(user_args.results_dir)
   cache_dir = os.path.join(user_args.results_dir, "cache")
-  if not os.path.exists(cache_dir):
-    os.makedirs(cache_dir)
+  # if not os.path.exists(cache_dir):
+  #   os.makedirs(cache_dir)
   data_file_base_name = os.path.splitext(os.path.basename(user_args.data_file))[
       0
   ]
   output_file_name = f"{user_args.model_name}-{user_args.domain_name}-{user_args.eval_mode}-{user_args.prompt_mode}-{data_file_base_name}"
   cache_file = os.path.join(cache_dir, f"{output_file_name}.jsonl")
+  if not os.path.exists(cache_file):
+    os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+    with open(cache_file, "w") as f:
+      pass  # Create empty cache file
   output_file = os.path.join(user_args.results_dir, f"{output_file_name}.csv")
+  if not os.path.exists(os.path.dirname(output_file)):
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    with open(output_file, "w") as f:
+      pass  # Create empty output file
   print("Loading Evaluator")
   if domain_main_name == "SL":
     evaluator = SimpleLogicEvaluator(
@@ -127,11 +136,17 @@ def main(user_args) -> None:
       prompt_data = pd.read_csv(f)
 
   print("Starting Evaluation")
-  results = evaluator.evaluate_data(data, prompt_data)
+  results, all_cots, total_cost = evaluator.evaluate_data(data, prompt_data)
 
   with open(output_file, "w") as wf:
     results.to_csv(wf)
   print(f"Wrote to {output_file}")
+  
+  with open(output_file.replace(".csv", "_cots.json"), "w") as wf:
+    json.dump(all_cots, wf)
+  
+  with open(output_file.replace(".csv", "_cost.json"), "w") as wf:
+    json.dump(total_cost, wf)
 
 
 if __name__ == "__main__":
@@ -181,7 +196,7 @@ if __name__ == "__main__":
   )
   parser.add_argument(
       "--data_file", type=str, help="The path to the data file.", 
-      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/simplelogic_heldout_k_sufficient_data_test.csv"
+      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/archived/simplelogic_heldout_k_sufficient_data_sampled.csv"
   )
   parser.add_argument(
       "--data_dir",
@@ -212,7 +227,7 @@ if __name__ == "__main__":
   parser.add_argument(
       "--batch_size",
       type=int,
-      default=8,
+      default=64,  # Increased to 64 - async allows queuing beyond max_num_seqs
       help="Batch size for evaluation.",
   )
   parser.add_argument(

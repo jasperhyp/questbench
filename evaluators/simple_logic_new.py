@@ -222,7 +222,8 @@ Generate "Answer:" followed by the answer and nothing else."""
             {"role": "user", "content": request},
         ])
       batch_prompts.append(assist_prompt)
-    batch_responses, cost = cached_generate(
+    
+    batch_responses, cost, all_cots = cached_generate(
         batch_prompts,
         model_name,
         model_url,
@@ -230,125 +231,153 @@ Generate "Answer:" followed by the answer and nothing else."""
         cache_file=cache_file,
         generation_config=self.generation_config,
         parallel_model_calls=self.parallel_model_calls,
-    )  # cost is now a list of num thinking tokens per example
+    )
 
+    # Initialize conversations from batch_prompts (using "text" key instead of "content")
     batch_convos = []
-    batch_correct = []
-    for i, (request, response) in enumerate(
-        zip(batch_requests, batch_responses)
-    ):
-      conversation = []
-      conversation.append({"role": "user", "text": request})  # user: ambig q
-      conversation.append({
-          "role": self.model_role_name,
-          "text": response,
-      })  # agent: clarifying q
-      if "End questioning" in response:
-        response = "End questioning"
-      else:
-        n_answer_loops = 0
-        while (
-            self.eval_mode == "mc"
-            and not re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)
+    for i, prompt in enumerate(batch_prompts):
+      convo = []
+      for msg in prompt:
+        convo.append({"role": msg["role"], "text": msg["content"]})
+      convo.append({"role": self.model_role_name, "text": batch_responses[i]})
+      batch_convos.append(convo)
+
+    # Helper to check if response needs retry
+    def needs_retry(response, eval_mode):
+      if eval_mode == "mc":
+        return (
+            not re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)
             and "end questioning" not in response.lower()
-        ) or (
-            (self.eval_mode == "isambig" or self.eval_mode == "fullinfo")
-            and not re.findall(r"(yes|not sure|no)", response.lower())
-        ):
-          if n_answer_loops > 5:
-            print("Too many loops")
-            break
+        )
+      else:  # isambig or fullinfo
+        return not re.findall(r"(yes|not sure|no)", response.lower())
+
+    # Batched retry loop
+    max_retry_rounds = 5
+    for retry_round in range(max_retry_rounds):
+      # Find indices that need retry
+      retry_indices = []
+      retry_prompts = []
+      retry_messages = []  # Store the retry user messages for convos
+      
+      for i, response in enumerate(batch_responses):
+        if needs_retry(response, self.eval_mode):
+          retry_indices.append(i)
+          # Append the failed response and retry message to the prompt
           batch_prompts[i].append(
               {"role": self.model_role_name, "content": response}
           )
           if self.eval_mode == "mc":
-            batch_prompts[i].append({
-                # "role": "system",
-                "role": "user",
-                "content": (
-                    "Could not parse response. Generate exactly one of"
-                    ' "Question: Is Alice [attribute]?" or "End questioning"'
-                    " and nothing else."
-                ),
-            })
+            retry_msg = (
+                "Could not parse response. Generate exactly one of"
+                ' "Question: Is Alice [attribute]?" or "End questioning"'
+                " and nothing else."
+            )
           elif self.eval_mode == "isambig":
-            batch_prompts[i].append({
-                # "role": "system",
-                "role": "user",
-                "content": (
-                    'Wrong format. Please answer either "Answer: Yes" or'
-                    ' "Answer: No" or "Answer: Not sure" and nothing else.'
-                ),
-            })
+            retry_msg = (
+                'Wrong format. Please answer either "Answer: Yes" or'
+                ' "Answer: No" or "Answer: Not sure" and nothing else.'
+            )
           elif self.eval_mode == "fullinfo":
-            batch_prompts[i].append({
-                # "role": "system",
-                "role": "user",
-                "content": (
-                    'Wrong format. Please answer either "Answer: Yes" or'
-                    ' "Answer: No" and nothing else.'
-                ),
-            })
-          batch_response, cost = cached_generate(
-              [batch_prompts[i]],
-              model_name,
-              model_url,
-              cache=cache,
-              cache_file=cache_file,
-              generation_config=self.generation_config,
-              parallel_model_calls=self.parallel_model_calls,
-          )
-          response = batch_response[0]
-          conversation.append({"role": self.model_role_name, "text": response})
-          n_answer_loops += 1
+            retry_msg = (
+                'Wrong format. Please answer either "Answer: Yes" or'
+                ' "Answer: No" and nothing else.'
+            )
+          batch_prompts[i].append({"role": "user", "content": retry_msg})
+          retry_prompts.append(batch_prompts[i])
+          retry_messages.append(retry_msg)
+      
+      if not retry_indices:
+        break  # All responses are valid
+      
+      if retry_round == max_retry_rounds - 1:
+        print(f"Max retries reached for {len(retry_indices)} responses")
+        break
+      
+      # Batch generate retries
+      retry_responses, retry_cost, retry_cots = cached_generate(
+          retry_prompts,
+          model_name,
+          model_url,
+          cache=cache,
+          cache_file=cache_file,
+          generation_config=self.generation_config,
+          parallel_model_calls=self.parallel_model_calls,
+      )
+      
+      # Update responses, cots, cost, and conversations
+      for idx, retry_idx in enumerate(retry_indices):
+        batch_responses[retry_idx] = retry_responses[idx]
+        # Replace cots and cost for retried items (we want the final cot)
+        all_cots[retry_idx] = retry_cots[idx]
+        cost[retry_idx] = retry_cost[idx]
+        # Add retry exchange to conversation
+        batch_convos[retry_idx].append({
+            "role": "user",
+            "text": retry_messages[idx]
+        })
+        batch_convos[retry_idx].append({
+            "role": self.model_role_name,
+            "text": retry_responses[idx]
+        })
+
+    # Parse final responses
+    batch_correct = []
+    for i, response in enumerate(batch_responses):
+      if "End questioning" in response:
+        response = "End questioning"
+      else:
         response = response.split("Question:")[-1].strip()
-        # regex matching
-        if self.eval_mode == "mc":
-          if not (
-              re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)
-              or "end questioning" in response.lower()
-          ):
-            print(f"Could not parse response: {response}")
-            response = {"None"}
-          else:
-            if "end questioning" in response.lower():
-              response = {"End questioning"}
-            else:
-              # response = re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)[0]
-              response = set(re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response))
+        
+      if self.eval_mode == "mc":
+        if not (
+            re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response)
+            or "end questioning" in response.lower()
+        ):
+          print(f"Could not parse response: {response}")
+          response = {"None"}
         else:
-          if not re.findall(r"(yes|not sure|no)", response.lower()):
+          if "end questioning" in response.lower():
+            response = {"End questioning"}
+          else:
+            response = set(re.findall(r"Is Alice \[?([ \w-]+)\]?\?", response))
+      else:
+        if not re.findall(r"(yes|not sure|no)", response.lower()):
+          print(
+              "No/bad number found in response:"
+              f" {json.dumps(batch_prompts[i])}"
+          )
+          response = "None"
+        else:
+          orig_response = response
+          first_line = orig_response.split("\n")[0]
+          processed_response = first_line + (
+              response.lower().split("answer")[-1]
+          )
+          all_yes = "yes" in processed_response
+          all_no = "no" in processed_response
+          all_not_sure = "not sure" in processed_response
+          if all_yes and not all_no and not all_not_sure:
+            response = "yes"
+          elif all_no and not all_not_sure:
+            response = "no"
+          elif all_not_sure:
+            response = "not sure"
+          else:
             print(
-                "No/bad number found in response:"
+                f"No answer found in response: {orig_response} \n for prompt:"
                 f" {json.dumps(batch_prompts[i])}"
             )
-            response = "None"
-          else:
-            orig_response = response
-            first_line = orig_response.split("\n")[0]
-            processed_response = first_line + (
-                response.lower().split("answer")[-1]
-            )
-            all_yes = "yes" in processed_response
-            all_no = "no" in processed_response
-            all_not_sure = "not sure" in processed_response
-            if all_yes and not all_no and not all_not_sure:
-              response = "yes"
-            elif all_no and not all_not_sure:
-              response = "no"
-            elif all_not_sure:
-              response = "not sure"
-            else:
-              print(
-                  f"No answer found in response: {orig_response} \n for prompt:"
-                  f" {json.dumps(batch_prompts[i])}"
-              )
-      batch_responses[i] = response
-      batch_convos.append(conversation)
       
-      is_match = any(response == set(gt) for gt in batch_gt_queries[i]) if self.eval_mode == "mc" else response.strip() in batch_gt_queries[i]
+      batch_responses[i] = response
+      is_match = (
+          any(response == set(gt) for gt in batch_gt_queries[i])
+          if self.eval_mode == "mc"
+          else response.strip() in batch_gt_queries[i]
+      )
       batch_correct.append(is_match)
-    return batch_convos, batch_responses, batch_correct, cost
+    
+    return batch_convos, batch_responses, batch_correct, cost, all_cots
 
   def parse_rules(self, rules):
     """Parses a list of SimpleLogic rules into a natural language format.
@@ -418,15 +447,15 @@ Generate "Answer:" followed by the answer and nothing else."""
           batch_ids.append([])
 
         if self.fs_samples == 0:
-          if str(data["k"]) == "1":
+          if str(datum["k"]) == "1":
             system_prompt = self.vanilla_prompt_k1
-          elif str(data["k"]) == "2":
+          elif str(datum["k"]) == "2":
             system_prompt = self.vanilla_prompt_k2
-          elif str(data["k"]) == "3":
+          elif str(datum["k"]) == "3":
             system_prompt = self.vanilla_prompt_k3
           else:
-            # raise Exception(f"Invalid k value: {data['k']}")
-            continue
+            raise Exception(f"Invalid k value: {datum['k']}")
+            # continue
           batch_system_prompts[-1].append(
               system_prompt.format(rules_nl=rules_nl)
           )
@@ -496,14 +525,14 @@ Generate "Answer:" followed by the answer and nothing else."""
               batch_ids.append([])
 
             if self.fs_samples == 0:
-              if str(data["k"]) == "1":
+              if str(datum["k"]) == "1":
                 system_prompt = self.vanilla_prompt_k1
-              elif str(data["k"]) == "2":
+              elif str(datum["k"]) == "2":
                 system_prompt = self.vanilla_prompt_k2
-              elif str(data["k"]) == "3":
+              elif str(datum["k"]) == "3":
                 system_prompt = self.vanilla_prompt_k3
               else:
-                raise Exception(f"Invalid k value: {data['k']}")
+                raise Exception(f"Invalid k value: {datum['k']}")
               batch_system_prompts[-1].append(
                   system_prompt.format(rules_nl=rules_nl)
               )
@@ -687,6 +716,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         ]
     )
     total_cost = []
+    all_cots = []
 
     fs_turns = self.make_fewshot_turns(prompt_data)
     batch_ids, batch_system_prompts, batch_requests, batch_gt_queries = (
@@ -696,8 +726,8 @@ Generate "Answer:" followed by the answer and nothing else."""
         zip(batch_ids, batch_system_prompts, batch_requests, batch_gt_queries),
         total=len(batch_ids),
     )
-    for batch_id, batch_system_prompt, batch_request, batch_gt_query in pbar:
-      batch_conversation, batch_generated_q, batch_correct, cost = (
+    for i, (batch_id, batch_system_prompt, batch_request, batch_gt_query) in enumerate(pbar):
+      batch_conversation, batch_generated_q, batch_correct, cost, cots = (
           self.evaluate_batch(
               batch_request,
               batch_system_prompt,
@@ -710,6 +740,7 @@ Generate "Answer:" followed by the answer and nothing else."""
           )
       )
       total_cost += cost
+      all_cots += cots
       for i, item_id in enumerate(batch_id):
         datum = data.iloc[item_id]
 
@@ -738,4 +769,4 @@ Generate "Answer:" followed by the answer and nothing else."""
         results.groupby("max_depth").agg({"correct": "mean"}),
     )
     print(f"Total cost: {total_cost}")
-    return results
+    return results, all_cots, total_cost

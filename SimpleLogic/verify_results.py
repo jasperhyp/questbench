@@ -68,7 +68,7 @@ def solve_unit_prop(clauses, context):
             
     return assignment
 
-def verify_row(data):
+def verify_row(data, counter):
     clauses = parse_clauses(data['rules'])
     known = ast.literal_eval(data['known_facts'])
     context = {k: True for k in known}
@@ -81,6 +81,7 @@ def verify_row(data):
     base_facts = solve_unit_prop(clauses, context)
     if goal in base_facts:
         print("❌ FAIL: Goal is already known from context.")
+        counter['failed (goal inferred from context)'] += 1
         return False
 
     for qs in gt_qs_list:
@@ -92,6 +93,7 @@ def verify_row(data):
             
             if result != "CONTRADICTION" and goal not in result:
                 print(f"❌ FAIL: Branch {dict(zip(qs, answers))} is insufficient.")
+                counter['failed (insufficient branch)'] += 1
                 return False
 
         # Check 3: (Local) Minimality (Subsets must be insufficient)
@@ -108,9 +110,11 @@ def verify_row(data):
             
             if subset_sufficient:
                 print(f"❌ FAIL: Subset {subset} is sufficient (Not Minimal).")
+                counter['failed (not minimal)'] += 1
                 return False
 
     print(f"✅ Row Verified (k={data['k'] if 'k' in data else 'N/A'})")
+    counter['verified'] += 1
     return True
 
 if __name__ == "__main__":
@@ -119,10 +123,15 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     
     args = ArgumentParser()
-    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/simplelogic_heldout_k_sufficient_data_test_test.csv", help="Path to the CSV file with results to verify.")
+    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/archived/simplelogic_heldout_k_sufficient_data.csv", help="Path to the CSV file with results to verify.")
     arguments = args.parse_args()
 
+    counter = {'verified': 0, 'failed (goal inferred from context)': 0, 'failed (insufficient branch)': 0, 'failed (not minimal)': 0}
     data = pd.read_csv(arguments.input_csv)
     for idx, row in tqdm(data.iterrows(), total=len(data), desc="Verifying results"):
         print(f"Verifying row {idx}:")
-        verify_row(row)
+        verify_row(row, counter)
+
+    print("\nVerification Summary:")
+    for key, value in counter.items():
+        print(f"{key}: {value}")

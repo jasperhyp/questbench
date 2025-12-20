@@ -132,6 +132,20 @@ def main(arguments) -> None:
     rule_tree = ruleset.RuleTree.deserialize(rs["rules"])
     target_attr = rs["query"]
     
+    # --- PRE-PROCESS SUBSET QUESTIONS ---
+    # Convert 'heldout_set_to_subset_qs' to a robust lookup map
+    # Key: frozenset(context_vars), Value: set(invalid_vars)
+    subset_qs_map = {}
+    if "heldout_set_to_subset_qs" in rs:
+        for ctx_str, qs_list in rs["heldout_set_to_subset_qs"].items():
+            try:
+                # Handle both JSON lists and potential python string representations
+                ctx_list = json.loads(ctx_str)
+                ctx_key = frozenset(ctx_list)
+                subset_qs_map[ctx_key] = set(qs_list)
+            except:
+                continue
+
     # 1. Identify where the problem data is stored
     # We prefer 'heldout_k_sets' if it exists.
     k_data_source = {}
@@ -182,9 +196,14 @@ def main(arguments) -> None:
       false_facts = sorted(false_facts)
       
       # Determine invalid questions
+      # 1. Goal
       invalid_qs = {target_attr}
+      # 2. Already Known Vars
       known_vars = {f.split("not ")[-1] for f in known_facts}
       invalid_qs.update(known_vars)
+      # 3. Subset Questions (Vars that solve a subset of this context)
+      if frozenset(context_set) in subset_qs_map:
+          invalid_qs.update(subset_qs_map[frozenset(context_set)])
       
       # --- DEFINING SEARCH SPACE ---
       all_qs = set(
@@ -205,7 +224,7 @@ def main(arguments) -> None:
           if set(q_set).intersection(invalid_qs):
               continue
           
-          # Verify sufficiency using holdout_utils
+          # Verify sufficiency
           if holdout_utils_new.check_sufficiency(rule_tree, context_set, set(q_set), target_attr):
               clean_gt_qs.append(sorted(q_set))
       
@@ -219,7 +238,6 @@ def main(arguments) -> None:
           for size in range(1, k):
               found_smaller = False
               # Brute force check all subsets of size < k
-              # Limit search space if too large? Usually |search_space| ~20
               for subset in itertools.combinations(search_space_vars, size):
                   if holdout_utils_new.check_sufficiency(rule_tree, context_set, set(subset), target_attr):
                       found_smaller = True
@@ -238,7 +256,6 @@ def main(arguments) -> None:
       for sol_list in clean_gt_qs:
           solution_vars = set(sol_list)
           
-          # Key Format
           if len(sol_list) == 1:
               sol_key = sol_list[0]
           else:
@@ -266,7 +283,6 @@ def main(arguments) -> None:
       num_rules = rs.get("depth", 0) 
       depth = rs.get("depth", 0)
       
-      # Refine stats based on actual derivation found
       if gt_q_to_true_derivation:
           first_key = list(gt_q_to_true_derivation.keys())[0]
           num_rules = len(gt_q_to_true_derivation[first_key])
