@@ -133,7 +133,7 @@ Possible questions:
         *fs_turns,
         {"role": "user", "content": request},
     ]
-    responses, _ = cached_generate(
+    responses, _, _ = cached_generate(
         [prompt],
         self.model_name,
         self.model_url,
@@ -162,7 +162,7 @@ Possible questions:
                 ' your choice. Output "Choice: <number>" and nothing else.'
             ),
         })
-        responses, _ = cached_generate(
+        responses, _, _ = cached_generate(
             [prompt],
             self.model_name,
             self.model_url,
@@ -209,7 +209,7 @@ Possible questions:
             "role": "system",
             "content": prompt_content,
         })
-        responses, _ = cached_generate(
+        responses, _, _ = cached_generate(
             prompt,
             self.model_name,
             self.model_url,
