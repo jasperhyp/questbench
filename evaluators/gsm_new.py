@@ -79,6 +79,35 @@ def _infer_k_from_row(datum: pd.Series) -> int:
   return 1
 
 
+def _infer_missing_count_from_row(datum: pd.Series, max_count: int = 4) -> int:
+  """
+  Infer how many required variables are missing.
+  Allow 0, clamp to [0, max_count].
+  Prefer explicit fields if present; otherwise fall back to length of heldout list if available.
+  """
+  for key in ["k", "Missing_Count", "missing_count", "missing_cnt"]:
+    if key in datum and pd.notna(datum[key]):
+      try:
+        v = int(datum[key])
+        if v < 0:
+          v = 0
+        if v > max_count:
+          v = max_count
+        return v
+      except Exception:
+        pass
+  # fallback: try Heldout Value length
+  try:
+    gt_vars = _safe_list_field(datum.get("Heldout Value", "[]"))
+    v = len(gt_vars)
+    if v < 0:
+      v = 0
+    if v > max_count:
+      v = max_count
+    return v
+  except Exception:
+    return 0
+
 def _parse_gt_question_field(gtq: Any) -> List[str]:
   """
   GT Question field may be:
@@ -122,6 +151,7 @@ class GSMEvaluator(Evaluator):
       verbal_questions: bool = False,
       eval_mode: str = "mc",
       batch_size: int = 1,
+      reveal_k_in_prompt: bool = False,
       **kwargs,
   ):
     super().__init__(
@@ -134,10 +164,27 @@ class GSMEvaluator(Evaluator):
         **kwargs,
     )
     self.verbal_questions = verbal_questions
+    self.reveal_k_in_prompt = reveal_k_in_prompt
+    
+    # NEW: single-choice prompt for missing-count (0..4)
+    self.assist_sc_prompt = """You are solving a math problem.
+    Decide how many key variables required to solve the problem are missing from the given information.
+    Choose exactly one option from {0,1,2,3,4}.
+    Output format:
+    Choice: <0-4>
+    """
 
+    self.user_sc_prompt = """Math problem: {request}"""
+    
     # mc prompts: now parameterized by k
     self.assist_mc_prompt_k = """You are trying to solve a math problem. You must decide whether you have enough information to solve the math problem.
 If you do not have enough information, you may ask questions back to the user from the predefined "Possible questions". Otherwise, choose "No questions needed."
+Output format:
+- If you want to ask: "Choice: <number_1>, <number_2>, ..." (all questions needed to solve this problem)
+- If no questions needed: choose the option that says "No questions needed." and output its number as "Choice: <number>"
+"""
+    self.assist_mc_prompt_give_k = """You are solving a math problem. Exactly {k} key variables required to solve the problem are missing from the given information.
+Your task is to identify which {k} missing variables they are by selecting the corresponding questions from the predefined "Possible questions" list.
 Output format:
 - If you want to ask: "Choice: <number_1>, <number_2>, ..." (all questions needed to solve this problem)
 - If no questions needed: choose the option that says "No questions needed." and output its number as "Choice: <number>"
@@ -152,11 +199,15 @@ Possible questions:
 {possible_qs}"""
     self.user_isambig_prompt = """Math problem: {request}"""
     self.user_fullinfo_prompt = """Math problem: {request}"""
+    
 
     if self.eval_mode == "mc":
       self.user_prompt = self.user_mc_prompt
       # system prompt will be chosen per-example based on k in make_batches
       self.assist_prompt = None
+    elif self.eval_mode == "sc": 
+      self.assist_prompt = self.assist_sc_prompt
+      self.user_prompt = self.user_sc_prompt
     elif self.eval_mode == "isambig":
       self.assist_prompt = self.assist_isambig_prompt
       self.user_prompt = self.user_isambig_prompt
@@ -164,18 +215,21 @@ Possible questions:
       assert self.eval_mode == "fullinfo"
       self.assist_prompt = self.assist_fullinfo_prompt
       self.user_prompt = self.user_fullinfo_prompt
-
+        
     if self.eval_mode != "mc":
-      if self.use_cot:
+      if self.use_cot and self.eval_mode in ["isambig", "fullinfo"]:
         self.assist_prompt += " Reason step-by-step, then generate one of the above outputs."
       else:
         self.assist_prompt += " Generate one of the above outputs and nothing else."
 
     self.batch_size = batch_size
-    self.orig_dataset = datasets.load_dataset("qintongli/GSM-Plus")
+    # self.orig_dataset = datasets.load_dataset("qintongli/GSM-Plus")
 
   def _build_mc_system_prompt(self, k: int) -> str:
-    p = self.assist_mc_prompt_k
+    if self.reveal_k_in_prompt:
+      p = self.assist_mc_prompt_give_k.format(k=int(k))
+    else:
+      p = self.assist_mc_prompt_k
 
     if self.use_cot:
       p += " Reason step-by-step, then generate one of the above outputs."
@@ -206,10 +260,33 @@ Possible questions:
       return set(int(x) for x in nums)
     except Exception:
       return None
+    
+  def _parse_choice_int(self, response: str, valid: Optional[Set[int]] = None) -> Optional[int]:
+    """
+    Parse single-choice: "Choice: 3" -> 3
+    If multiple numbers appear, reject (force single choice).
+    """
+    if response is None:
+      return None
+    text = response.strip().lower()
+    if "choice:" in text:
+      text = text.split("choice:")[-1]
+    nums = re.findall(r"\b[0-9]+\b", text)
+    if len(nums) != 1:
+      return None
+    try:
+      v = int(nums[0])
+    except Exception:
+      return None
+    if valid is not None and v not in valid:
+      return None
+    return v
 
   def _needs_retry(self, response: str) -> bool:
     if self.eval_mode == "mc":
       return self._parse_choice_set(response) is None
+    if self.eval_mode == "sc":
+      return self._parse_choice_int(response, valid=set([0,1,2,3,4])) is None
     else:
       return not re.findall(r"(not sure|\b[0-9]+\b)", (response or "").lower())
 
@@ -280,6 +357,10 @@ Possible questions:
                 'Wrong format or option not found. Output exactly "Choice: <number>" '
                 'or "Choice: <number_1>, <number_2>, ..." and nothing else.'
             )
+          elif self.eval_mode == "sc":
+            retry_msg = (
+                'Wrong format. Output exactly "Choice: <0-4>" and nothing else.'
+            )
           elif self.eval_mode == "fullinfo":
             retry_msg = (
                 'Wrong format. Output exactly "Answer: <number>" (raw number only) and nothing else.'
@@ -334,17 +415,13 @@ Possible questions:
           pred_set = set()
         batch_preds.append(pred_set)
 
-        # gt can be int, list[int], list[list[int]], etc.
         gt = batch_gt_queries[i]
-
-        # Normalize gt to a list of sets
         gt_sets = []
         if isinstance(gt, int):
           gt_sets = [set([gt])]
         elif isinstance(gt, (set, frozenset)):
           gt_sets = [set(gt)]
         elif isinstance(gt, list):
-          # could be list[int] (single set), or list[list[int]] (multiple acceptable)
           if len(gt) == 0:
             gt_sets = [set()]
           elif all(isinstance(x, int) for x in gt):
@@ -353,7 +430,6 @@ Possible questions:
             for x in gt:
               gt_sets.append(set(x))
           else:
-            # fallback: try convert numeric-like
             tmp = []
             for x in gt:
               try:
@@ -362,7 +438,6 @@ Possible questions:
                 pass
             gt_sets = [set(tmp)]
         else:
-          # fallback
           try:
             gt_sets = [set([int(gt)])]
           except Exception:
@@ -371,8 +446,17 @@ Possible questions:
         is_match = any(pred_set == s for s in gt_sets)
         batch_correct.append(is_match)
 
+      elif self.eval_mode == "sc":
+        pred = self._parse_choice_int(resp, valid=set([0,1,2,3,4]))
+        if pred is None:
+          pred = -1
+        batch_preds.append(pred)
+        try:
+          batch_correct.append(int(pred) == int(batch_gt_queries[i]))
+        except Exception:
+          batch_correct.append(False)
+
       else:
-        # isambig/fullinfo: parse Answer
         low = (resp or "").lower()
         answer_part = low.split("answer:")[-1].strip()
 
@@ -484,6 +568,25 @@ Possible questions:
         batch_gt_queries[-1].append(list(gt_set))
         batch_system_prompts[-1].append(self._build_mc_system_prompt(k))
         batch_k[-1].append(k)
+        
+      elif self.eval_mode == "sc":
+        request = datum["Rewritten Problem"]
+        missing_cnt = _infer_missing_count_from_row(datum, max_count=4)
+
+        if len(batch_requests[-1]) >= batch_size:
+          batch_ids.append([])
+          batch_requests.append([])
+          batch_gt_answers.append([])
+          batch_gt_queries.append([])
+          batch_system_prompts.append([])
+          batch_k.append([])
+
+        batch_ids[-1].append(d)
+        batch_requests[-1].append(self.user_prompt.format(request=request))
+        batch_gt_answers[-1].append(datum.get("Full Answer", None))
+        batch_gt_queries[-1].append(int(missing_cnt))
+        batch_system_prompts[-1].append(self.assist_prompt)
+        batch_k[-1].append(int(missing_cnt))
 
       else:
         is_trues = [True]
@@ -495,10 +598,10 @@ Possible questions:
             request = datum["Rewritten Problem"]
             response = "Not sure"
           else:
-            if self.verbal_questions:
-              request = self.orig_dataset["test"]["question"][datum["Question ID"]]
-            else:
-              request = datum["Full Problem"]
+            # if self.verbal_questions:
+            #   request = self.orig_dataset["test"]["question"][datum["Question ID"]]
+            # else:
+            request = datum["Full Problem"]
             response = datum["Full Answer"]
 
           if len(batch_requests[-1]) >= batch_size:
@@ -575,7 +678,14 @@ Possible questions:
                 "content": "Choice: " + ", ".join(str(x) for x in idxs),
             },
         ])
-
+      elif self.eval_mode == "sc":
+        request = datum["Rewritten Problem"]
+        missing_cnt = _infer_missing_count_from_row(datum, max_count=4)
+        fewshot_turns.append([
+            {"role": "system", "content": self.assist_prompt},
+            {"role": "user", "content": self.user_prompt.format(request=request)},
+            {"role": self.model_role_name, "content": f"Choice: {int(missing_cnt)}"},
+        ])
       else:
         is_trues = [True]
         if self.eval_mode == "isambig":
@@ -586,10 +696,10 @@ Possible questions:
           request = datum["Rewritten Problem"]
           response = "Not sure"
         else:
-          if self.verbal_questions:
-            request = self.orig_dataset["test"]["question"][datum["Question ID"]]
-          else:
-            request = datum["Full Problem"]
+          # if self.verbal_questions:
+          #   request = self.orig_dataset["test"]["question"][datum["Question ID"]]
+          # else:
+          request = datum["Full Problem"]
           response = datum["Full Answer"]
 
         fewshot_turns.append([
@@ -695,5 +805,5 @@ Possible questions:
       except Exception:
         pass
 
-    print(f"Total cost: {total_cost}")
+    # print(f"Total cost: {total_cost}")
     return results, all_cots, total_cost

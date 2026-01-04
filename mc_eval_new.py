@@ -48,10 +48,11 @@ def main(user_args) -> None:
 
     # Make model name filesystem-safe (important: "Qwen/xxx" contains "/")
     safe_model_name = user_args.model_name.replace("/", "_")
-
+    
+    k_tag = "givek" if user_args.reveal_k_in_prompt else "nok"
     output_file_name = (
         f"{safe_model_name}-{user_args.domain_name}-{user_args.eval_mode}-"
-        f"{user_args.prompt_mode}-{data_file_base_name}"
+        f"{user_args.prompt_mode}-{k_tag}-{data_file_base_name}"
     )
 
     cache_file = os.path.join(cache_dir, f"{output_file_name}.jsonl")
@@ -76,10 +77,10 @@ def main(user_args) -> None:
         )
         prompt_file = os.path.join(
             user_args.data_dir,
-            "Logic-Q/simplelogic_heldout_1k_prompts.csv",
+            "questbench/questbench_data/Logic-Q/simplelogic_heldout_1k_prompts.csv",
         )
     elif domain_main_name == "GSM":
-        if user_args.domain_name.split("_")[1] in ["csp", "verbal"]:
+        if user_args.domain_name.split("_")[1] in ["csp", "verbal"] or user_args.k == 1:
             evaluator = GSMEvaluator(
                 user_args.model_name,
                 cache_file=cache_file,
@@ -91,17 +92,20 @@ def main(user_args) -> None:
                 model_role_name=user_args.model_role_name,
                 parallel_model_calls=user_args.parallel_model_calls,
                 vllm_port=user_args.vllm_port,
+                reveal_k_in_prompt=user_args.reveal_k_in_prompt,
             )
-            if user_args.domain_name.split("_")[1] == "csp":
+            if user_args.domain_name.split("_")[1] == "verbal":
                 prompt_file = os.path.join(
                     user_args.data_dir,
-                    "gsm_CSP_heldout_pilot_prompts.csv",
+                    "questbench/questbench_data/GSM-Q/gsm_verbal_heldout_pilot_prompts.csv",
                 )
-            elif user_args.domain_name.split("_")[1] == "verbal":
+            # if user_args.domain_name.split("_")[1] == "csp":
+            else:
                 prompt_file = os.path.join(
                     user_args.data_dir,
-                    "gsm_verbal_heldout_pilot_prompts.csv",
+                    "questbench/questbench_data/GSM-Q/gsm_CSP_heldout_pilot_prompts.csv",
                 )
+            
         else:
             evaluator = GSMEvaluator_new(
                 user_args.model_name,
@@ -114,10 +118,11 @@ def main(user_args) -> None:
                 model_role_name=user_args.model_role_name,
                 parallel_model_calls=user_args.parallel_model_calls,
                 vllm_port=user_args.vllm_port,
+                reveal_k_in_prompt=user_args.reveal_k_in_prompt,
             )
             prompt_file = os.path.join(
                 user_args.data_dir,
-                f"gsm_CSP_heldout_pilot_prompts_missing_{user_args.k}.csv",
+                f"gsm_new/gsm_CSP_heldout_pilot_prompts_missing_{user_args.k}.csv",
             )
             
     elif domain_main_name == "Planning":
@@ -125,11 +130,11 @@ def main(user_args) -> None:
             user_args.model_name,
             domain_file=os.path.join(
                 user_args.data_dir,
-                "Planning-Q/task_pddls/blocks/domain.pddl",
+                "questbench/questbench_data/Planning-Q/task_pddls/blocks/domain.pddl",
             ),
             task_file_pattern=os.path.join(
                 user_args.data_dir,
-                "Planning-Q/task_pddls/blocks/task*.pddl",
+                "questbench/questbench_data/Planning-Q/task_pddls/blocks/task*.pddl",
             ),
             cache_file=cache_file,
             use_cot=use_cot,
@@ -143,13 +148,16 @@ def main(user_args) -> None:
         )
         prompt_file = os.path.join(
             user_args.data_dir,
-            "Planning-Q/planning_heldout_prompts.csv",
+            "questbench/questbench_data/Planning-Q/planning_heldout_prompts.csv",
         )
     else:
         raise SystemExit(f"Unknown domain: {domain_main_name}")
 
     print("Loading Data")
     data_file = user_args.data_file
+    
+    if user_args.k == 1:
+        data_file = 'questbench/questbench_data/GSM-Q/gsm_CSP_full.csv'
     data_file = os.path.join(
             user_args.data_dir,
             data_file,
@@ -282,22 +290,22 @@ def main(user_args) -> None:
         except Exception:
             pass
 
-    # label cardinality stats for mc (pred_q is a set or stringified set)
+    # label cardinality stats for mc only
     pred_set_sizes = []
-    if results is not None and "pred_q" in results.columns:
+    if user_args.eval_mode == "mc" and results is not None and "pred_q" in results.columns:
         for x in results["pred_q"].tolist():
             if isinstance(x, (set, list, tuple)):
                 pred_set_sizes.append(len(x))
             elif isinstance(x, str):
-                # try parse digits as a proxy
                 nums = re.findall(r"\b[0-9]+\b", x)
                 if nums:
                     pred_set_sizes.append(len(set(nums)))
+
     pred_set_stats = {
-        "avg_pred_set_size": _safe_mean(pred_set_sizes),
-        "median_pred_set_size": _safe_median(pred_set_sizes),
-        "min_pred_set_size": _safe_min(pred_set_sizes),
-        "max_pred_set_size": _safe_max(pred_set_sizes),
+        "avg_pred_set_size": _safe_mean(pred_set_sizes) if pred_set_sizes else None,
+        "median_pred_set_size": _safe_median(pred_set_sizes) if pred_set_sizes else None,
+        "min_pred_set_size": _safe_min(pred_set_sizes) if pred_set_sizes else None,
+        "max_pred_set_size": _safe_max(pred_set_sizes) if pred_set_sizes else None,
         "num_pred_set_entries": int(len(pred_set_sizes)),
     }
 
@@ -318,6 +326,7 @@ def main(user_args) -> None:
             "parallel_model_calls": bool(user_args.parallel_model_calls),
             "vllm_port": user_args.vllm_port,
             "k_arg": user_args.k,
+            "reveal_k_in_prompt": bool(user_args.reveal_k_in_prompt),  # NEW
         },
         "paths": {
             "data_file": data_file,
@@ -382,12 +391,15 @@ if __name__ == "__main__":
       type=str,
       choices=[
           "mc",
+          "sc",        # single-choice missing-count
           "isambig",
           "fullinfo",
       ],
       help=(
           "Evaluation mode. `mc` is for the multiple choice version of"
-          " QuestBench, `isambig` is for evaluating whether the model can"
+          " QuestBench (select questions). `sc` is for single-choice where the"
+          " model selects how many required variables are missing (0-4)."
+          " `isambig` is for evaluating whether the model can"
           " identify the task is ambiguous, and `fullinfo` is for evaluating"
           " the model's performance on the task with the full information"
           " (i.e., no missing information)."
@@ -454,6 +466,12 @@ if __name__ == "__main__":
       type=int,
       default=2,
       help="k-sufficient.",
+  )
+  
+  parser.add_argument(
+        "--reveal_k_in_prompt",
+        action="store_true",
+        help="If set, include the exact k in the MC system prompt.",
   )
   
   args = parser.parse_args()

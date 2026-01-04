@@ -25,6 +25,42 @@ from model_utils import cached_generate
 import pandas as pd
 import tqdm
 
+def _safe_list_field(x):
+  if x is None:
+    return []
+  if isinstance(x, list):
+    return x
+  if isinstance(x, (set, tuple)):
+    return list(x)
+  if isinstance(x, dict):
+    return list(x.keys())
+  if not isinstance(x, str):
+    return []
+  s = x.strip()
+  if not s:
+    return []
+  try:
+    return json.loads(s)
+  except Exception:
+    return []
+
+
+def _parse_choice_int(response, valid_set):
+  if response is None:
+    return None
+  text = response.strip().lower()
+  if "choice:" in text:
+    text = text.split("choice:")[-1]
+  nums = re.findall(r"\b[0-9]+\b", text)
+  if len(nums) != 1:
+    return None
+  try:
+    v = int(nums[0])
+  except Exception:
+    return None
+  if v not in valid_set:
+    return None
+  return v
 
 class GSMEvaluator(Evaluator):
   """Evaluator for LLMs on GSM-Q.
@@ -62,6 +98,7 @@ class GSMEvaluator(Evaluator):
       verbal_questions: bool = False,
       eval_mode: str = "mc",
       batch_size: int = 1,
+      reveal_k_in_prompt= False,
       **kwargs,
   ):
     super().__init__(
@@ -74,9 +111,23 @@ class GSMEvaluator(Evaluator):
         **kwargs,
     )
     self.verbal_questions = verbal_questions
+    self.reveal_k_in_prompt = reveal_k_in_prompt
     self.assist_mc_prompt = """You are trying to solve a math problem. You must decide whether you have enough information to solve the math problem. Please respond with one of the following-
 If you do not have enough information to solve the math problem, you may ask a question back to the user from a set of predefined "Possible questions". Otherwise, choose "No questions needed."
 Generate the number of your choice in the form "Choice: number"
+"""
+
+    self.assist_mc_prompt_k = """You are trying to solve a math problem. You must decide whether you have enough information to solve the math problem.
+If you do not have enough information, you may ask questions back to the user from the predefined "Possible questions". Otherwise, choose "No questions needed."
+Output format:
+- If you want to ask: "Choice: <number_1>, <number_2>, ..." (all questions needed to solve this problem)
+- If no questions needed: choose the option that says "No questions needed." and output its number as "Choice: <number>"
+"""
+    self.assist_mc_prompt_give_k = """You are solving a math problem. Exactly {k} key variables required to solve the problem are missing from the given information.
+Your task is to identify which {k} missing variables they are by selecting the corresponding questions from the predefined "Possible questions" list.
+Output format:
+- If you want to ask: "Choice: <number_1>, <number_2>, ..." (all questions needed to solve this problem)
+- If no questions needed: choose the option that says "No questions needed." and output its number as "Choice: <number>"
 """
     self.assist_isambig_prompt = """You are trying to answer a math question. Please answer with "Answer:" followed by the answer to the math question, or "Not sure" if you are not sure what the answer is. Only include the raw numerical answer, do not include any units or thousands separators."""
     self.assist_fullinfo_prompt = """You are trying to answer a math question. Please answer with "Answer:" followed by the answer to the math question. Only include the raw numerical answer, do not include any units or thousands separators."""
@@ -87,9 +138,29 @@ Possible questions:
     self.user_isambig_prompt = """Math problem: {request}"""
     self.user_fullinfo_prompt = """Math problem: {request}"""
 
+    # NEW: single-choice (missing-count) prompts
+    self.assist_sc_prompt = """You are solving a math problem.
+      Decide how many key variables required to solve the problem are missing from the given information.
+      Choose exactly one option from {0,1,2,3,4}.
+      Output format:
+      Choice: <0-4>
+      """
+    self.user_sc_prompt =  """Math problem: {request}"""
+
+
     if self.eval_mode == "mc":
-      self.assist_prompt = self.assist_mc_prompt
+      # self.assist_prompt = self.assist_mc_prompt
+      if self.reveal_k_in_prompt:
+        self.assist_prompt = self.assist_mc_prompt_give_k.format(k=int(1))
+      else:
+        self.assist_prompt = self.assist_mc_prompt_k
+      
       self.user_prompt = self.user_mc_prompt
+      
+    elif self.eval_mode == "sc":  # NEW
+      self.assist_prompt = self.assist_sc_prompt
+      self.user_prompt = self.user_sc_prompt
+
     elif self.eval_mode == "isambig":
       self.assist_prompt = self.assist_isambig_prompt
       self.user_prompt = self.user_isambig_prompt
@@ -98,18 +169,14 @@ Possible questions:
       self.assist_prompt = self.assist_fullinfo_prompt
       self.user_prompt = self.user_fullinfo_prompt
 
-    if self.use_cot:
-      self.assist_prompt += (
-          """ Reason step-by-step, then generate one of the above outputs."""
-      )
+    if self.use_cot and self.eval_mode in ["isambig", "fullinfo"]:
+      self.assist_prompt += " Reason step-by-step, then generate one of the above outputs."
     else:
-      self.assist_prompt += (
-          """ Generate one of the above outputs and nothing else."""
-      )
-
+      self.assist_prompt += " Generate one of the above outputs and nothing else."
+      
     self.batch_size = batch_size
 
-    self.orig_dataset = datasets.load_dataset("qintongli/GSM-Plus")
+    # self.orig_dataset = datasets.load_dataset("qintongli/GSM-Plus")
 
   def generate_query(
       self,
@@ -151,7 +218,6 @@ Possible questions:
     prompt.append({"role": self.model_role_name, "content": response})
 
     if self.eval_mode == "mc":
-      # check whether choice is correct
       response = response.lower().split("choice:")[-1].strip()
       n_loops = 0
       while not re.findall(r"\b[0-9]+\b", response):
@@ -169,7 +235,7 @@ Possible questions:
             cache=self.cache,
             cache_file=self.cache_file,
             generation_config=self.generation_config,
-            parallel_model_calls=False
+            parallel_model_calls=False,
         )
         response = responses[0]
         conversation.append({
@@ -185,9 +251,51 @@ Possible questions:
           break
       try:
         response = re.findall(r"\b[0-9]+\b", response)[0]
-        correct = int(response) == gt_query
-      except ValueError:
+        correct = int(response) == int(gt_query)
+      except Exception:
         correct = False
+      return correct, response, conversation
+
+    elif self.eval_mode == "sc":
+      valid = set([0, 1, 2, 3, 4])
+      pred = _parse_choice_int(response, valid)
+      n_loops = 0
+      while pred is None:
+        prompt.append({
+            "role": "system",
+            "content": 'Wrong format. Output exactly "Choice: <0-4>" and nothing else.',
+        })
+        responses, _, _ = cached_generate(
+            [prompt],
+            self.model_name,
+            self.model_url,
+            cache=self.cache,
+            cache_file=self.cache_file,
+            generation_config=self.generation_config,
+            parallel_model_calls=False,
+        )
+        response = responses[0]
+        conversation.append({
+            "role": "system",
+            "content": 'Wrong format. Output exactly "Choice: <0-4>" and nothing else.',
+        })
+        prompt.append({"role": self.model_role_name, "content": response})
+        pred = _parse_choice_int(response, valid)
+        n_loops += 1
+        if n_loops > 5:
+          break
+
+      if pred is None:
+        correct = False
+        pred_out = "-1"
+      else:
+        pred_out = str(pred)
+        try:
+          correct = int(pred) == int(gt_query)
+        except Exception:
+          correct = False
+      return correct, pred_out, conversation
+
     else:
       response = response.lower().split("answer:")[-1].strip()
       n_loops = 0
@@ -205,24 +313,18 @@ Possible questions:
               " number, it should be a raw number without any additional units,"
               " thousands separators, or text."
           )
-        prompt.append({
-            "role": "system",
-            "content": prompt_content,
-        })
+        prompt.append({"role": "system", "content": prompt_content})
         responses, _, _ = cached_generate(
-            prompt,
+            [prompt],
             self.model_name,
             self.model_url,
             cache=self.cache,
             cache_file=self.cache_file,
             generation_config=self.generation_config,
-            parallel_model_calls=False
+            parallel_model_calls=False,
         )
         response = responses[0]
-        conversation.append({
-            "role": "system",
-            "content": prompt_content,
-        })
+        conversation.append({"role": "system", "content": prompt_content})
         prompt.append({"role": self.model_role_name, "content": response})
         n_loops += 1
         if n_loops > 5:
@@ -235,8 +337,8 @@ Possible questions:
           correct = False
         else:
           response = numbers[0]
-          correct = int(response) == gt_query
-    return correct, response, conversation
+          correct = int(response) == int(gt_query)
+      return correct, response, conversation
 
   def parse_auto_eval(self, eval_str):
     try:
@@ -325,6 +427,25 @@ Possible questions:
 
         batch_ids[-1].append(d)
         batch_gt_answers[-1].append(answer)
+      
+      elif self.eval_mode == "sc":
+        request = datum["Rewritten Problem"]
+        # missing_cnt = _infer_missing_count_from_row(datum, max_count=4)
+        missing_cnt = 1
+        answer = datum.get("Full Answer", None)
+
+        if len(batch_requests[-1]) >= batch_size:
+          batch_ids.append([])
+          batch_requests.append([])
+          batch_gt_answers.append([])
+          batch_gt_queries.append([])
+
+        batch_requests[-1].append(
+            self.user_prompt.format(request=request)
+        )
+        batch_gt_queries[-1].append(int(missing_cnt))
+        batch_ids[-1].append(d)
+        batch_gt_answers[-1].append(answer)
       else:
         is_trues = [True]
         if self.eval_mode == "isambig":
@@ -334,11 +455,11 @@ Possible questions:
             request = datum["Rewritten Problem"]
             response = "Not sure"
           else:
-            if self.verbal_questions:
-              # get from original dataset
-              request = self.orig_dataset["test"]['question'][datum["Question ID"]]
-            else:
-              request = datum["Full Problem"]
+            # if self.verbal_questions:
+            #   # get from original dataset
+            #   request = self.orig_dataset["test"]['question'][datum["Question ID"]]
+            # else:
+            request = datum["Full Problem"]
             response = datum["Full Answer"]
 
           if len(batch_requests[-1]) >= batch_size:
@@ -407,6 +528,20 @@ Possible questions:
                 "content": f"Choice: {q_to_ask_index}",
             },
         ])
+      elif self.eval_mode == "sc":
+        request = datum["Rewritten Problem"]
+        missing_cnt = _infer_missing_count_from_row(datum, max_count=4)
+        fewshot_turns.append([
+            {
+                "role": "user",
+                "content": self.user_prompt.format(request=request),
+            },
+            {
+                "role": self.model_role_name,
+                "content": f"Choice: {int(missing_cnt)}",
+            },
+        ])
+      
       else:
         is_trues = [True]
         if self.eval_mode == "isambig":
@@ -416,11 +551,11 @@ Possible questions:
           request = datum["Rewritten Problem"]
           response = "Not sure"
         else:
-          if self.verbal_questions:
-            # get from original dataset
-            request = self.orig_dataset["test"][datum["Question ID"]]
-          else:
-            request = datum["Full Problem"]
+          # if self.verbal_questions:
+          #   # get from original dataset
+          #   request = self.orig_dataset["test"][datum["Question ID"]]
+          # else:
+          request = datum["Full Problem"]
           response = datum["Full Answer"]
 
         fewshot_turns.append([
