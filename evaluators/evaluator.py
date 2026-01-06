@@ -46,7 +46,7 @@ class Evaluator:
       fs_samples: int = 0,
       eval_mode: str = "mc",
       model_role_name: str = "assistant",
-      parallel_model_calls: bool = True,
+      # parallel_model_calls: bool = True,
       vllm_port: int = 8011,
       **kwargs,
   ):
@@ -97,7 +97,7 @@ class Evaluator:
     self.fs_samples = fs_samples
     self.eval_mode = eval_mode
     self.model_role_name = model_role_name
-    self.parallel_model_calls = parallel_model_calls
+    # self.parallel_model_calls = parallel_model_calls
     self.vllm_port = vllm_port
     
     self.use_invalid_facts_sets = kwargs.get("use_invalid_facts_sets", False)

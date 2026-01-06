@@ -71,14 +71,14 @@ def main(user_args) -> None:
         eval_mode=user_args.eval_mode,
         batch_size=user_args.batch_size,
         model_role_name=user_args.model_role_name,
-        parallel_model_calls=user_args.parallel_model_calls,
+        # parallel_model_calls=user_args.parallel_model_calls,
         vllm_port=user_args.vllm_port,
         **configs,
     )
     prompt_file = os.path.join(
         user_args.data_dir,
         # "Logic-Q/simplelogic_heldout_1k_prompts.csv",
-        "simplelogic_heldout_1k_prompts.csv",
+        "simplelogic_heldout_k_sufficient_prompts_new.csv",
     )
   elif domain_main_name == "GSM":
     assert user_args.domain_name.split("_")[1] in ["csp", "verbal"]
@@ -91,7 +91,7 @@ def main(user_args) -> None:
         eval_mode=user_args.eval_mode,
         batch_size=user_args.batch_size,
         model_role_name=user_args.model_role_name,
-        parallel_model_calls=user_args.parallel_model_calls,
+        # parallel_model_calls=user_args.parallel_model_calls,
         vllm_port=user_args.vllm_port,
     )
     if user_args.domain_name.split("_")[1] == "csp":

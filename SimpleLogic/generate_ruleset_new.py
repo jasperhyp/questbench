@@ -64,7 +64,7 @@ def main(arguments) -> None:
         continue
       print(f"\n================Processing {r}/{len(rules_dicts)}=================")
       
-      valid = derivation_new.get_derivations(rules_dict)  # NOTE: Generate all A^{(y)} and A^{(\neg y)}. (The most) Costly, but constant in k
+      valid = derivation_new.get_derivations(rules_dict, arguments.max_expansions_per_layer)  # NOTE: Generate all A^{(y)} and A^{(\neg y)}. (The most) Costly, but constant in k
       if not valid:
         # Save a placeholder to mark this rule as processed (invalid)
         # so it will be skipped on reruns
@@ -173,5 +173,6 @@ if __name__ == "__main__":
   parser.add_argument("--start_idx", type=int, default=0)
   parser.add_argument("--end_idx", type=int)
   parser.add_argument("--max_k", type=int, default=4)
+  parser.add_argument("--max_expansions_per_layer", type=int, default=500_000)
   args = parser.parse_args()
   main(args)

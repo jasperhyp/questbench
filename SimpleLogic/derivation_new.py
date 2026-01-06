@@ -224,6 +224,7 @@ def backderive_nextlayer_rules(
     prev_layer_rules: Set[ConjunctionRule],
     all_query_rules: Set[ConjunctionRule],
     max_depth: int = 5,
+    max_expansions_per_layer: int = 500_000,
 ) -> Tuple[Set[ConjunctionRule], Set[ConjunctionRule], bool]:
   """Backderive the next layer of rules for forming a target query.
 
@@ -358,8 +359,8 @@ def backderive_nextlayer_rules(
     curr_layer_rules.extend(prev_rule_expansions_linearized)
   print(f"Time for product expansions: {time() - start:.2f} seconds")
   
-  # NOTE: Skip the rule set (because the redundancy checks are going to be too costly) if any layer exceeds 1,000,000 possible product-expanded rules
-  if len(curr_layer_rules) > 500_000:
+  # NOTE: Skip the rule set (because the redundancy checks are going to be too costly) if any layer exceeds 500,000/1,000,000 possible product-expanded rules
+  if len(curr_layer_rules) > max_expansions_per_layer:
     len_break = True
     return set(), all_query_rules, len_break
   start = time()
@@ -489,13 +490,13 @@ def backderive_nextlayer_rules(
   all_query_rules = ancestor_query_rules_pruned.union(curr_layer_rules_pruned)
   # expand current set of rules into next layer
   _, all_query_rules, len_break = backderive_nextlayer_rules(
-      rule_tree, curr_layer_rules_pruned, all_query_rules, max_depth - 1
+      rule_tree, curr_layer_rules_pruned, all_query_rules, max_depth - 1, max_expansions_per_layer
   )
 
   return curr_layer_rules_pruned, all_query_rules, len_break
 
 
-def get_derivations(rules_dict):
+def get_derivations(rules_dict, max_expansions_per_layer: int):
   """Compute all derivations of a target word given a rules_dict.
 
   Args:
@@ -533,6 +534,7 @@ def get_derivations(rules_dict):
         },
         all_query_rules=set(),
         max_depth=len(rules_dict["rules"].nodes),  # NOTE: Set of all word-values in the rules (CNF form)
+        max_expansions_per_layer=max_expansions_per_layer,
     )  # NOTE: rules_dict["true_derivations"] is a set of ConjunctionRule objects (derivations leading to the target word being true)
     print(f"TOTAL TIME: {time() - start:.2f} seconds")
     if len_break:
@@ -573,6 +575,7 @@ def get_derivations(rules_dict):
         },
         all_query_rules=set(),
         max_depth=len(rules_dict["rules"].nodes),
+        max_expansions_per_layer=max_expansions_per_layer,
     )
     print(f"TOTAL TIME: {time() - start:.2f} seconds")
     if len_break:

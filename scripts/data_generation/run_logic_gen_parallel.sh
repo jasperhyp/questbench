@@ -3,7 +3,7 @@
 cd "/n/home09/yeh803/workspace/Reasoning/external/questbench"
 
 # Define the data directory path to keep the command clean
-SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_0_500k"
+SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_0_1m"
 LOG_DIR="logs_generation"
 
 # Create the log directory if it doesn't exist

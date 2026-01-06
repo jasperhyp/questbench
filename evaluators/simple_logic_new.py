@@ -189,7 +189,9 @@ Generate "Answer:" followed by the answer and nothing else."""
         self.system_prompt = self.fs_isambig_prompt
       elif self.eval_mode == "fullinfo":
         self.system_prompt = self.fs_fullinfo_prompt
-      self.request = self.fs_request
+      # TODO
+      # self.request = self.fs_request
+      self.user_prompt = self.prompts[self.eval_mode]["user_prompt"]["fs"]
     else:
       if self.eval_mode == "mc":
         # self.system_prompt = self.vanilla_prompt
@@ -198,7 +200,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         self.system_prompt = self.vanilla_isambig_prompt
       elif self.eval_mode == "fullinfo":
         self.system_prompt = self.vanilla_fullinfo_prompt
-      self.request = self.non_fs_request
+      # self.request = self.non_fs_request
       self.user_prompt = self.prompts[self.eval_mode]["user_prompt"]["non_fs"]
 
     self.batch_size = batch_size
@@ -251,7 +253,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         cache=cache,
         cache_file=cache_file,
         generation_config=self.generation_config,
-        parallel_model_calls=self.parallel_model_calls,
+        # parallel_model_calls=self.parallel_model_calls,
     )
 
     # Initialize conversations from batch_prompts (using "text" key instead of "content")
@@ -323,7 +325,7 @@ Generate "Answer:" followed by the answer and nothing else."""
           cache=cache,
           cache_file=cache_file,
           generation_config=self.generation_config,
-          parallel_model_calls=self.parallel_model_calls,
+          # parallel_model_calls=self.parallel_model_calls,
       )
       
       # Update responses, cots, cost, and conversations
@@ -489,7 +491,8 @@ Generate "Answer:" followed by the answer and nothing else."""
               system_prompt.format(rules_nl=rules_nl)
           )
           batch_requests[-1].append(
-              self.request.format(
+              # self.request.format(
+              self.user_prompt.format(
                   known_facts=known_facts,
                   known_untrue_facts=known_untrue_facts,
                   invalid_qs=invalid_qs,
@@ -499,7 +502,8 @@ Generate "Answer:" followed by the answer and nothing else."""
         else:
           batch_system_prompts[-1].append(None)
           batch_requests[-1].append(
-              self.request.format(
+              # self.request.format(
+              self.user_prompt.format(
                   rules_nl=rules_nl,
                   known_facts=known_facts,
                   known_untrue_facts=known_untrue_facts,
@@ -568,7 +572,8 @@ Generate "Answer:" followed by the answer and nothing else."""
                   system_prompt.format(rules_nl=rules_nl)
               )
               batch_requests[-1].append(
-                  self.request.format(
+                  # self.request.format(
+                  self.user_prompt.format(
                       known_facts=known_facts_nl,
                       known_untrue_facts=known_untrue_facts_nl,
                       invalid_qs="",
@@ -578,7 +583,8 @@ Generate "Answer:" followed by the answer and nothing else."""
             else:
               batch_system_prompts[-1].append(None)
               batch_requests[-1].append(
-                  self.request.format(
+                  # self.request.format(
+                  self.user_prompt.format(
                       rules_nl=rules_nl,
                       known_facts=known_facts_nl,
                       known_untrue_facts=known_untrue_facts_nl,
@@ -633,7 +639,8 @@ Generate "Answer:" followed by the answer and nothing else."""
         fewshot_turns.append([
             {
                 "role": "user",
-                "content": self.request.format(
+                # "content": self.request.format(
+                "content": self.user_prompt.format(
                     rules_nl=rules_nl,
                     known_facts=known_facts,
                     known_untrue_facts=known_untrue_facts,
@@ -681,7 +688,8 @@ Generate "Answer:" followed by the answer and nothing else."""
         fewshot_turns.append([
             {
                 "role": "user",
-                "content": self.request.format(
+                # "content": self.request.format(
+                "content": self.user_prompt.format(
                     rules_nl=rules_nl,
                     known_facts=known_facts_nl,
                     known_untrue_facts=known_untrue_facts_nl,

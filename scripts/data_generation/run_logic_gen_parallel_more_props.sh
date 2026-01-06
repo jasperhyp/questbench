@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# ==========================================
+# INPUT VALIDATION
+# ==========================================
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <start_folder_index> <end_folder_index> <max_expansions_per_layer>"
+    echo "Example: $0 1 10 500000"
+    exit 1
+fi
+
+START_NUM=$1
+END_NUM=$2
+MAX_EXPANSIONS_PER_LAYER=$3
+
 cd "/n/home09/yeh803/workspace/Reasoning/external/questbench"
 
 # Base path for the data
@@ -10,10 +23,12 @@ export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 
+echo "Running batch process from new_${START_NUM} to new_${END_NUM}"
+
 # ==========================================
-# OUTER LOOP: Iterate sequentially through folders new_0 to new_10
+# OUTER LOOP: Iterate from START_NUM to END_NUM
 # ==========================================
-for i in {1..10}; do
+for ((i=START_NUM; i<=END_NUM; i++)); do
 
     # Construct the specific directory for this batch (new_0, new_1, etc.)
     SL_DIR="${BASE_SL_DIR}/new_${i}_500k"
@@ -43,12 +58,13 @@ for i in {1..10}; do
             --start_idx "$start_idx" \
             --end_idx "$end_idx" \
             --max_k 4 \
+            --max_expansions_per_layer $MAX_EXPANSIONS_PER_LAYER \
             > "${CURRENT_LOG_DIR}/run_${start_idx}_${end_idx}.log" 2>&1 &
 
     done
 
     # ==========================================
-    # WAIT: Finish all indices for 'new_0' before starting 'new_1'
+    # WAIT: Finish all indices for current folder before starting next folder
     # ==========================================
     wait
     echo "Finished processing folder: new_${i}"
@@ -56,4 +72,4 @@ for i in {1..10}; do
 
 done
 
-echo "All folders (new_0 through new_10) completed."
+echo "All folders (new_${START_NUM} through new_${END_NUM}) completed."

@@ -23,7 +23,6 @@ import numpy as np
 import asyncio
 
 from openai import OpenAI, AsyncOpenAI
-import google.generativeai as genai
 import requests
 import tenacity
 from tenacity import retry
@@ -32,12 +31,13 @@ import transformers
 
 
 ThreadPoolExecutor = futures.ThreadPoolExecutor
-pipeline = transformers.pipeline
+# pipeline = transformers.pipeline
 wait_random_exponential = tenacity.wait_random_exponential
 stop_after_attempt = tenacity.stop_after_attempt
 
 
 if "GOOGLE_API_KEY" in os.environ:
+  import google.generativeai as genai
   genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
 
 OPENAI_HEADER = {}
@@ -138,50 +138,50 @@ def openai_request(model_url, data):
   return response
 
 
-def process_gemma_messages(messages):
-  """Process messages for Gemma models to ensure proper formatting.
+# def process_gemma_messages(messages):
+#   """Process messages for Gemma models to ensure proper formatting.
   
-  Args:
-    messages: List of message dictionaries with 'role' and 'content' keys.
+#   Args:
+#     messages: List of message dictionaries with 'role' and 'content' keys.
     
-  Returns:
-    List of processed messages that follow the alternating user/assistant pattern.
-  """
-  # First, convert system to user and combine consecutive messages
-  processed_messages = []
-  last_role = None
+#   Returns:
+#     List of processed messages that follow the alternating user/assistant pattern.
+#   """
+#   # First, convert system to user and combine consecutive messages
+#   processed_messages = []
+#   last_role = None
   
-  for i, message in enumerate(messages):
-    # Convert system role to user role
-    current_role = message["role"]
-    if current_role == "system":
-      current_role = "user"
-      message = {"role": "user", "content": message["content"]}
+#   for i, message in enumerate(messages):
+#     # Convert system role to user role
+#     current_role = message["role"]
+#     if current_role == "system":
+#       current_role = "user"
+#       message = {"role": "user", "content": message["content"]}
     
-    # Combine consecutive messages with the same role
-    if current_role == last_role:
-      processed_messages[-1]["content"] += "\n\n" + message["content"]
-    else:
-      processed_messages.append(message)
-      last_role = current_role
+#     # Combine consecutive messages with the same role
+#     if current_role == last_role:
+#       processed_messages[-1]["content"] += "\n\n" + message["content"]
+#     else:
+#       processed_messages.append(message)
+#       last_role = current_role
   
-  # Ensure alternating user/assistant pattern
-  final_messages = []
-  for i, message in enumerate(processed_messages):
-    if i == 0 and message["role"] != "user":
-      # If first message is not from user, add a dummy user message
-      final_messages.append({"role": "user", "content": "Hello"})
+#   # Ensure alternating user/assistant pattern
+#   final_messages = []
+#   for i, message in enumerate(processed_messages):
+#     if i == 0 and message["role"] != "user":
+#       # If first message is not from user, add a dummy user message
+#       final_messages.append({"role": "user", "content": "Hello"})
     
-    # Ensure no consecutive messages with same role
-    if i > 0 and message["role"] == final_messages[-1]["role"]:
-      if message["role"] == "user":
-        final_messages.append({"role": "assistant", "content": "I understand."})
-      else:
-        final_messages.append({"role": "user", "content": "Please continue."})
+#     # Ensure no consecutive messages with same role
+#     if i > 0 and message["role"] == final_messages[-1]["role"]:
+#       if message["role"] == "user":
+#         final_messages.append({"role": "assistant", "content": "I understand."})
+#       else:
+#         final_messages.append({"role": "user", "content": "Please continue."})
     
-    final_messages.append(message)
+#     final_messages.append(message)
   
-  return final_messages
+#   return final_messages
 
 
 @retry(
@@ -225,24 +225,24 @@ def model_call_wrapper(
     model_url,
     batch_messages: List[List[Dict[str, str]]],
     generation_config: Dict[str, str],
-    parallel_model_calls: bool,
+    # parallel_model_calls: bool,
 ) -> List[Tuple[str, int]]:
   """Wrapper for calling various types of models, including Gemini and OpenAI models."""
   if not batch_messages:
     return []
   def get_batch_responses(get_response):
-    if not parallel_model_calls or len(batch_messages) <= 1:
-      responses = []
-      for messages in batch_messages:
-        responses.append(get_response(messages))
-      return responses
-    else:
-      with ThreadPoolExecutor(max_workers=len(batch_messages)) as executor:
-        responses = executor.map(
-            get_response,
-            batch_messages,
-        )
-        return list(responses)
+    # if not parallel_model_calls or len(batch_messages) <= 1:
+    #   responses = []
+    #   for messages in batch_messages:
+    #     responses.append(get_response(messages))
+    #   return responses
+    # else:
+    with ThreadPoolExecutor(max_workers=len(batch_messages)) as executor:
+      responses = executor.map(
+          get_response,
+          batch_messages,
+      )
+      return list(responses)
 
   if model_name in GPT_COSTS:
     def get_response(messages):
@@ -268,27 +268,27 @@ def model_call_wrapper(
       return chat.send_message(messages[-1]).text
 
     return get_batch_responses(get_response)
-  elif "gemma" in model_name.lower():
-    # Use VLLM server for Gemma models
-    def get_response(messages):
-      final_messages = process_gemma_messages(messages)
+  # elif "gemma" in model_name.lower():
+  #   # Use VLLM server for Gemma models
+  #   def get_response(messages):
+  #     final_messages = process_gemma_messages(messages)
       
-      data = {
-          "model": model_name,
-          "messages": final_messages,
-          "temperature": 0.0,
-          "max_tokens": 512,
-      }
+  #     data = {
+  #         "model": model_name,
+  #         "messages": final_messages,
+  #         "temperature": 0.0,
+  #         "max_tokens": 512,
+  #     }
       
-      response = requests.post(model_url, json=data)
-      try:
-        response_json = response.json()
-        return response_json["choices"][0]["message"]["content"].strip()
-      except Exception as e:
-        print(response.text)
-        raise e
+  #     response = requests.post(model_url, json=data)
+  #     try:
+  #       response_json = response.json()
+  #       return response_json["choices"][0]["message"]["content"].strip()
+  #     except Exception as e:
+  #       print(response.text)
+  #       raise e
         
-    return get_batch_responses(get_response)
+  #   return get_batch_responses(get_response)
   
   elif "qwen" in model_name.lower():
     # Use async for better throughput with continuous batching
@@ -408,7 +408,7 @@ def cached_generate(
       model_url,
       batch_messages=new_batch_prompts,
       generation_config=generation_config,
-      parallel_model_calls=parallel_model_calls,
+      # parallel_model_calls=parallel_model_calls,
   )
   for prompt, (response, num_thinking_tokens, cot) in zip(new_batch_prompts, batch_responses):
     jsonified_prompt = jsonify_prompt(prompt)
