@@ -1,14 +1,16 @@
 #!/bin/bash
 
+cd "/n/home09/yeh803/workspace/Reasoning/external/questbench"
+
 # Define the data directory path to keep the command clean
-SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP"
+SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_0_500k"
 LOG_DIR="logs_generation"
 
 # Create the log directory if it doesn't exist
 mkdir -p "$LOG_DIR"
 
 # 1. IMPORTANT: Restrict each Python job to 1 CPU core
-#    to prevent 35 jobs from fighting over resources and freezing the server.
+#    to prevent jobs from fighting over resources and freezing the server.
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
@@ -26,7 +28,7 @@ for start_idx in {0..6900..100}; do
         --sl_dir "$SL_DIR" \
         --start_idx "$start_idx" \
         --end_idx "$end_idx" \
-        --max_k 4 \
+        --max_k 5 \
         > "${LOG_DIR}/run_${start_idx}_${end_idx}.log" 2>&1 &
 
 done

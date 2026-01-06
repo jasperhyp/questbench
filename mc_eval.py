@@ -57,6 +57,11 @@ def main(user_args) -> None:
     with open(output_file, "w") as f:
       pass  # Create empty output file
   print("Loading Evaluator")
+  
+  configs = {
+    "use_invalid_facts_sets": user_args.use_invalid_facts_sets,
+  }
+  
   if domain_main_name == "SL":
     evaluator = SimpleLogicEvaluator(
         user_args.model_name,
@@ -68,6 +73,7 @@ def main(user_args) -> None:
         model_role_name=user_args.model_role_name,
         parallel_model_calls=user_args.parallel_model_calls,
         vllm_port=user_args.vllm_port,
+        **configs,
     )
     prompt_file = os.path.join(
         user_args.data_dir,
@@ -196,7 +202,7 @@ if __name__ == "__main__":
   )
   parser.add_argument(
       "--data_file", type=str, help="The path to the data file.", 
-      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/archived/simplelogic_heldout_k_sufficient_data_sampled.csv"
+      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/simplelogic_heldout_k_sufficient_data_new_sampled.csv"
   )
   parser.add_argument(
       "--data_dir",
@@ -240,12 +246,15 @@ if __name__ == "__main__":
           " needed."
       ),
   )
-  parser.add_argument(
-      "--no_thread_pool",
-      action="store_false",
-      dest="parallel_model_calls",
-      help="Disable thread pool.",
-  )
+  parser.add_argument("--use_invalid_facts_sets",
+                      action="store_true",
+                      help="Whether to use invalid facts sets.")
+  # parser.add_argument(
+  #     "--no_thread_pool",
+  #     action="store_false",
+  #     dest="parallel_model_calls",
+  #     help="Disable thread pool.",
+  # )
   parser.add_argument(
       "--vllm_port",
       type=int,

@@ -18,6 +18,7 @@
 import argparse
 import glob
 import json
+import orjson
 import os
 import random
 import ast
@@ -28,51 +29,30 @@ import tqdm
 
 tqdm = tqdm.tqdm
 
-
-def find_matching_derivation(derivations_list, context_set, solution_vars):
-    """
-    Reconstructs the derivation trace by finding the first rule in the list
-    whose leaf nodes are satisfied by the (Context U Solution).
-    """
-    for d in derivations_list:
-        # d is the serialized derivation dictionary
-        # d['leaf_words'] contains the premises required for this derivation
-        leaves = d['leaf_words'].keys()
-        
-        is_match = True
-        for leaf in leaves:
-            # 1. Is the leaf literal exactly in the known facts?
-            if leaf in context_set:
-                continue
-            
-            # 2. Is the leaf's variable one of the ones we are asking about?
-            # (If we ask about 'A', we know 'A' or 'not A', fulfilling the leaf requirement)
-            var_name = leaf.split("not ")[-1] if leaf.startswith("not ") else leaf
-            if var_name in solution_vars:
-                continue
-                
-            # If neither, this derivation relies on information we don't have
-            is_match = False
-            break
-        
-        if is_match:
-            return d['derivation'] # Return the trace structure [[premises, conclusion], ...]
-    return None
-  
-
 def main(arguments) -> None:
   # Load constructed rulesets
   rulesets = []
   for item_file in glob.glob(
-      os.path.join(arguments.sl_dir, "*_heldout_fixed_new_test.jsonl")
+      os.path.join(arguments.sl_dir, "*_heldout_fixed_new.jsonl")
   ):
     print(item_file)
-    with open(item_file, "r") as f:
+    # with open(item_file, "r") as f:
+    #   for line in tqdm(f):
+    #     try:
+    #       rulesets.append(json.loads(line))
+    #     except json.JSONDecodeError:
+    #       continue
+    import gc
+    gc.disable()
+    
+    with open(item_file, "rb") as f:
       for line in tqdm(f):
         try:
-          rulesets.append(json.loads(line))
-        except json.JSONDecodeError:
+          rulesets.append(orjson.loads(line))
+        except orjson.JSONDecodeError:
           continue
+    
+    gc.enable()
 
   # Create dataframe
   data = pd.DataFrame(
@@ -81,6 +61,7 @@ def main(arguments) -> None:
           "known_facts",
           "known_untrue_facts",
           "cannot_ask_facts",
+          "cannot_ask_facts_sets",
           "goal",
           "rules",
           "max_depth",
@@ -90,214 +71,35 @@ def main(arguments) -> None:
           "all_qs",
           "all_valid_qs",
           "gt_qs",
-          "gt_q_to_true_derivation",
-          "gt_q_to_false_derivation",
+          # "gt_q_to_true_derivation",
+          # "gt_q_to_false_derivation",
+          "gt_q_to_derivations_min_rules",
+          "gt_q_to_derivations_min_depth",
       ]
   )
 
-  # for rs in tqdm(rulesets):
-  #   if ruleset.get("heldout_set_to_q", []):
-  #     rule_tree = ruleset.RuleTree.deserialize(rs["rules"])
-  #     target_attr = rs["query"]
-  #     heldout_set_to_q = rs["heldout_set_to_q"]
-  #     heldout_set_to_subset_qs = rs["heldout_set_to_subset_qs"]
-
-  #     heldout_set_to_q_subsample = random.sample(
-  #         list(heldout_set_to_q.keys()),
-  #         min(
-  #             len(heldout_set_to_q),
-  #             arguments.max_problems_to_sample_per_ruleset,
-  #         ),
-  #     )
-
-  #     for heldout_prompt in heldout_set_to_q_subsample:
-  #       gt_qs = set()
-  #       invalid_qs = set()  # makes problem easier; request LM not to ask
-  #       false_facts = []
-  #       num_rules_to_compute_q = []
-  #       max_depth_to_compute_q = []
-  #       gt_q_to_true_derivation = {}
-  #       gt_q_to_false_derivation = {}
-  #       # FIXME
-  #       # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  #       # for differ_word in heldout_set_to_q[heldout_prompt]:
-  #       #   gt_qs.add(differ_word.split("not ")[-1])
-  #       #   true_derivation, false_derivation = (
-  #       #       heldout_set_to_q[heldout_prompt][differ_word]["true_derivation"],
-  #       #       heldout_set_to_q[heldout_prompt][differ_word]["false_derivation"],
-  #       #   )
-  #       #   gt_q_to_true_derivation[differ_word] = true_derivation["derivation"]
-  #       #   gt_q_to_false_derivation[differ_word] = false_derivation["derivation"]
-  #       # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-  #       target_vars_sets = []
-  #       for differ_key in heldout_set_to_q[heldout_prompt]:
-  #         vars_in_key = differ_key.split(" & ")
-  #         clean_vars = tuple(sorted([v.split("not ")[-1] for v in vars_in_key]))
-  #         target_vars_sets.append(clean_vars)
-  #         tuple(sorted([v.split("not ")[-1] for v in vars_in_key]))
-  #         target_vars_sets.append(clean_vars)
-          
-  #         true_derivation, false_derivation = (
-  #             heldout_set_to_q[heldout_prompt][differ_key]["true_derivation"],
-  #             heldout_set_to_q[heldout_prompt][differ_key]["false_derivation"],
-  #         )
-  #         gt_q_to_true_derivation[differ_key] = true_derivation["derivation"]
-  #         gt_q_to_false_derivation[differ_key] = false_derivation["derivation"]
-  #       # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  #         num_rules_to_compute_q.append(
-  #             max(
-  #                 len(true_derivation["derivation"]),
-  #                 len(false_derivation["derivation"]),
-  #             )
-  #         )
-  #         max_depth_to_compute_q.append(
-  #             max(
-  #                 max(true_derivation["leaf_words"].values()),
-  #                 max(false_derivation["leaf_words"].values()),
-  #             )
-  #         )
-  #         for cannot_ask_attr in set(heldout_set_to_subset_qs[heldout_prompt]):
-  #           invalid_qs.add(cannot_ask_attr)
-
-  #       if set(false_facts).intersection(set(invalid_qs)):
-  #         # remove invalid_qs
-  #         false_facts = list(set(false_facts).difference(set(invalid_qs)))
-  #         # sort
-  #         false_facts = sorted(false_facts)
-
-  #       invalid_qs = sorted(list(invalid_qs))
-  #       if set(gt_qs) <= set(invalid_qs):
-  #         continue
-
-  #       all_qs = set(
-  #           {q for q in rule_tree.nodes.keys() if not q.startswith("not ")}
-  #       )
-  #       valid_qs = (
-  #           set(all_qs)
-  #           - set(invalid_qs)
-  #           - set(false_facts)
-  #           - set(heldout_prompt)
-  #       )
-
-  #       # check
-  #       # FIXME
-  #       # Update Validation Logic
-  #       # The original code loops through `all_qs` (single variables) and checks if they solve the problem.
-  #       # For k=2, NO single variable will solve it. We must check the combinations.
-  #       # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  #       true_facts = json.loads(heldout_prompt)
-  #       inferrable_facts = holdout_utils_new.get_all_inferrable_facts(
-  #           rule_tree, true_facts, false_facts
-  #       )
-  #       try:
-  #         assert (
-  #             target_attr not in inferrable_facts
-  #             and ruleset.negate(target_attr) not in inferrable_facts
-  #         )
-  #       except AssertionError:
-  #         continue
-  #       new_gt_qs = set()
-  #       for q in all_qs:
-  #         if q == target_attr:
-  #           continue
-  #         inferrable_q_facts = holdout_utils_new.get_all_inferrable_facts(
-  #             rule_tree, true_facts + [q], false_facts
-  #         )
-  #         inferrable_negq_facts = holdout_utils_new.get_all_inferrable_facts(
-  #             rule_tree, true_facts, false_facts + [ruleset.negate(q)]
-  #         )
-  #         if q in gt_qs:
-  #           assert (
-  #               target_attr in inferrable_q_facts
-  #               or ruleset.negate(target_attr) in inferrable_q_facts
-  #           )
-  #           if target_attr in inferrable_q_facts:
-  #             if ruleset.negate(target_attr) in inferrable_negq_facts:
-  #               new_gt_qs.add(q)
-  #           else:
-  #             if target_attr not in inferrable_negq_facts:
-  #               new_gt_qs.add(q)
-  #         elif q not in invalid_qs:
-  #           if not (
-  #               (
-  #                   target_attr not in inferrable_q_facts
-  #                   and ruleset.negate(target_attr) not in inferrable_q_facts
-  #               )
-  #               or (
-  #                   target_attr not in inferrable_negq_facts
-  #                   and ruleset.negate(target_attr) not in inferrable_negq_facts
-  #               )
-  #           ):
-  #             new_gt_qs.add(q)
-  #       if not new_gt_qs:
-  #         continue
-  #       gt_qs = sorted(list(new_gt_qs))
-
-  #       num_rules = min(num_rules_to_compute_q)
-  #       depth = min(max_depth_to_compute_q)
-  #       num_total_rules = rule_tree.num_rules()
-  #       num_words = rule_tree.num_words()
-  #       data.loc[len(data)] = [
-  #           sorted(json.loads(heldout_prompt)),
-  #           sorted(false_facts),
-  #           sorted(invalid_qs),
-  #           target_attr,
-  #           rule_tree.serialize(),
-  #           depth,
-  #           num_rules,
-  #           num_total_rules,
-  #           num_words,
-  #           all_qs,
-  #           valid_qs,
-  #           gt_qs,
-  #           gt_q_to_true_derivation,
-  #           gt_q_to_false_derivation,
-  #       ]
-
-  # # split into prompts and data
-  # prompt_indices = random.sample(range(len(data)), 25)
-  # prompts = data.iloc[prompt_indices]
-  # data_subsample = data.iloc[list(set(range(len(data))) - set(prompt_indices))]
-  # # save data
-  # with open(
-  #     os.path.join(arguments.sl_dir, "temp_simplelogic_heldout_1k_prompts.csv"), "w"
-  # ) as f:
-  #   prompts.to_csv(f, index=False)
-  # with open(
-  #     os.path.join(arguments.sl_dir, "temp_simplelogic_heldout_1k_data.csv"), "w"
-  # ) as f:
-  #   data_subsample.to_csv(f, index=False)
-  
   print(f"Processing {len(rulesets)} rulesets...")
 
   for rs in tqdm(rulesets):
-    if "rules" not in rs: 
+    if "true_derivations" not in rs: 
         continue
         
     rule_tree = ruleset.RuleTree.deserialize(rs["rules"])
     target_attr = rs["query"]
     
-    # 1. Identify where the problem data is stored
-    # We prefer 'heldout_k_sets' if it exists.
     k_data_source = {}
     if "heldout_k_sets" in rs and rs["heldout_k_sets"]:
       # Use the new structure: {"1": {ctx: [[v]]}, "2": {ctx: [[v1,v2]]}}
       k_data_source = rs["heldout_k_sets"]
-    elif "heldout_set_to_q" in rs:
-      # Fallback for old 1-sufficient only files
-      # Convert {ctx: {v: info}} -> {"1": {ctx: [[v]]}}
-      k_data_source = {"1": {}}
-      for h_set, q_dict in rs["heldout_set_to_q"].items():
-        k_data_source["1"][h_set] = [[v] for v in q_dict.keys()]
     else:
-      continue
+      raise Exception
 
     # 2. Flatten all problems in this ruleset for subsampling
-    # tuple: (k_int, context_str, valid_sets_list)
+    # tuple: (k_int, context_str, valid_sets_list, derivations_min_rules_list, derivations_min_depth_list)
     all_problems = []
     for k_str, context_map in k_data_source.items():
-      for context_str, valid_sets in context_map.items():
-        all_problems.append((int(k_str), context_str, valid_sets))
+      for context_str, dict_lst in context_map.items():
+        all_problems.append((int(k_str), context_str, [dct["s_set"] for dct in dict_lst], [dct["derivations_min_rules"] for dct in dict_lst], [dct["derivations_min_depth"] for dct in dict_lst]))
 
     # 3. Subsample problems per ruleset (Robustness from original make_data)
     if len(all_problems) > arguments.max_problems_to_sample_per_ruleset:
@@ -308,144 +110,97 @@ def main(arguments) -> None:
       sampled_problems = all_problems
 
     # 4. Process each problem
-    for k, context_str, valid_sets in sampled_problems:
+    for k, context_str, valid_sets, derivations_min_rules, derivations_min_depth in sampled_problems:
       # Parse context
-      try:
-          known_facts = json.loads(context_str)
-      except:
-          # Fallback if context_str is somehow malformed (e.g. single quotes)
-          try:
-            known_facts = ast.literal_eval(context_str)
-          except:
-            continue
+      # try:
+      context_set = set(json.loads(context_str))
+      # except:
+      #     # Fallback if context_str is somehow malformed (e.g. single quotes)
+      #     try:
+      #       known_facts = ast.literal_eval(context_str)
+      #     except:
+      #       continue
       
       # Determine facts known to be false based on "not X" in context
+      # NOTE: known facts are positive probably because simplelogic is built upon definite clauses restricted to positive literals
       false_facts = []
-      for f in known_facts:
+      for f in context_set:
         if f.startswith("not "):
             false_facts.append(f.split("not ")[1])
       false_facts = sorted(false_facts)
+      true_facts = sorted([f for f in context_set if not f.startswith("not ")])
       
-      # Determine invalid questions
+      # invalid questions and question sets
       # 1. Cannot ask the goal itself
       invalid_qs = {target_attr}
       # 2. Cannot ask about variables already in the known facts (redundant)
-      known_vars = {f.split("not ")[-1] for f in known_facts}
+      known_vars = {f.split("not ")[-1] for f in context_set}
       invalid_qs.update(known_vars)
       
-      # --- CLEANING GROUND TRUTH ---
-      # We TRUST 'valid_sets' from the input file (it contains minimal sets).
-      # We only filter out sets that accidentally contain already-known variables.
-      clean_gt_qs = []
-      for q_set in valid_sets:
-          if not set(q_set).intersection(invalid_qs):
-              clean_gt_qs.append(sorted(q_set))
+      invalid_q_sets = rs["context_to_invalid_sets"][str(k)].get(context_str, list())
+      invalid_q_sets = {frozenset(q) for q in invalid_q_sets}
       
-      if not clean_gt_qs:
-          continue
-
-      # Extract GT Derivations (Only available easily for k=1 via heldout_set_to_q)
-      # For k>1, we leave these dicts empty.
-      # gt_q_to_true_derivation = {}
-      # gt_q_to_false_derivation = {}
-      
-      # if k == 1 and "heldout_set_to_q" in rs and context_str in rs["heldout_set_to_q"]:
-      #   q_info = rs["heldout_set_to_q"][context_str]
-      #   # valid_sets is [[v1], [v2]...]; we look them up in the old dict
-      #   for v_list in valid_sets:
-      #       v = v_list[0] 
-      #       if v in q_info:
-      #           gt_q_to_true_derivation[v] = q_info[v]["true_derivation"]["derivation"]
-      #           gt_q_to_false_derivation[v] = q_info[v]["false_derivation"]["derivation"]
-
-      # # valid_sets comes from JSON as list of lists, e.g. [['a', 'b'], ['c', 'd']]
-      # gt_qs = valid_sets
-      
-    #   # All variables in the tree (potential search space)
-    #   all_qs = set(
-    #       {q for q in rule_tree.nodes.keys() if not q.startswith("not ")}
-    #   )
-      
-    #   # Valid individual variables available for selection (the atoms)
-    #   valid_qs_atoms = sorted(list(
-    #       all_qs - invalid_qs - set(false_facts)
-    #   ))
-      
-      # --- TRACE RECONSTRUCTION (Critical for FullInfo Eval) ---
-      gt_q_to_true_derivation = {}
-      gt_q_to_false_derivation = {}
-      context_set = set(known_facts)
-
-      for sol_list in clean_gt_qs:
-          solution_vars = set(sol_list)
-          
-          # Key Format: "var" for k=1, "('v1', 'v2')" for k>1
-          if len(sol_list) == 1:
-              sol_key = sol_list[0]
-          else:
-              sol_key = str(tuple(sorted(sol_list)))
-
-          # 1. Find Proof for True (A U S => y)
-          true_trace = find_matching_derivation(
-              rs.get("true_derivations", []), 
-              context_set, 
-              solution_vars
-          )
-          if true_trace:
-              gt_q_to_true_derivation[sol_key] = true_trace
-
-          # 2. Find Proof for False (A U S => not y)
-          false_trace = find_matching_derivation(
-              rs.get("false_derivations", []), 
-              context_set, 
-              solution_vars
-          )
-          if false_trace:
-              gt_q_to_false_derivation[sol_key] = false_trace
-      # ---------------------------------------------------------
-
       # All variables in the tree (potential search space)
-      all_qs = set(
-          {q for q in rule_tree.nodes.keys() if not q.startswith("not ")}
-      )
+      # Get all variables that exist in both positive and negative forms
+      all_vars = set()
+      for q in rule_tree.nodes.keys():
+        if q.startswith("not "):
+          all_vars.add(q[4:])  # Extract variable name from "not X"
+        else:
+          all_vars.add(q)
+      
+      # Only include variables that have both positive and negative forms
+      all_qs_atoms = set()
+      for var in all_vars:
+        if var in rule_tree.nodes and f"not {var}" in rule_tree.nodes:
+          all_qs_atoms.add(var)
       
       # Valid individual variables available for selection (the atoms)
       valid_qs_atoms = sorted(list(
-          all_qs - invalid_qs - set(false_facts)
+          all_qs_atoms - set(false_facts) - set(true_facts)
       ))
-
-      # Stats
-      num_rules = rs.get("depth", 0) 
-      depth = rs.get("depth", 0)
       
-      # Refine depth stats if we have derivation info (k=1 only)
-      if gt_q_to_true_derivation:
-          first_key = list(gt_q_to_true_derivation.keys())[0]
-          # derivation is a list of rule steps
-          num_rules = len(gt_q_to_true_derivation[first_key])
-      elif gt_q_to_false_derivation:
-          first_key = list(gt_q_to_false_derivation.keys())[0]
-          num_rules = len(gt_q_to_false_derivation[first_key])
+      # filter out sets that accidentally are identical to invalid sets.
+      # TODO: Maybe this filter is not needed?
+      clean_gt_qs = []
+      clean_derivations_min_rules = []
+      clean_derivations_min_depth = []
+      num_rules_to_compute_q = []
+      max_depth_to_compute_q = []
+      for q_set, derivs_min_rules, derivs_min_depth in zip(valid_sets, derivations_min_rules, derivations_min_depth):
+          if (not frozenset(q_set) in invalid_q_sets) and (not set(q_set).intersection(invalid_qs)):
+              clean_gt_qs.append(sorted(q_set))
+              clean_derivations_min_rules.append(derivs_min_rules)  # derivs is a dict of traces from all feasible combinations of true/false assignments
+              clean_derivations_min_depth.append(derivs_min_depth)
+              # NOTE: derivs_min_rules/min_depth is a dict where keys are assignment combinations and values are dicts with "derivation" key containing derive_obj.serialize()
+              num_rules_to_compute_q.append(max(len(deriv["derivation"]["derivation"]) for deriv in derivs_min_rules.values()))
+              max_depth_to_compute_q.append(max(max(deriv["derivation"]["leaf_words"].values()) for deriv in derivs_min_depth.values()))
       
+      if not clean_gt_qs:
+          continue
+      
+      num_rules = min(num_rules_to_compute_q)
+      depth = min(max_depth_to_compute_q)
       num_total_rules = rule_tree.num_rules()
       num_words = rule_tree.num_words()
 
       data.loc[len(data)] = [
           k,
-          sorted(known_facts),
-          sorted(false_facts),
+          true_facts,
+          false_facts,
           sorted(list(invalid_qs)),
+          [sorted(q_set) for q_set in invalid_q_sets],
           target_attr,
           rule_tree.serialize(),
           depth,
           num_rules,
           num_total_rules,
           num_words,
-          sorted(list(all_qs)),
+          sorted(list(all_qs_atoms)),
           valid_qs_atoms,
           clean_gt_qs,          # The main target for k-sufficient
-          gt_q_to_true_derivation,
-          gt_q_to_false_derivation,
+          clean_derivations_min_rules,   # List of dicts of derivations for each gt_q
+          clean_derivations_min_depth,   # List of dicts of derivations for each gt_q
       ]
 
   # Split into prompts and data
@@ -456,8 +211,8 @@ def main(arguments) -> None:
       data_subsample = data.iloc[list(set(range(len(data))) - set(prompt_indices))]
       
       # Use a new filename to avoid overwriting 1-sufficient benchmarks
-      prompt_path = os.path.join(arguments.sl_dir, "simplelogic_heldout_k_sufficient_prompts_test.csv")
-      data_path = os.path.join(arguments.sl_dir, "simplelogic_heldout_k_sufficient_data_test.csv")
+      prompt_path = os.path.join(arguments.sl_dir, "simplelogic_heldout_k_sufficient_prompts_new.csv")
+      data_path = os.path.join(arguments.sl_dir, "simplelogic_heldout_k_sufficient_data_new.csv")
       
       print(f"Writing {len(prompts)} prompts to {prompt_path}")
       with open(prompt_path, "w") as f:

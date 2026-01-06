@@ -72,7 +72,7 @@ class SimpleLogicEvaluator(Evaluator):
       use_cot: bool = False,
       fs_samples: int = 0,
       eval_mode: str = "mc",
-      batch_size: int = 1,
+      batch_size: int = 16,
       **kwargs,
   ):
     super().__init__(
@@ -84,57 +84,77 @@ class SimpleLogicEvaluator(Evaluator):
         eval_mode=eval_mode,
         **kwargs,
     )
-
-    self.vanilla_prompt_k1 = """Suppose you know the following rules about Alice:
+    
+    self.prompts = {
+      "mc": {
+        "system_prompt": {
+          "vanilla_k1": """Suppose you know the following rules about Alice:
     {rules_nl}
 
-You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
+You are trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following:
 If you do not have enough information yet, you may ask a question about an attribute of Alice, in the form of "Question: Is Alice [attribute]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
-Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
-Generate one of "Question: Is Alice [attribute]?" or "End questioning" and nothing else."""
-    self.vanilla_prompt_k2 = """Suppose you know the following rules about Alice:
+Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
+Generate one of "Question: Is Alice [attribute]?" or "End questioning" and nothing else.""",
+          "vanilla_k2": """Suppose you know the following rules about Alice:
     {rules_nl}
 
-You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
-If you do not have enough information yet, you may ask questions about at most two attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
-Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
-Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]?" or "End questioning" and nothing else."""
-    self.vanilla_prompt_k3 = """Suppose you know the following rules about Alice:
+You are trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following:
+If you do not have enough information yet, you may ask questions about at most two attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
+Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
+Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]?" or "End questioning" and nothing else.""",
+          "vanilla_k3": """Suppose you know the following rules about Alice:
     {rules_nl}
 
-You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
+You are trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following:
 If you do not have enough information yet, you may ask questions about at most three attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
-Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
-Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]?" or "End questioning" and nothing else."""
-    self.vanilla_isambig_prompt = """Suppose you know the following rules about Alice:
+Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
+Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]?" or "End questioning" and nothing else.""",
+          "vanilla_k4": """Suppose you know the following rules about Alice:
+    {rules_nl}
+
+You are trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following:
+If you do not have enough information yet, you may ask questions about at most three attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]? Is Alice [attribute_4]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
+Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
+Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]? Is Alice [attribute_4]?" or "End questioning" and nothing else."""
+        },
+        "user_prompt": {
+          "non_fs": """{known_facts}
+{known_untrue_facts}
+{invalid_qs}
+Is Alice {goal}?""",
+        }
+      },
+      "isambig": {
+        "system_prompt": """Suppose you know the following rules about Alice:
 {rules_nl}
 
 You will presented with a binary question about an attribute of Alice. Please answer it with "Yes" or "No" or "Not sure"."""
-    self.vanilla_fullinfo_prompt = """Suppose you know the following rules about Alice:
+      },
+      "fullinfo": {
+        "system_prompt": """Suppose you know the following rules about Alice:
 {rules_nl}
 
 You will be given a binary question about an attribute of Alice. Please answer it with "Yes" or "No"."""
-    self.cot_prompt = """Suppose you know the following rules about Alice:
-    {rules_nl}
+      }
+    }
 
-You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
-If you do not have enough information yet, you may ask a question about an attribute of Alice, in the form of "Question: Is Alice [attribute]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
-Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
-iefly, then generate one of "Question: Is Alice [attribute]?" or "End questioning"."""
-    self.cot_isambig_prompt = """Suppose you know the following rules about Alice:
-{rules_nl}
+#     self.cot_prompt = """Suppose you know the following rules about Alice:
+#     {rules_nl}
 
-You will presented with a binary question about an attribute of Alice. Please answer it with "Yes" or "No" or "Not sure".
-Reason step-by-step, then generate "Answer:" followed by the answer and nothing else."""
-    self.cot_fullinfo_prompt = """Suppose you know the following rules about Alice:
-{rules_nl}
+# You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following-
+# If you do not have enough information yet, you may ask a question about an attribute of Alice, in the form of "Question: Is Alice [attribute]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
+# Once you have enough all information necessary to determine the truth value of the statement, you can terminate with "End questioning".
+# iefly, then generate one of "Question: Is Alice [attribute]?" or "End questioning"."""
+#     self.cot_isambig_prompt = """Suppose you know the following rules about Alice:
+# {rules_nl}
 
-You will be given a binary question about an attribute of Alice. Please answer it with "Yes" or "No".
-Reason step-by-step, then generate "Answer:" followed by the answer and nothing else."""
-    self.non_fs_request = """{known_facts}
-{known_untrue_facts}
-{invalid_qs}
-Is Alice {goal}?"""
+# You will presented with a binary question about an attribute of Alice. Please answer it with "Yes" or "No" or "Not sure".
+# Reason step-by-step, then generate "Answer:" followed by the answer and nothing else."""
+#     self.cot_fullinfo_prompt = """Suppose you know the following rules about Alice:
+# {rules_nl}
+
+# You will be given a binary question about an attribute of Alice. Please answer it with "Yes" or "No".
+# Reason step-by-step, then generate "Answer:" followed by the answer and nothing else."""
     self.fs_prompt = """You trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine answer the target question. You may respond with one of the following-
 If you do not have enough information yet, you may ask a question about an attribute of Alice, in the form of "Question: Is Alice [attribute]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
 Once you have enough all information necessary to determine determine the truth value of the statement, you can terminate with "End questioning".
@@ -154,15 +174,15 @@ Generate "Answer:" followed by the answer and nothing else."""
     self.fs_fullinfo_prompt = """You will be given a binary question about an attribute of Alice. Please answer it with "Yes" or "No".
 Generate "Answer:" followed by the answer and nothing else."""
 
-    if self.use_cot:
-      if self.eval_mode == "mc":
-        self.system_prompt = self.cot_prompt
-      elif self.eval_mode == "isambig":
-        self.system_prompt = self.cot_isambig_prompt
-      elif self.eval_mode == "fullinfo":
-        self.system_prompt = self.cot_fullinfo_prompt
-      self.request = self.non_fs_request
-    elif self.fs_samples > 0:
+    # if self.use_cot:
+    #   if self.eval_mode == "mc":
+    #     self.system_prompt = self.cot_prompt
+    #   elif self.eval_mode == "isambig":
+    #     self.system_prompt = self.cot_isambig_prompt
+    #   elif self.eval_mode == "fullinfo":
+    #     self.system_prompt = self.cot_fullinfo_prompt
+    #   self.request = self.non_fs_request
+    if self.fs_samples > 0:
       if self.eval_mode == "mc":
         self.system_prompt = self.fs_prompt
       elif self.eval_mode == "isambig":
@@ -179,12 +199,13 @@ Generate "Answer:" followed by the answer and nothing else."""
       elif self.eval_mode == "fullinfo":
         self.system_prompt = self.vanilla_fullinfo_prompt
       self.request = self.non_fs_request
+      self.user_prompt = self.prompts[self.eval_mode]["user_prompt"]["non_fs"]
 
     self.batch_size = batch_size
 
   def evaluate_batch(
       self,
-      batch_requests,
+      batch_user_prompts,
       batch_system_prompts,
       model_name,
       model_url,
@@ -210,16 +231,16 @@ Generate "Answer:" followed by the answer and nothing else."""
       correctness.
     """
     batch_prompts = []
-    for request, system_prompt in zip(batch_requests, batch_system_prompts):
+    for user_prompt, system_prompt in zip(batch_user_prompts, batch_system_prompts):
       assist_prompt = []
       if self.fs_samples > 0:
         assist_prompt.extend(fs_turns)
       if system_prompt is None:
-        assist_prompt.append({"role": "user", "content": request})
+        assist_prompt.append({"role": "user", "content": user_prompt})
       else:
         assist_prompt.extend([
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": request},
+            {"role": "user", "content": user_prompt},
         ])
       batch_prompts.append(assist_prompt)
     
@@ -253,7 +274,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         return not re.findall(r"(yes|not sure|no)", response.lower())
 
     # Batched retry loop
-    max_retry_rounds = 5
+    max_retry_rounds = 3
     for retry_round in range(max_retry_rounds):
       # Find indices that need retry
       retry_indices = []
@@ -431,10 +452,16 @@ Generate "Answer:" followed by the answer and nothing else."""
           [f"Alice is not {attr}." for attr in datum["known_untrue_facts"]]
       )
       if self.eval_mode == "mc":
-        invalid_qs = sorted([
-            f"You may not ask if Alice is {attr}."
-            for attr in datum["cannot_ask_facts"]
-        ])
+        if self.use_invalid_facts_sets:
+          invalid_qs = sorted([
+              f"You may not ask concurrently if Alice is " + (", ".join([attr for attr in attrs])) + "."
+              for attrs in datum["cannot_ask_facts_sets"]
+          ])
+        else:
+          invalid_qs = sorted([
+              f"You may not ask if Alice is {attr}."
+              for attr in datum["cannot_ask_facts"]
+          ])
         invalid_qs = "\n".join(sorted(set(invalid_qs)))
         assert not set(known_facts).intersection(set(known_untrue_facts))
         known_facts = "\n".join(known_facts)
@@ -448,11 +475,13 @@ Generate "Answer:" followed by the answer and nothing else."""
 
         if self.fs_samples == 0:
           if str(datum["k"]) == "1":
-            system_prompt = self.vanilla_prompt_k1
+            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k1"]
           elif str(datum["k"]) == "2":
-            system_prompt = self.vanilla_prompt_k2
+            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k2"]
           elif str(datum["k"]) == "3":
-            system_prompt = self.vanilla_prompt_k3
+            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k3"]
+          elif str(datum["k"]) == "4":
+            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k4"]
           else:
             raise Exception(f"Invalid k value: {datum['k']}")
             # continue
@@ -481,7 +510,9 @@ Generate "Answer:" followed by the answer and nothing else."""
 
         batch_ids[-1].append(d)
         batch_gt_queries[-1].append(datum["gt_qs"])
+        
       else:
+        # FIXME: Isambig/which-k/fullinfo
         original_known_facts = known_facts
         original_known_untrue_facts = known_untrue_facts
         for gt_q in datum["gt_q_to_true_derivation"]:
@@ -581,16 +612,23 @@ Generate "Answer:" followed by the answer and nothing else."""
       known_untrue_facts = [
           f"Alice is not {attr}." for attr in datum["known_untrue_facts"]
       ]
-      invalid_qs = [
-          f"You may not ask if Alice is {attr}."
-          for attr in datum["cannot_ask_facts"]
-      ]
+      if self.use_invalid_facts_sets:
+        invalid_qs = [
+            f"You may not ask concurrently if Alice is " + (", ".join([attr for attr in attrs])) + "."
+            for attrs in datum["cannot_ask_facts_sets"]
+        ]
+      else:
+        invalid_qs = [
+            f"You may not ask if Alice is {attr}."
+            for attr in datum["cannot_ask_facts"]
+        ]
+      invalid_qs = "\n".join(sorted(set(invalid_qs)))
       assert not set(known_facts).intersection(set(known_untrue_facts))
 
       if self.eval_mode == "mc":
         known_facts = "\n".join(known_facts)
         known_untrue_facts = "\n".join(sorted(set(known_untrue_facts)))
-        invalid_qs = "\n".join(sorted(set(invalid_qs)))
+        
         random_gt_attr = random.choice(datum["gt_qs"])
         fewshot_turns.append([
             {
@@ -608,7 +646,9 @@ Generate "Answer:" followed by the answer and nothing else."""
                 "content": f"Question: Is Alice {random_gt_attr}?",
             },
         ])
+        
       else:
+        # FIXME
         gt_q = random.choice(list(datum["gt_q_to_true_derivation"].keys()))
         if self.eval_mode == "isambig":
           is_true = [True, False, None][d % 3]
@@ -654,6 +694,7 @@ Generate "Answer:" followed by the answer and nothing else."""
                 "content": f"Answer: {goal_is_true}",
             },
         ])
+    
     # shuffle the ordering of the few-shot turns
     # (move user, assistant pairs together)
     random.shuffle(fewshot_turns)
@@ -669,6 +710,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         },
         *fewshot_prefix,
     ]
+    
     return fewshot_prefix
 
   def evaluate_data(self, data: pd.DataFrame, prompt_data: pd.DataFrame):
@@ -685,12 +727,15 @@ Generate "Answer:" followed by the answer and nothing else."""
         "known_facts",
         "known_untrue_facts",
         "cannot_ask_facts",
+        "cannot_ask_facts_sets",
         "rules",
         "all_qs",
         "all_valid_qs",
         "gt_qs",
-        "gt_q_to_true_derivation",
-        "gt_q_to_false_derivation",
+        # "gt_q_to_true_derivation",
+        # "gt_q_to_false_derivation",
+        "gt_q_to_derivations_min_rules",
+        "gt_q_to_derivations_min_depth"
     ]:
       data[k] = data[k].apply(ast.literal_eval)
       try:
@@ -710,8 +755,10 @@ Generate "Answer:" followed by the answer and nothing else."""
             "gt_qs",
             "all_qs",
             "all_valid_qs",
-            "gt_q_to_true_derivation",
-            "gt_q_to_false_derivation",
+            # "gt_q_to_true_derivation",
+            # "gt_q_to_false_derivation",
+            "gt_q_to_derivations_min_rules",
+            "gt_q_to_derivations_min_depth",
             "conversation",
         ]
     )
@@ -755,8 +802,10 @@ Generate "Answer:" followed by the answer and nothing else."""
             batch_gt_query[i],
             datum["all_qs"],
             datum["all_valid_qs"],
-            datum["gt_q_to_true_derivation"],
-            datum["gt_q_to_false_derivation"],
+            # datum["gt_q_to_true_derivation"],
+            # datum["gt_q_to_false_derivation"],
+            datum["gt_q_to_derivations_min_rules"],
+            datum["gt_q_to_derivations_min_depth"],
             batch_conversation[i],
         ]
       pbar.set_description(

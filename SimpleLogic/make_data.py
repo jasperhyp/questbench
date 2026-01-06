@@ -33,7 +33,7 @@ def main(arguments) -> None:
   # Load constructed rulesets
   rulesets = []
   for item_file in glob.glob(
-      os.path.join(arguments.sl_dir, "*_heldout_fixed.jsonl")
+      os.path.join(arguments.sl_dir, "*_heldout_fixed_new.jsonl")
   ):
     print(item_file)
     with open(item_file, "r") as f:
@@ -218,7 +218,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument(
       "--sl_dir",
-      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP",
+      default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new",
       help="Directory containing the SimpleLogic data.",
   )
   parser.add_argument(

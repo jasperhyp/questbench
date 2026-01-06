@@ -64,13 +64,26 @@ def main(arguments) -> None:
         continue
       print(f"\n================Processing {r}/{len(rules_dicts)}=================")
       
-      valid = derivation_new.get_derivations(rules_dict)  # NOTE: Generate all A^{(y)} and A^{(\neg y)}. Costly, but constant in k
+      valid = derivation_new.get_derivations(rules_dict)  # NOTE: Generate all A^{(y)} and A^{(\neg y)}. (The most) Costly, but constant in k
       if not valid:
+        # Save a placeholder to mark this rule as processed (invalid)
+        # so it will be skipped on reruns
+        placeholder_dict = {
+            "rules": rule_tree_rules.serialize(),
+            "query": rules_dict["query"],
+            "depth": rules_dict.get("depth"),
+            "invalid": True,  # Mark as invalid
+        }
+        with open(write_file, "a") as wf:
+            wf.write(json.dumps(placeholder_dict) + "\n")
+            wf.flush()
+        rules_dicts_existing.append(json.dumps(placeholder_dict) + "\n")
+        print(f"Skipped invalid rule {r}/{len(rules_dicts)}, saved placeholder to " + write_file)
         continue
       
       # Generate heldout sets with max_k
       start = time()
-      holdout_utils_new.make_heldout_ruleset(rules_dict, max_k=arguments.max_k)  # TODO: Iterates through the product of every A^{(y)} and A^{(\neg y)} derivation to find a pair that are identical in every assignment except for exactly k variables
+      holdout_utils_new.make_heldout_ruleset(rules_dict, max_k=arguments.max_k)
       print(f"\nTOTAL Time to make heldout sets: {time() - start:.2f} seconds\n")
       
       # CHANGED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -140,6 +153,9 @@ def main(arguments) -> None:
       # Add heldout_k_sets if available (from new holdout_utils)
       if "heldout_k_sets" in rules_dict:
           output_dict["heldout_k_sets"] = rules_dict["heldout_k_sets"]
+          
+      if "context_to_invalid_sets" in rules_dict:
+          output_dict["context_to_invalid_sets"] = rules_dict["context_to_invalid_sets"]
 
       with open(write_file, "a") as wf:
         wf.write(json.dumps(output_dict) + "\n")
@@ -153,7 +169,7 @@ def main(arguments) -> None:
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("--sl_dir", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP")
+  parser.add_argument("--sl_dir", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new")
   parser.add_argument("--start_idx", type=int, default=0)
   parser.add_argument("--end_idx", type=int)
   parser.add_argument("--max_k", type=int, default=4)

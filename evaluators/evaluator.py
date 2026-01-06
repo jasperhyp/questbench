@@ -48,6 +48,7 @@ class Evaluator:
       model_role_name: str = "assistant",
       parallel_model_calls: bool = True,
       vllm_port: int = 8011,
+      **kwargs,
   ):
     self.model_name = model_name
     self.generation_config = {
@@ -56,17 +57,17 @@ class Evaluator:
     }
     if "gemini" in self.model_name:
       self.model_url = self.model_name
-    elif "gemma" in self.model_name:
-      # For Gemma models, we'll use the VLLM server URL
-      self.model_url = f"http://localhost:{vllm_port}/v1/chat/completions"
-      if self.model_name == "gemma_2_2b":
-        self.model_name = "google/gemma-2-2b-it"
-      elif self.model_name == "gemma_2_9b":
-        self.model_name = "google/gemma-2-9b-it"
-      elif self.model_name == "gemma_2_27b":
-        self.model_name = "google/gemma-2-27b-it"
-      else:
-        raise ValueError(f"Invalid model name: {self.model_name}")
+    # elif "gemma" in self.model_name:
+    #   # For Gemma models, we'll use the VLLM server URL
+    #   self.model_url = f"http://localhost:{vllm_port}/v1/chat/completions"
+    #   if self.model_name == "gemma_2_2b":
+    #     self.model_name = "google/gemma-2-2b-it"
+    #   elif self.model_name == "gemma_2_9b":
+    #     self.model_name = "google/gemma-2-9b-it"
+    #   elif self.model_name == "gemma_2_27b":
+    #     self.model_name = "google/gemma-2-27b-it"
+    #   else:
+    #     raise ValueError(f"Invalid model name: {self.model_name}")
     elif "qwen" in self.model_name:
       self.model_url = f"http://localhost:{vllm_port}/v1"
       self.model_name = "Qwen/Qwen3-30B-A3B-Thinking-2507-FP8"
@@ -98,3 +99,5 @@ class Evaluator:
     self.model_role_name = model_role_name
     self.parallel_model_calls = parallel_model_calls
     self.vllm_port = vllm_port
+    
+    self.use_invalid_facts_sets = kwargs.get("use_invalid_facts_sets", False)
