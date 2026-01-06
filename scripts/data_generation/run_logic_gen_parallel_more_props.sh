@@ -31,10 +31,22 @@ echo "Running batch process from new_${START_NUM} to new_${END_NUM}"
 for ((i=START_NUM; i<=END_NUM; i++)); do
 
     # Construct the specific directory for this batch (new_0, new_1, etc.)
-    SL_DIR="${BASE_SL_DIR}/new_${i}_500k"
+    if [ "$MAX_EXPANSIONS_PER_LAYER" -eq 500000 ]; then
+        SL_DIR="${BASE_SL_DIR}/new_${i}_500k"
+    elif [ "$MAX_EXPANSIONS_PER_LAYER" -eq 1000000 ]; then
+        SL_DIR="${BASE_SL_DIR}/new_${i}_1m"
+    else
+        echo "Error: Unsupported max_expansions_per_layer value: $MAX_EXPANSIONS_PER_LAYER"
+        exit 1
+    fi
     
     # Create a specific log sub-folder so logs don't overwrite each other
-    CURRENT_LOG_DIR="logs_generation/new_${i}_500k"
+    # CURRENT_LOG_DIR="logs_generation/new_${i}_500k"
+    if [ "$MAX_EXPANSIONS_PER_LAYER" -eq 500000 ]; then
+        CURRENT_LOG_DIR="logs_generation/new_${i}_500k"
+    elif [ "$MAX_EXPANSIONS_PER_LAYER" -eq 1000000 ]; then
+        CURRENT_LOG_DIR="logs_generation/new_${i}_1m"
+    fi
     mkdir -p "$CURRENT_LOG_DIR"
 
     echo "=================================================="
