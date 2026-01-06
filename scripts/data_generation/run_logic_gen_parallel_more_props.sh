@@ -3,7 +3,7 @@
 # ==========================================
 # INPUT VALIDATION
 # ==========================================
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 3 ]; then
     echo "Usage: $0 <start_folder_index> <end_folder_index> <max_expansions_per_layer>"
     echo "Example: $0 1 10 500000"
     exit 1

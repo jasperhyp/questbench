@@ -365,7 +365,7 @@ def cached_generate(
     cache,
     cache_file,
     generation_config,
-    parallel_model_calls,
+    # parallel_model_calls,
 ):
   """Generate a batch of responses from a model, caching responses.
 
@@ -393,7 +393,7 @@ def cached_generate(
         model_name,
         model_url,
         generation_config=generation_config,
-        parallel_model_calls=parallel_model_calls,
+        # parallel_model_calls=parallel_model_calls,
     )
   new_batch_prompts = []
   for prompt in batch_prompts:
