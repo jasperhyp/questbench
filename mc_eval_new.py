@@ -15,7 +15,7 @@
 
 import argparse
 import os
-from evaluators.gsm import GSMEvaluator
+from evaluators.gsm_k1 import GSMEvaluator
 from evaluators.gsm_new import GSMEvaluator as GSMEvaluator_new
 from evaluators.planning import PlanningEvaluator
 from evaluators.simple_logic import SimpleLogicEvaluator
@@ -164,6 +164,19 @@ def main(user_args) -> None:
         )
     with open(data_file, "r") as f:
         data = pd.read_csv(f)
+        
+        
+    # -------------------------
+    # Subsample for quick tests
+    # -------------------------
+    if getattr(user_args, "max_examples", None):
+        n = int(user_args.max_examples)
+        if n > 0 and len(data) > n:
+            if getattr(user_args, "sample_seed", None) is not None:
+                data = data.sample(n=n, random_state=int(user_args.sample_seed)).reset_index(drop=True)
+            else:
+                data = data.head(n).reset_index(drop=True)
+            
     prompt_data = None
     if os.path.exists(prompt_file):
             with open(prompt_file, "r") as f:
@@ -173,15 +186,20 @@ def main(user_args) -> None:
     print("Starting Evaluation")
     out = evaluator.evaluate_data(data, prompt_data)
     if isinstance(out, tuple):
-        results, all_cots, total_cost = out
+        results, all_cots, total_cost, total_cost_usd = out
     else:
         results = out
         all_cots = None
         total_cost = None
+        total_cost_usd = None
 
     with open(output_file, "w") as wf:
         results.to_csv(wf)
     print(f"Wrote to {output_file}")
+    
+    if total_cost_usd is not None:
+        with open(output_file.replace(".csv", "_cost_usd.json"), "w") as wf:
+            json.dump(total_cost_usd, wf)
     
     if total_cost is not None:
         with open(output_file.replace(".csv", "_cost.json"), "w") as wf:
@@ -246,6 +264,16 @@ def main(user_args) -> None:
             acc = None
 
     # cost stats
+    total_cost_usd = _to_float_list(total_cost_usd)
+    cost_usd_stats = {
+        "total_cost_usd": float(sum(total_cost_usd)) if total_cost_usd else None,
+        "avg_cost": _safe_mean(total_cost_usd),
+        "median_cost": _safe_median(total_cost_usd),
+        "min_cost": _safe_min(total_cost_usd),
+        "max_cost": _safe_max(total_cost_usd),
+        "num_cost_entries": int(len(total_cost_usd)),
+    }
+    
     cost_list = _to_float_list(total_cost)
     cost_stats = {
         "total_cost": float(sum(cost_list)) if cost_list else None,
@@ -349,6 +377,7 @@ def main(user_args) -> None:
             "accuracy_by_depth": acc_by_depth,
             "cost": cost_stats,
             "pred_set_size": pred_set_stats,
+            "cost_usd": cost_usd_stats
         },
     }
 
@@ -473,6 +502,8 @@ if __name__ == "__main__":
         action="store_true",
         help="If set, include the exact k in the MC system prompt.",
   )
+  parser.add_argument("--max_examples", type=int, default=0, help="If >0, only evaluate this many examples.")
+  parser.add_argument("--sample_seed", type=int, default=0, help="Seed for sampling when max_examples>0.")
   
   args = parser.parse_args()
   main(args)

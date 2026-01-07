@@ -13,12 +13,24 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Utility functions for calling models."""
+"""Utility functions for calling models.
+
+This version unifies GPT and Gemini outputs to match Qwen's style:
+  (final_output, num_thinking_tokens, cot)
+
+cached_generate returns:
+  text_outputs: List[str]
+  thinking_tokens: List[Optional[int]]
+  cots: List[Optional[str]]
+  costs_usd: List[Optional[float]]
+"""
+
+from __future__ import annotations
 
 from concurrent import futures
 import json
 import os
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, Union
 import asyncio
 from urllib.parse import urlparse
 
@@ -37,20 +49,42 @@ wait_random_exponential = tenacity.wait_random_exponential
 stop_after_attempt = tenacity.stop_after_attempt
 
 
-if "GOOGLE_API_KEY" in os.environ:
-  import google.generativeai as genai
-  genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
+# ----------------------------
+# Headers and endpoints
+# ----------------------------
 
-OPENAI_HEADER = {}
+OPENAI_HEADER: Dict[str, str] = {}
 if "OPENAI_API_KEY" in os.environ:
   OPENAI_HEADER = {
       "Content-Type": "application/json",
       "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}",
-      "OpenAI-Organization": os.environ.get("OPENAI_ORGANIZATION"),
-      "OpenAI-Project": os.environ.get("OPENAI_PROJECT"),
+      "OpenAI-Organization": os.environ.get("OPENAI_ORGANIZATION") or "",
+      "OpenAI-Project": os.environ.get("OPENAI_PROJECT") or "",
+  }
+  # drop empty fields to avoid confusing some gateways
+  OPENAI_HEADER = {k: v for k, v in OPENAI_HEADER.items() if v}
+
+# Default OpenAI Chat Completions endpoint (can be overridden by evaluator's model_url)
+OPENAI_CHAT_COMPLETIONS_URL = os.environ.get(
+    "OPENAI_MODEL_URL",
+    "https://api.openai.com/v1/chat/completions",
+).strip()
+
+# Gemini OpenAI compatibility endpoint (Developer API)
+# You can override this if you proxy it, for example via API Gateway
+GEMINI_MODEL_URL = os.environ.get(
+    "GEMINI_MODEL_URL",
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+).strip()
+
+GEMINI_HEADER: Dict[str, str] = {}
+if "GEMINI_API_KEY" in os.environ:
+  GEMINI_HEADER = {
+      "Content-Type": "application/json",
+      "Authorization": f"Bearer {os.environ.get('GEMINI_API_KEY')}",
   }
 
-ANTHROPIC_HEADER = {}
+ANTHROPIC_HEADER: Dict[str, str] = {}
 if "ANTHROPIC_API_KEY" in os.environ:
   ANTHROPIC_HEADER = {
       "Content-Type": "application/json",
@@ -58,23 +92,43 @@ if "ANTHROPIC_API_KEY" in os.environ:
       "X-Api-Key": os.environ["ANTHROPIC_API_KEY"],
   }
 
-GPT_COSTS = {
-    "gpt-4o": {
-        "prompt_tokens": 5 / 1000000,
-        "completion_tokens": 15 / 1000000,
-    },
-    "o1-preview": {
-        "prompt_tokens": 15 / 1000000,
-        "completion_tokens": 60 / 1000000,
-    },
-    "o1": {
-        "prompt_tokens": 15 / 1000000,
-        "completion_tokens": 60 / 1000000,
-    },
+CLAUDE_MODELS = ["claude-3-5-sonnet-20241022"]
+# ----------------------------
+# Pricing tables (USD per 1M tokens)
+# ----------------------------
+# Notes:
+# - OpenAI: thinking tokens are included in output token billing.
+# - OpenAI may provide cached input token counts in usage.prompt_tokens_details.cached_tokens.
+# - Gemini pricing page states output price includes thinking tokens.
+#
+# You can extend these dicts as needed. Unknown models will yield cost_usd=None.
+
+OPENAI_PRICES_PER_1M: Dict[str, Dict[str, float]] = {
+    # GPT-5 
+    "gpt-5": {"input": 1.25, "cached_input": 0.125, "output": 10.00},
+    "gpt-5-mini": {"input": 0.25, "cached_input": 0.025, "output": 2.00},
+    "gpt-5-nano": {"input": 0.05, "cached_input": 0.005, "output": 0.40},
+
+    # GPT-5.2
+    "gpt-5.2": {"input": 1.75, "cached_input": 0.175, "output": 14.00},
+    "gpt-5.2-pro": {"input": 21.00, "cached_input": 2.10, "output": 168.00},
+
+    "gpt-4o": {"input": 5.00, "cached_input": 0.50, "output": 15.00},
+    "o1-preview": {"input": 15.00, "cached_input": 1.50, "output": 60.00},
+    "o1": {"input": 15.00, "cached_input": 1.50, "output": 60.00},
 }
 
-CLAUDE_MODELS = ["claude-3-5-sonnet-20241022"]
+GEMINI_PRICES_PER_1M: Dict[str, Dict[str, float]] = {
+    "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
+    "gemini-2.5-flash-lite": {"input": 0.10, "output": 0.40},
+    "gemini-3-flash-preview": {"input": 0.50, "output": 3.00},
+"gemini-3-pro-preview": {"input": 2.00, "output": 12.00},
+}
 
+
+# ----------------------------
+# Qwen vLLM base_url builder
+# ----------------------------
 
 def _build_qwen_base_url() -> str:
   """
@@ -113,7 +167,7 @@ def _build_qwen_base_url() -> str:
 
 QWEN_BASE_URL = _build_qwen_base_url()
 
-# Keep a sync client if you ever use it elsewhere. It does not cause the event-loop issue.
+# Sync OpenAI client for Qwen (does not cause event-loop issues)
 client = OpenAI(
     base_url=QWEN_BASE_URL,
     api_key="EMPTY",
@@ -126,50 +180,96 @@ _QWEN_TOKENIZER_PATH = os.environ.get(
     "QWEN_TOKENIZER_PATH",
     "Qwen/Qwen3-30B-A3B-Thinking-2507-FP8",
 )
-
 tokenizer = transformers.AutoTokenizer.from_pretrained(_QWEN_TOKENIZER_PATH)
 
+
+# ----------------------------
+# Cache
+# ----------------------------
 
 def load_cache_file(cache_file: str) -> Dict[str, Any]:
   """
   Cache schema (jsonl lines):
     - legacy: {"prompt": <json_str>, "completion": <str or dict>}
-    - qwen:   {"prompt": <json_str>, "completion": <str>, "num_thinking_tokens": <int>, "cot": <str>}
+    - qwen legacy: {"prompt": <json_str>, "completion": <str>, "num_thinking_tokens": <int>, "cot": <str>}
+    - unified (this file): {"prompt": <json_str>, "completion": <str>, "num_thinking_tokens": <int>, "cot": <str>, "cost_usd": <float>, "usage": {...}}
   """
   cache: Dict[str, Any] = {}
   if os.path.exists(cache_file):
     with open(cache_file, "r") as f:
       for line in f:
-        line = json.loads(line)
-        if "num_thinking_tokens" in line and "cot" in line:
-          cache[line["prompt"]] = (
-              line["completion"],
-              line["num_thinking_tokens"],
-              line["cot"],
-          )
-        else:
-          cache[line["prompt"]] = line["completion"]
+        try:
+          obj = json.loads(line)
+        except Exception:
+          continue
+        if "prompt" not in obj:
+          continue
+        jp = obj["prompt"]
+
+        # Unified entry
+        if isinstance(obj, dict) and "completion" in obj and ("num_thinking_tokens" in obj or "cot" in obj or "cost_usd" in obj):
+          cache[jp] = {
+              "completion": obj.get("completion", ""),
+              "num_thinking_tokens": obj.get("num_thinking_tokens", None),
+              "cot": obj.get("cot", None),
+              "cost_usd": obj.get("cost_usd", None),
+              "usage": obj.get("usage", {}) if isinstance(obj.get("usage", {}), dict) else {},
+              "model": obj.get("model", None),
+          }
+          continue
+
+        # Older qwen style
+        if "num_thinking_tokens" in obj and "cot" in obj and "completion" in obj:
+          cache[jp] = (obj.get("completion", ""), obj.get("num_thinking_tokens", 0), obj.get("cot", ""))
+          continue
+
+        # Legacy: {"prompt": ..., "completion": ...}
+        if "completion" in obj:
+          cache[jp] = obj["completion"]
   return cache
 
 
 def jsonify_prompt(prompt) -> str:
-  return json.dumps(prompt)
+  return json.dumps(prompt, ensure_ascii=False)
+
+
+# ----------------------------
+# HTTP helpers
+# ----------------------------
+
+@retry(
+    stop=stop_after_attempt(10),
+    wait=wait_random_exponential(multiplier=1, max=60),
+)
+def openai_like_request(model_url: str, data: Dict[str, Any], headers: Dict[str, str]) -> Dict[str, Any]:
+  response = requests.post(model_url, headers=headers, json=data)
+  try:
+    response_json = response.json()
+    assert "choices" in response_json
+  except Exception as e:
+    print(getattr(response, "text", response))
+    raise e
+  return response_json
 
 
 @retry(
     stop=stop_after_attempt(10),
     wait=wait_random_exponential(multiplier=1, max=60),
 )
-def openai_request(model_url: str, data: Dict[str, Any]) -> Dict[str, Any]:
-  response = requests.post(model_url, headers=OPENAI_HEADER, json=data)
+def claude_request(model_url: str, data: Dict[str, Any]) -> Dict[str, Any]:
+  response = requests.post(model_url, headers=ANTHROPIC_HEADER, json=data)
   try:
-    response = response.json()
-    assert "choices" in response
+    response_json = response.json()
+    assert "content" in response_json
   except Exception as e:
-    print(response)
+    print(getattr(response, "text", response))
     raise e
-  return response
+  return response_json
 
+
+# ----------------------------
+# Gemma adapter (kept)
+# ----------------------------
 
 def process_gemma_messages(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
   processed_messages: List[Dict[str, str]] = []
@@ -203,20 +303,149 @@ def process_gemma_messages(messages: List[Dict[str, str]]) -> List[Dict[str, str
   return final_messages
 
 
-@retry(
-    stop=stop_after_attempt(10),
-    wait=wait_random_exponential(multiplier=1, max=60),
-)
-def claude_request(model_url: str, data: Dict[str, Any]) -> Dict[str, Any]:
-  response = requests.post(model_url, headers=ANTHROPIC_HEADER, json=data)
-  try:
-    response = response.json()
-    assert "content" in response
-  except Exception as e:
-    print(response)
-    raise e
-  return response
+# ----------------------------
+# Cost and token parsing
+# ----------------------------
 
+def _lower(s: Any) -> str:
+  try:
+    return str(s).lower()
+  except Exception:
+    return ""
+
+
+def _pick_openai_price(model_name: str) -> Optional[Dict[str, float]]:
+  mn = _lower(model_name)
+  # prefer longest key match
+  matches: List[Tuple[int, str]] = []
+  for k in OPENAI_PRICES_PER_1M:
+    if _lower(k) in mn:
+      matches.append((len(k), k))
+  if not matches:
+    return None
+  matches.sort(reverse=True)
+  return OPENAI_PRICES_PER_1M[matches[0][1]]
+
+
+def _pick_gemini_price(model_name: str) -> Optional[Dict[str, float]]:
+  mn = _lower(model_name)
+  matches: List[Tuple[int, str]] = []
+  for k in GEMINI_PRICES_PER_1M:
+    if _lower(k) in mn:
+      matches.append((len(k), k))
+  if not matches:
+    return None
+  matches.sort(reverse=True)
+  return GEMINI_PRICES_PER_1M[matches[0][1]]
+
+
+def _extract_usage_openai_like(resp: Dict[str, Any]) -> Dict[str, Any]:
+  usage = resp.get("usage", {}) or {}
+  ptd = usage.get("prompt_tokens_details", {}) or {}
+  cached_tokens = ptd.get("cached_tokens", 0) or 0
+
+  ctd = usage.get("completion_tokens_details", {}) or {}
+  otd = usage.get("output_tokens_details", {}) or {}
+
+  reasoning_tokens = None
+  if "reasoning_tokens" in ctd and ctd["reasoning_tokens"] is not None:
+    reasoning_tokens = ctd["reasoning_tokens"]
+  elif "reasoning_tokens" in otd and otd["reasoning_tokens"] is not None:
+    reasoning_tokens = otd["reasoning_tokens"]
+
+  return {
+      "prompt_tokens": usage.get("prompt_tokens", None),
+      "completion_tokens": usage.get("completion_tokens", None),
+      "total_tokens": usage.get("total_tokens", None),
+      "cached_prompt_tokens": cached_tokens,
+      "reasoning_tokens": reasoning_tokens,
+  }
+
+
+def _compute_cost_openai_like(model_name: str, usage: Dict[str, Any], provider: str) -> Optional[float]:
+  if not isinstance(usage, dict):
+    return None
+  pt = usage.get("prompt_tokens", None)
+  ct = usage.get("completion_tokens", None)
+  if pt is None or ct is None:
+    return None
+
+  try:
+    pt_i = int(pt)
+    ct_i = int(ct)
+  except Exception:
+    return None
+
+  if provider == "openai":
+    price = _pick_openai_price(model_name)
+    if price is None:
+      return None
+    cached = usage.get("cached_prompt_tokens", 0) or 0
+    try:
+      cached_i = int(cached)
+    except Exception:
+      cached_i = 0
+    uncached_i = max(0, pt_i - cached_i)
+
+    in_cost = (uncached_i * float(price["input"])) / 1_000_000.0
+    cached_price = price.get("cached_input", None)
+    if cached_price is not None and cached_i > 0:
+      in_cost += (cached_i * float(cached_price)) / 1_000_000.0
+    out_cost = (ct_i * float(price["output"])) / 1_000_000.0
+    return float(in_cost + out_cost)
+
+  if provider == "gemini":
+    price = _pick_gemini_price(model_name)
+    if price is None:
+      return None
+    in_cost = (pt_i * float(price["input"])) / 1_000_000.0
+    out_cost = (ct_i * float(price["output"])) / 1_000_000.0
+    return float(in_cost + out_cost)
+
+  return None
+
+
+def _extract_text_and_thought_openai_like(resp: Dict[str, Any]) -> Tuple[str, str]:
+  """
+  Return (final_output, cot_like_text).
+
+  For OpenAI: cot is not available, so returns "".
+  For Gemini OpenAI compatibility: content may include thought-like parts, we best-effort capture them.
+  """
+  try:
+    msg = resp["choices"][0]["message"]
+  except Exception:
+    return (str(resp), "")
+
+  content = msg.get("content", "")
+  if isinstance(content, str):
+    return (content.strip(), "")
+
+  # Some compat layers may return list parts
+  final_parts: List[str] = []
+  thought_parts: List[str] = []
+
+  if isinstance(content, list):
+    for part in content:
+      if isinstance(part, str):
+        final_parts.append(part)
+        continue
+      if not isinstance(part, dict):
+        continue
+      txt = part.get("text") or part.get("content") or ""
+      if part.get("thought") is True or "thoughtSignature" in part:
+        if txt:
+          thought_parts.append(str(txt))
+      else:
+        if txt:
+          final_parts.append(str(txt))
+
+  return ("\n".join(final_parts).strip(), "\n".join(thought_parts).strip())
+
+
+# ----------------------------
+# Qwen async generation (kept)
+# ----------------------------
 
 def _cap_concurrency(max_concurrent: int, batch_size: int) -> int:
   try:
@@ -226,7 +455,6 @@ def _cap_concurrency(max_concurrent: int, batch_size: int) -> int:
   mc = max(1, mc)
   if batch_size > 0:
     mc = min(mc, batch_size)
-  # Avoid overwhelming a local vLLM server by default.
   mc = min(mc, 64)
   return mc
 
@@ -240,8 +468,6 @@ async def qwen_async_batch_generate(
   Returns List[Tuple[final_output, num_thinking_tokens, cot]]
 
   Key design: do NOT use a module-level AsyncOpenAI client.
-  We create and close the async client within the same event loop,
-  preventing "Event loop is closed" during connection pool cleanup.
   """
   batch_size = len(batch_messages)
   max_concurrent = _cap_concurrency(max_concurrent, batch_size)
@@ -279,7 +505,7 @@ async def qwen_async_batch_generate(
         base_url=QWEN_BASE_URL,
         api_key="EMPTY",
         http_client=http_client,
-        max_retries=0,  # handled by tenacity above
+        max_retries=0,
     )
 
     async def generate_one(idx: int, messages: List[Dict[str, str]]):
@@ -297,7 +523,6 @@ async def qwen_async_batch_generate(
         choice = resp.choices[0]
         response_text = getattr(choice, "text", "") or ""
 
-        # best-effort thinking token split
         num_thinking_tokens = 0
         cot = ""
         final_output = response_text
@@ -323,12 +548,6 @@ async def qwen_async_batch_generate(
 
 
 def _run_async_safely(coro):
-  """
-  Run an async coroutine from sync code.
-
-  If already inside a running event loop in the same thread, asyncio.run cannot be used.
-  In this codebase model_call_wrapper is expected to be called from sync code.
-  """
   try:
     _ = asyncio.get_running_loop()
   except RuntimeError:
@@ -338,6 +557,33 @@ def _run_async_safely(coro):
       "model_call_wrapper was called from within a running event loop. "
       "Refactor the caller to await qwen_async_batch_generate directly."
   )
+
+
+# ----------------------------
+# Model call wrapper
+# ----------------------------
+
+def _strip_gpt5_incompatible_fields(model_name: str, gen: Dict[str, Any]) -> Dict[str, Any]:
+  """
+  Some GPT-5 endpoints can reject unsupported sampling fields.
+  We keep this conservative.
+  """
+  if not isinstance(gen, dict):
+    return {}
+  out = dict(gen)
+  mn = _lower(model_name)
+  if "gpt-5" in mn:
+    for k in ["temperature", "top_p", "top_k", "logprobs", "echo", "frequency_penalty", "presence_penalty"]:
+      out.pop(k, None)
+    # Some stacks prefer max_completion_tokens for reasoning models.
+    if "max_tokens" in out and "max_completion_tokens" not in out:
+      out["max_completion_tokens"] = out.pop("max_tokens")
+  return out
+
+
+def _is_openai_chat_model_name(model_name: str) -> bool:
+  mn = _lower(model_name)
+  return mn.startswith("gpt-") or mn.startswith("o1") or mn.startswith("o3")
 
 
 def model_call_wrapper(
@@ -356,26 +602,27 @@ def model_call_wrapper(
     with ThreadPoolExecutor(max_workers=len(batch_messages)) as executor:
       return list(executor.map(get_response, batch_messages))
 
-  if model_name in GPT_COSTS:
+  # OpenAI chat models (GPT, o1, etc)
+  if _is_openai_chat_model_name(model_name):
+    def get_response(messages):
+      gen = _strip_gpt5_incompatible_fields(model_name, generation_config)
+      data = {"model": model_name, "messages": messages, **gen}
+      url = model_url if (isinstance(model_url, str) and model_url.startswith("http")) else OPENAI_CHAT_COMPLETIONS_URL
+      return openai_like_request(url, data, headers=OPENAI_HEADER)
+    return get_batch_responses(get_response)
+
+  # Gemini via OpenAI compatibility endpoint (so we get usage back)
+  if "gemini" in _lower(model_name):
+    if not GEMINI_HEADER:
+      raise ValueError("GEMINI_API_KEY is not set, cannot call Gemini OpenAI compatibility endpoint.")
     def get_response(messages):
       data = {"model": model_name, "messages": messages, **generation_config}
-      return openai_request(model_url, data)
+      url = model_url if (isinstance(model_url, str) and model_url.startswith("http")) else GEMINI_MODEL_URL
+      return openai_like_request(url, data, headers=GEMINI_HEADER)
     return get_batch_responses(get_response)
 
-  if "gemini" in model_name.lower():
-    def get_response(messages):
-      model = genai.GenerativeModel(model_url)
-      converted = []
-      for message in messages:
-        role = message["role"]
-        if role == "system":
-          role = "user"
-        converted.append({"role": role, "parts": message.get("content", "")})
-      chat = model.start_chat(history=converted[:-1])
-      return chat.send_message(converted[-1]).text
-    return get_batch_responses(get_response)
-
-  if "gemma" in model_name.lower():
+  # Gemma (kept)
+  if "gemma" in _lower(model_name):
     def get_response(messages):
       final_messages = process_gemma_messages(messages)
       data = {
@@ -389,15 +636,16 @@ def model_call_wrapper(
         response_json = response.json()
         return response_json["choices"][0]["message"]["content"].strip()
       except Exception as e:
-        print(response.text)
+        print(getattr(response, "text", response))
         raise e
     return get_batch_responses(get_response)
 
-  if "qwen" in model_name.lower():
-    # returns List[Tuple[final_output, num_thinking_tokens, cot]]
+  # Qwen vLLM
+  if "qwen" in _lower(model_name):
     return _run_async_safely(qwen_async_batch_generate(model_name, batch_messages))
 
-  if model_name in CLAUDE_MODELS:
+  # Claude (kept)
+  if "claude" in _lower(model_name):
     def get_response(messages):
       converted = []
       for message in messages:
@@ -409,9 +657,85 @@ def model_call_wrapper(
       return claude_request(model_url, data)
     return get_batch_responses(get_response)
 
-  # critical: do not silently return None
   raise ValueError(f"Unsupported model_name: {model_name}")
 
+
+# ----------------------------
+# Normalization to unified (text, thinking, cot, cost)
+# ----------------------------
+
+def _normalize_one(model_name: str, raw: Any) -> Tuple[str, Optional[int], Optional[str], Optional[float], Dict[str, Any]]:
+  """
+  Returns:
+    completion: str
+    num_thinking_tokens: Optional[int]
+    cot: Optional[str]
+    cost_usd: Optional[float]
+    usage: Dict[str, Any]
+  """
+  mn = _lower(model_name)
+
+  # Qwen already returns (final_output, num_thinking_tokens, cot)
+  if "qwen" in mn and isinstance(raw, tuple) and len(raw) == 3:
+    completion, ntok, cot = raw
+    usage = {
+        "prompt_tokens": None,
+        "completion_tokens": None,
+        "total_tokens": None,
+        "cached_prompt_tokens": 0,
+        "reasoning_tokens": int(ntok) if ntok is not None else None,
+    }
+    return str(completion), int(ntok) if ntok is not None else None, str(cot), None, usage
+
+  # OpenAI-like dict (OpenAI GPT or Gemini compat)
+  if isinstance(raw, dict) and "choices" in raw:
+    completion, thought = _extract_text_and_thought_openai_like(raw)
+    usage = _extract_usage_openai_like(raw)
+    # thinking tokens: prefer reasoning_tokens if present, else 0
+    ntok_val = usage.get("reasoning_tokens", None)
+    try:
+      ntok = int(ntok_val) if ntok_val is not None else 0
+    except Exception:
+      ntok = 0
+
+    raw_model = raw.get("model", model_name) if isinstance(raw.get("model", None), str) else model_name
+    provider = "gemini" if "gemini" in _lower(raw_model) or "gemini" in mn else "openai"
+    cost_usd = _compute_cost_openai_like(raw_model, usage, provider=provider)
+
+    cot = thought if thought else ""
+    return completion, ntok, cot, cost_usd, usage
+
+  # Claude format
+  if isinstance(raw, dict) and "content" in raw and isinstance(raw.get("content"), list):
+    try:
+      completion = raw["content"][0]["text"]
+    except Exception:
+      completion = str(raw)
+    return completion, None, None, None, {}
+
+  # Fallback string
+  return str(raw), None, None, None, {}
+
+
+def _normalize_outputs(model_name: str, raw_responses: List[Any]):
+  texts: List[str] = []
+  thinking: List[Optional[int]] = []
+  cots: List[Optional[str]] = []
+  costs: List[Optional[float]] = []
+
+  for r in raw_responses:
+    t, nt, c, usd, _usage = _normalize_one(model_name, r)
+    texts.append(t)
+    thinking.append(nt)
+    cots.append(c)
+    costs.append(usd)
+
+  return texts, thinking, cots, costs
+
+
+# ----------------------------
+# cached_generate
+# ----------------------------
 
 def cached_generate(
     batch_prompts: List[List[Dict[str, str]]],
@@ -427,6 +751,7 @@ def cached_generate(
     batch_text_outputs: List[str]
     all_num_thinking_tokens: List[Optional[int]]
     all_cots: List[Optional[str]]
+    all_costs_usd: List[Optional[float]]
   """
   # o1 requires no system role
   if model_name.startswith("o1"):
@@ -436,7 +761,7 @@ def cached_generate(
           prompt[t]["role"] = "user"
     generation_config = {}
 
-  # No cache mode: still keep return shape consistent
+  # No cache mode
   if cache is None:
     raw = model_call_wrapper(
         model_name=model_name,
@@ -445,17 +770,23 @@ def cached_generate(
         generation_config=generation_config,
         parallel_model_calls=parallel_model_calls,
     )
-    text_out, thinking_tokens, cots = _normalize_outputs_from_raw(model_name, raw)
-    return text_out, thinking_tokens, cots
+    return _normalize_outputs(model_name, raw)
 
+  # Decide which prompts are new
   new_batch_prompts: List[List[Dict[str, str]]] = []
   for prompt in batch_prompts:
     jp = jsonify_prompt(prompt)
     if jp not in cache:
       new_batch_prompts.append(prompt)
-    elif model_name in GPT_COSTS and isinstance(cache[jp], dict) and "choices" not in cache[jp]:
-      new_batch_prompts.append(prompt)
+      continue
+    # old cache entries might be raw strings; we still accept but do not requery
+    # unless it is an OpenAI-like dict missing "choices"
+    entry = cache[jp]
+    if isinstance(entry, dict) and "choices" in entry:
+      # already a raw OpenAI-like response, ok
+      continue
 
+  # Query new prompts
   if new_batch_prompts:
     raw_responses = model_call_wrapper(
         model_name=model_name,
@@ -465,109 +796,71 @@ def cached_generate(
         parallel_model_calls=parallel_model_calls,
     )
 
-    # write into cache
+    # write into cache as unified dict
     for prompt, raw in zip(new_batch_prompts, raw_responses):
       jp = jsonify_prompt(prompt)
-      cache[jp] = raw
+      completion, ntok, cot, cost_usd, usage = _normalize_one(model_name, raw)
+
+      unified = {
+          "completion": completion,
+          "num_thinking_tokens": ntok,
+          "cot": cot,
+          "cost_usd": cost_usd,
+          "usage": usage,
+          "model": raw.get("model", model_name) if isinstance(raw, dict) else model_name,
+      }
+      cache[jp] = unified
 
       if cache_file:
         parent = os.path.dirname(cache_file)
         if parent:
           os.makedirs(parent, exist_ok=True)
-
         with open(cache_file, "a") as f:
-          if isinstance(raw, tuple) and len(raw) == 3:
-            completion, num_thinking_tokens, cot = raw
-            f.write(
-                json.dumps({
-                    "prompt": jp,
-                    "completion": completion,
-                    "num_thinking_tokens": num_thinking_tokens,
-                    "cot": cot,
-                }) + "\n"
-            )
-          else:
-            f.write(
-                json.dumps({
-                    "prompt": jp,
-                    "completion": raw,
-                }) + "\n"
-            )
+          f.write(json.dumps({"prompt": jp, **unified}, ensure_ascii=False) + "\n")
 
-    assert len(raw_responses) == len(new_batch_prompts)
-
+  # Build outputs in original order
   batch_text_outputs: List[str] = []
   all_num_thinking_tokens: List[Optional[int]] = []
   all_cots: List[Optional[str]] = []
+  all_costs_usd: List[Optional[float]] = []
 
   for prompt in batch_prompts:
     jp = jsonify_prompt(prompt)
-    entry = cache[jp]
+    entry = cache.get(jp)
 
-    if model_name in GPT_COSTS:
-      text_output = entry["choices"][0]["message"]["content"]
-      batch_text_outputs.append(text_output)
-      all_num_thinking_tokens.append(None)
-      all_cots.append(None)
-    elif model_name in CLAUDE_MODELS:
-      text_output = entry["content"][0]["text"]
-      batch_text_outputs.append(text_output)
-      all_num_thinking_tokens.append(None)
-      all_cots.append(None)
-    else:
-      if isinstance(entry, tuple) and len(entry) == 3:
-        completion, num_thinking_tokens, cot = entry
-        batch_text_outputs.append(completion)
-        all_num_thinking_tokens.append(int(num_thinking_tokens))
-        all_cots.append(cot)
-      else:
-        batch_text_outputs.append(str(entry))
+    # Unified dict
+    if isinstance(entry, dict) and "completion" in entry:
+      batch_text_outputs.append(str(entry.get("completion", "")))
+      all_num_thinking_tokens.append(entry.get("num_thinking_tokens", None))
+      all_cots.append(entry.get("cot", None))
+      all_costs_usd.append(entry.get("cost_usd", None))
+      continue
+
+    # Older qwen tuple
+    if isinstance(entry, tuple) and len(entry) == 3:
+      completion, ntok, cot = entry
+      batch_text_outputs.append(str(completion))
+      try:
+        all_num_thinking_tokens.append(int(ntok))
+      except Exception:
         all_num_thinking_tokens.append(None)
-        all_cots.append(None)
+      all_cots.append(str(cot))
+      all_costs_usd.append(None)
+      continue
 
-  return batch_text_outputs, all_num_thinking_tokens, all_cots
+    # Raw OpenAI-like dict cached
+    if isinstance(entry, dict) and "choices" in entry:
+      completion, ntok, cot, cost_usd, _usage = _normalize_one(model_name, entry)
+      batch_text_outputs.append(completion)
+      all_num_thinking_tokens.append(ntok)
+      all_cots.append(cot)
+      all_costs_usd.append(cost_usd)
+      continue
 
+    # Fallback string
+    batch_text_outputs.append(str(entry) if entry is not None else "")
+    all_num_thinking_tokens.append(None)
+    all_cots.append(None)
+    all_costs_usd.append(None)
 
-def _normalize_outputs_from_raw(model_name: str, raw_responses: List[Any]):
-  """
-  Normalize raw model_call_wrapper outputs to:
-    text_outputs: List[str]
-    thinking_tokens: List[Optional[int]]
-    cots: List[Optional[str]]
-  """
-  text_outputs: List[str] = []
-  thinking_tokens: List[Optional[int]] = []
-  cots: List[Optional[str]] = []
-
-  if model_name in GPT_COSTS:
-    for r in raw_responses:
-      text_outputs.append(r["choices"][0]["message"]["content"])
-      thinking_tokens.append(None)
-      cots.append(None)
-    return text_outputs, thinking_tokens, cots
-
-  if model_name in CLAUDE_MODELS:
-    for r in raw_responses:
-      text_outputs.append(r["content"][0]["text"])
-      thinking_tokens.append(None)
-      cots.append(None)
-    return text_outputs, thinking_tokens, cots
-
-  if "qwen" in model_name.lower():
-    for r in raw_responses:
-      if isinstance(r, tuple) and len(r) == 3:
-        final_out, ntok, cot = r
-        text_outputs.append(final_out)
-        thinking_tokens.append(int(ntok))
-        cots.append(cot)
-      else:
-        text_outputs.append(str(r))
-        thinking_tokens.append(None)
-        cots.append(None)
-    return text_outputs, thinking_tokens, cots
-
-  for r in raw_responses:
-    text_outputs.append(str(r))
-    thinking_tokens.append(None)
-    cots.append(None)
-  return text_outputs, thinking_tokens, cots
+  return batch_text_outputs, all_num_thinking_tokens, all_cots, all_costs_usd

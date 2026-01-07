@@ -319,7 +319,7 @@ Possible questions:
         ])
       batch_prompts.append(assist_prompt)
 
-    batch_responses, cost, all_cots = cached_generate(
+    batch_responses, cost, all_cots, cost_usd = cached_generate(
         batch_prompts,
         model_name,
         model_url,
@@ -381,7 +381,7 @@ Possible questions:
         print(f"Max retries reached for {len(retry_indices)} responses")
         break
 
-      retry_responses, retry_cost, retry_cots = cached_generate(
+      retry_responses, retry_cost, retry_cots, retry_cost_usd = cached_generate(
           retry_prompts,
           model_name,
           model_url,
@@ -401,6 +401,7 @@ Possible questions:
         batch_responses[orig_i] = retry_responses[idx]
         all_cots[orig_i] = retry_cots[idx]
         cost[orig_i] = retry_cost[idx]
+        cost_usd[orig_i] = retry_cost_usd[idx]
 
         batch_convos[orig_i].append({"role": "user", "text": retry_messages[idx]})
         batch_convos[orig_i].append({"role": self.model_role_name, "text": retry_responses[idx]})
@@ -478,7 +479,7 @@ Possible questions:
         batch_preds.append(pred)
         batch_correct.append(is_match)
 
-    return batch_convos, batch_preds, batch_correct, cost, all_cots
+    return batch_convos, batch_preds, batch_correct, cost, all_cots, cost_usd
 
   def make_convo_batches(self, data: pd.DataFrame, batch_size: Optional[int] = None):
     if batch_size is None:
@@ -749,6 +750,7 @@ Possible questions:
 
     total_cost = []
     all_cots = []
+    all_cost_usd = []
 
     pbar = tqdm.tqdm(
         zip(batch_ids, batch_system_prompts, batch_requests, batch_gt_answers, batch_gt_queries, batch_k),
@@ -756,7 +758,7 @@ Possible questions:
     )
 
     for batch_id, batch_system_prompt, batch_request, batch_gt_answer, batch_gt_query, batch_k_vals in pbar:
-      batch_conversation, batch_pred, batch_correct, cost, cots = self.evaluate_batch(
+      batch_conversation, batch_pred, batch_correct, cost, cots, cost_usd = self.evaluate_batch(
           batch_request,
           batch_system_prompt,
           batch_gt_query,
@@ -769,6 +771,7 @@ Possible questions:
 
       total_cost += cost
       all_cots += cots
+      all_cost_usd += cost_usd
 
       for i, item_id in enumerate(batch_id):
         datum = data.iloc[item_id]
@@ -806,4 +809,4 @@ Possible questions:
         pass
 
     # print(f"Total cost: {total_cost}")
-    return results, all_cots, total_cost
+    return results, all_cots, total_cost, all_cost_usd

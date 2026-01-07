@@ -15,31 +15,27 @@
 
 """Base class for evaluators."""
 
-from __future__ import annotations
-
-from model_utils import OPENAI_PRICES_PER_1M  # only used for compatibility, not routing-critical
+from model_utils import CLAUDE_MODELS
+from model_utils import OPENAI_PRICES_PER_1M
 from model_utils import load_cache_file
-
-
-def _is_openai_name(name: str) -> bool:
-  n = (name or "").lower()
-  return n.startswith("gpt-") or n.startswith("o1") or n.startswith("o3")
-
-
-def _is_gemini_name(name: str) -> bool:
-  return "gemini" in (name or "").lower()
-
-
-def _is_gemma_name(name: str) -> bool:
-  return "gemma" in (name or "").lower()
-
-
-def _is_claude_name(name: str) -> bool:
-  return "claude" in (name or "").lower()
-
+from transformers import pipeline
 
 class Evaluator:
-  """Base class for evaluators."""
+  """Base class for evaluators.
+
+  Attributes:
+    model_name: name of LLM to evaluate
+    generation_config: generation config for LLM
+    model_url: model url of LLM
+    cache: cache of LLM responses
+    cache_file: cache file of LLM responses
+    use_cot: whether to use CoT or not
+    fs_samples: number of few-shot samples to use
+    eval_mode: evaluation mode, one of "mc", "isambig", "fullinfo"
+    model_role_name: role name for the model
+    parallel_model_calls: whether to make parallel calls to the model
+    vllm_port: port for the VLLM server
+  """
 
   def __init__(
       self,
@@ -54,32 +50,14 @@ class Evaluator:
       vllm_port: int = 8000,
   ):
     self.model_name = model_name
-
-    # A safe default that works across OpenAI-like endpoints.
-    # Keep both max_tokens and max_completion_tokens for compatibility.
-    # self.generation_config = {
-    #     "temperature": 0.0,
-    #     "max_tokens": 512,
-    #     "max_completion_tokens": 512,
-    #     "top_p": 1.0,
-    #     "frequency_penalty": 0.0,
-    #     "presence_penalty": 0.0,
-    # }
-    self.model_name = model_name
     self.generation_config = {
         "temperature": 0.0,
         "max_completion_tokens": 512,
     }
-
-    # Route model_url. model_utils.model_call_wrapper will decide the real endpoint
-    # when model_url is not an http URL, but setting it clearly helps debugging.
-    if _is_gemini_name(self.model_name):
-      # Gemini is handled in model_utils via OpenAI compatibility endpoint.
-      # model_url can be left as model_name, but keeping it explicit is clearer.
+    if "gemini" in self.model_name:
       self.model_url = self.model_name
-
-    elif _is_gemma_name(self.model_name):
-      # For Gemma models, use local vLLM server
+    elif "gemma" in self.model_name:
+      # For Gemma models, we'll use the VLLM server URL
       self.model_url = f"http://localhost:{vllm_port}/v1/chat/completions"
       if self.model_name == "gemma_2_2b":
         self.model_name = "google/gemma-2-2b-it"
@@ -89,8 +67,7 @@ class Evaluator:
         self.model_name = "google/gemma-2-27b-it"
       else:
         raise ValueError(f"Invalid model name: {self.model_name}")
-
-    elif _is_openai_name(self.model_name):
+    elif self.model_name in OPENAI_PRICES_PER_1M:
       self.generation_config = {
           "temperature": 0.0,
           "max_completion_tokens": 512,
@@ -99,25 +76,19 @@ class Evaluator:
           "presence_penalty": 0.0,
       }
       self.model_url = "https://api.openai.com/v1/chat/completions"
-      
-    elif _is_claude_name(self.model_name):
-      self.model_url = "https://api.anthropic.com/v1/messages"
+    elif self.model_name in CLAUDE_MODELS:
       self.generation_config = {
           "temperature": 0.0,
           "max_tokens": 512,
       }
-
+      self.model_url = "https://api.anthropic.com/v1/messages"
     else:
-      # Qwen or other local OpenAI-compatible servers can pass a base_url/name;
-      # model_utils will handle qwen specifically.
       self.model_url = self.model_name
-
     self.cache = cache
     self.cache_file = cache_file
     if cache is None and cache_file is not None:
       self.cache = load_cache_file(cache_file)
       print(f"Loaded {len(self.cache)} entries from {cache_file}")
-
     self.use_cot = use_cot
     self.fs_samples = fs_samples
     self.eval_mode = eval_mode
