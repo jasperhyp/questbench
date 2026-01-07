@@ -25,9 +25,159 @@ import ast
 
 import pandas as pd
 from SimpleLogic import ruleset
+from SimpleLogic import derivation_new
 import tqdm
+import itertools as it
 
 tqdm = tqdm.tqdm
+
+
+def _is_contradictory_factset(facts: set[str]) -> bool:
+  # Detect immediate x / not x pairs
+  for f in facts:
+    if ruleset.negate(f) in facts:
+      return True
+    # if f.startswith("not "):
+    #   if f[4:] in facts:
+    #     return True
+    # else:
+    #   if f"not {f}" in facts:
+    #     return True
+  return False
+
+
+def _infer_closure(rule_tree, full_facts: set[str]) -> tuple[bool, set[str]]:
+  """Returns (is_contradictory, inferred_facts)."""
+  if _is_contradictory_factset(full_facts):
+    return True, set()
+  true_facts = {f for f in full_facts if not f.startswith("not ")}
+  false_facts = {f for f in full_facts if f.startswith("not ")}
+  inferred = derivation_new.get_all_inferrable_facts(rule_tree, true_facts, false_facts)
+  for f in inferred:
+    if ruleset.negate(f) in inferred:
+      return True, inferred
+  return False, inferred
+
+
+def _truth_table_for_qset(rule_tree, base_context: set[str], q_set: list[str], goal: str):
+  """Enumerate all assignments to q_set and return a table over consistent rows.
+
+  Returns:
+    table: dict[tuple[bool,...], bool] mapping answer tuples -> goal truth value
+    consistent_keys: set[str] assignment_key_json for consistent rows
+    expected_target_value: dict[str, str] assignment_key_json -> (goal or not goal)
+  """
+  table = {}
+  consistent_keys = set()
+  expected_target_value = {}
+  for answers in it.product([True, False], repeat=len(q_set)):
+    assignment_facts = [q if val else ruleset.negate(q) for q, val in zip(q_set, answers)]
+    full_facts = set(base_context) | set(assignment_facts)
+    is_contra, inferred = _infer_closure(rule_tree, full_facts)
+    if is_contra:
+      continue
+
+    # Goal must be determined (k-sufficiency)
+    if goal in inferred:
+      y_val = True
+      tgt_lit = goal
+    elif ruleset.negate(goal) in inferred:
+      y_val = False
+      tgt_lit = ruleset.negate(goal)
+    else:
+      raise ValueError("Goal value is not determined under this assignment. Check holdout_utils_new.py for k-sufficiency enforcement.")
+      # return None, None, None  # insufficient
+
+    table[answers] = y_val
+    key_json = json.dumps(assignment_facts)
+    consistent_keys.add(key_json)
+    expected_target_value[key_json] = tgt_lit
+
+  # if not table:
+  #   return None, None, None
+  assert table, "No consistent assignments found for this q_set."
+  
+  return table, consistent_keys, expected_target_value
+
+
+def _all_vars_essential(table: dict, q_set: list[str]) -> bool:
+  """Essentiality check on a truth table over consistent rows only."""
+  k = len(q_set)
+  if k <= 1:
+    # For k=0 it's invalid; for k=1 minimality is handled by the context-unknown check.
+    return k == 1
+
+  # For each variable position i, look for a witness pair that flips y
+  for i in range(k):
+    essential = False
+    # iterate over assignments to other k-1 vars
+    for others in it.product([True, False], repeat=k-1):
+      # build the two full tuples differing only at i
+      t0 = []
+      t1 = []
+      j = 0
+      for p in range(k):
+        if p == i:
+          t0.append(False)
+          t1.append(True)
+        else:
+          t0.append(others[j])
+          t1.append(others[j])
+          j += 1
+      t0 = tuple(t0)
+      t1 = tuple(t1)
+
+      if t0 in table and t1 in table and table[t0] != table[t1]:
+        essential = True
+        break
+
+    if not essential:
+      return False
+
+  return True
+
+
+def validate_and_filter_problem(rule_tree, base_context: set[str], q_set: list[str], goal: str,
+                                derivs_min_rules: dict, derivs_min_depth: dict) -> tuple[bool, dict, dict]:
+  """Applies contradiction filtering + sufficiency + essentiality checks.
+
+  Returns:
+    (is_valid, filtered_derivs_min_rules, filtered_derivs_min_depth)
+  """
+  table, consistent_keys, expected_target_value = _truth_table_for_qset(rule_tree, base_context, q_set, goal)
+  if table is None:
+    return False, {}, {}
+
+  if not _all_vars_essential(table, q_set):
+    return False, {}, {}
+
+  # Filter derivation dicts to consistent rows and validate target_value matches inference
+  filtered_rules = {}
+  filtered_depth = {}
+
+  # Note: derivation dict keys are JSON-encoded lists of facts.
+  for k_json in list(derivs_min_rules.keys()):
+    if k_json not in consistent_keys:
+      continue
+    v_rules = derivs_min_rules.get(k_json)
+    v_depth = derivs_min_depth.get(k_json)
+    if v_rules is None or v_depth is None:
+      return False, {}, {}
+    if v_rules.get("target_value") != expected_target_value[k_json]:
+      return False, {}, {}
+    if v_depth.get("target_value") != expected_target_value[k_json]:
+      return False, {}, {}
+    if v_rules.get("derivation") is None or v_depth.get("derivation") is None:
+      return False, {}, {}
+    filtered_rules[k_json] = v_rules
+    filtered_depth[k_json] = v_depth
+
+  # Ensure we have derivations for every consistent assignment
+  if set(filtered_rules.keys()) != consistent_keys or set(filtered_depth.keys()) != consistent_keys:
+    return False, {}, {}
+
+  return True, filtered_rules, filtered_depth
+
 
 def main(arguments) -> None:
   # Load constructed rulesets
@@ -169,12 +319,20 @@ def main(arguments) -> None:
       max_depth_to_compute_q = []
       for q_set, derivs_min_rules, derivs_min_depth in zip(valid_sets, derivations_min_rules, derivations_min_depth):
           if (not frozenset(q_set) in invalid_q_sets) and (not set(q_set).intersection(invalid_qs)):
+              ok, filtered_rules, filtered_depth = validate_and_filter_problem(
+                  rule_tree, context_set, list(q_set), target_attr, derivs_min_rules, derivs_min_depth
+              )
+              if not ok:
+                  continue
               clean_gt_qs.append(sorted(q_set))
-              clean_derivations_min_rules.append(derivs_min_rules)  # derivs is a dict of traces from all feasible combinations of true/false assignments
-              clean_derivations_min_depth.append(derivs_min_depth)
-              # NOTE: derivs_min_rules/min_depth is a dict where keys are assignment combinations and values are dicts with "derivation" key containing derive_obj.serialize()
-              num_rules_to_compute_q.append(max(len(deriv["derivation"]["derivation"]) for deriv in derivs_min_rules.values()))
-              max_depth_to_compute_q.append(max(max(deriv["derivation"]["leaf_words"].values()) for deriv in derivs_min_depth.values()))
+              clean_derivations_min_rules.append(filtered_rules)
+              clean_derivations_min_depth.append(filtered_depth)
+              num_rules_to_compute_q.append(max(
+                  len(deriv["derivation"]["derivation"]) for deriv in filtered_rules.values()
+              ))
+              max_depth_to_compute_q.append(max(
+                  max(deriv["derivation"]["leaf_words"].values()) for deriv in filtered_depth.values()
+              ))
       
       if not clean_gt_qs:
           continue

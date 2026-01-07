@@ -70,45 +70,95 @@ def solve_unit_prop(clauses, context):
 
 def verify_row(data, counter):
     clauses = parse_clauses(data['rules'])
-    known = ast.literal_eval(data['known_facts'])
-    context = {k: True for k in known}
+
+    known_true = ast.literal_eval(data.get('known_facts', '[]'))
+    known_false = ast.literal_eval(data.get('known_untrue_facts', '[]')) if 'known_untrue_facts' in data else []
+
+    context = {k: True for k in known_true}
+    for k in known_false:
+        context[k] = False
+
     goal = data['goal']
     gt_qs_list = ast.literal_eval(data['gt_qs'])
     if isinstance(gt_qs_list[0], str):
         gt_qs_list = [[gt_q] for gt_q in gt_qs_list]  # Compatible with original questbench k=1 format
-    
-    # Check 1: Context Underspecified
+
+    # Check 1: Context underspecified (goal should not already be known)
     base_facts = solve_unit_prop(clauses, context)
-    if goal in base_facts:
+    if base_facts != "CONTRADICTION" and goal in base_facts:
         print("❌ FAIL: Goal is already known from context.")
         counter['failed (goal inferred from context)'] += 1
         return False
 
-    for qs in gt_qs_list:
-        # Check 2: Sufficiency (All 2^k branches must solve goal)
+    def build_table(qs):
+        """Return (table, any_consistent). table maps answer tuples -> goal boolean."""
+        table = {}
+        any_consistent = False
         for answers in itertools.product([True, False], repeat=len(qs)):
             hyp_context = context.copy()
             hyp_context.update(zip(qs, answers))
             result = solve_unit_prop(clauses, hyp_context)
-            
-            if result != "CONTRADICTION" and goal not in result:
-                print(f"❌ FAIL: Branch {dict(zip(qs, answers))} is insufficient.")
-                counter['failed (insufficient branch)'] += 1
-                return False
+            if result == "CONTRADICTION":
+                continue
+            any_consistent = True
+            if goal not in result:
+                return None, True  # insufficient
+            table[answers] = result[goal]
+        return table, any_consistent
 
-        # Check 3: (Local) Minimality (Subsets must be insufficient)
+    def subset_is_sufficient(subset):
+        table, any_consistent = build_table(subset)
+        if table is None:
+            return False  # insufficient (some consistent branch doesn't determine)
+        return any_consistent  # sufficient iff there exists at least one consistent branch and all determine
+
+    def essentiality_holds(table, qs):
+        k = len(qs)
+        for i in range(k):
+            essential = False
+            for others in itertools.product([True, False], repeat=k-1):
+                t0 = []
+                t1 = []
+                j = 0
+                for p in range(k):
+                    if p == i:
+                        t0.append(False)
+                        t1.append(True)
+                    else:
+                        t0.append(others[j])
+                        t1.append(others[j])
+                        j += 1
+                t0 = tuple(t0)
+                t1 = tuple(t1)
+                if t0 in table and t1 in table and table[t0] != table[t1]:
+                    essential = True
+                    break
+            if not essential:
+                return False
+        return True
+
+    for qs in gt_qs_list:
+        # Check 2: Sufficiency (all consistent branches must determine goal)
+        table, any_consistent = build_table(qs)
+        if table is None:
+            print(f"❌ FAIL: Some consistent branch for qs={qs} does not determine the goal.")
+            counter['failed (insufficient branch)'] += 1
+            return False
+        if not any_consistent:
+            print(f"❌ FAIL: All branches for qs={qs} are contradictions (degenerate problem).")
+            counter['failed (insufficient branch)'] += 1
+            return False
+
+        # Check 3: Essentiality (each variable must be essential under consistent assignments)
+        if len(qs) > 1 and not essentiality_holds(table, qs):
+            print(f"❌ FAIL: qs={qs} is sufficient but not minimal (violates essentiality).")
+            counter['failed (not minimal)'] += 1
+            return False
+
+        # Optional Check 4: Local minimality by subsets of size k-1
         for i in range(len(qs)):
             subset = qs[:i] + qs[i+1:]
-            subset_sufficient = True
-            for answers in itertools.product([True, False], repeat=len(subset)):
-                hyp_context = context.copy()
-                hyp_context.update(zip(subset, answers))
-                result = solve_unit_prop(clauses, hyp_context)
-                if result != "CONTRADICTION" and goal not in result:
-                    subset_sufficient = False
-                    break
-            
-            if subset_sufficient:
+            if subset and subset_is_sufficient(subset):
                 print(f"❌ FAIL: Subset {subset} is sufficient (Not Minimal).")
                 counter['failed (not minimal)'] += 1
                 return False
@@ -117,13 +167,15 @@ def verify_row(data, counter):
     counter['verified'] += 1
     return True
 
+
+
 if __name__ == "__main__":
     import pandas as pd
     from tqdm import tqdm
     from argparse import ArgumentParser
     
     args = ArgumentParser()
-    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k/simplelogic_heldout_k_sufficient_data_new.csv", help="Path to the CSV file with results to verify.")
+    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k/simplelogic_heldout_k_sufficient_data_new_sampled.csv", help="Path to the CSV file with results to verify.")
     arguments = args.parse_args()
 
     counter = {'verified': 0, 'failed (goal inferred from context)': 0, 'failed (insufficient branch)': 0, 'failed (not minimal)': 0}

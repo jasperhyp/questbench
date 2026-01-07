@@ -33,7 +33,6 @@ class SimpleLogicEvaluator(Evaluator):
   Attributes:
     model_name: name of LLM to evaluate
     generation_config: generation config for LLM
-    model_url: model url of LLM
     cache: cache of LLM responses
     cache_file: cache file of LLM responses
     vanilla_prompt: vanilla system prompt for multiple choice evaluation
@@ -88,6 +87,33 @@ class SimpleLogicEvaluator(Evaluator):
     self.prompts = {
       "mc": {
         "system_prompt": {
+          # Ask up to K
+          "vanilla_at_most_K": """Suppose you know the following rules about Alice:
+    {rules_nl}
+
+You are trying to discern whether a statement about Alice is true given some facts. You have a budget to ask about up to {max_k} attributes at once. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following:
+
+Instructions:
+1. If you do not have enough information yet, select a set of attributes (at least 1, at most {max_k}) to query. Choose the best combination that provides the most information regarding the statement.
+2. Format the question strictly as: "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? ..."
+3. If you have enough information to determine the truth value of the statement, respond strictly with: "End questioning".
+4. Do not output any other text.""",
+
+          # Ask exactly k
+          "vanilla_exact_k": """Suppose you know the following rules about Alice:
+    {rules_nl}
+
+You are trying to discern whether a statement about Alice is true given some facts. You must select exactly {k} attributes of Alice to query in order to gain the most information about the final statement.
+
+Instructions:
+1. If you already have enough information to determine the truth value of the statement, respond with "End questioning".
+2. Otherwise, you MUST ask questions about exactly {k} attributes.
+3. Format your output strictly as: "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? ..." (for exactly {k} attributes).
+4. Do not output any other text or reasoning.
+
+Generate your response:""",
+
+          # Ask up to 1
           "vanilla_k1": """Suppose you know the following rules about Alice:
     {rules_nl}
 
@@ -95,6 +121,8 @@ You are trying to discern whether a statement about Alice is true given some fac
 If you do not have enough information yet, you may ask a question about an attribute of Alice, in the form of "Question: Is Alice [attribute]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
 Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
 Generate one of "Question: Is Alice [attribute]?" or "End questioning" and nothing else.""",
+
+          # Ask up to 2
           "vanilla_k2": """Suppose you know the following rules about Alice:
     {rules_nl}
 
@@ -102,6 +130,8 @@ You are trying to discern whether a statement about Alice is true given some fac
 If you do not have enough information yet, you may ask questions about at most two attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
 Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
 Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]?" or "End questioning" and nothing else.""",
+
+          # Ask up to 3
           "vanilla_k3": """Suppose you know the following rules about Alice:
     {rules_nl}
 
@@ -109,11 +139,13 @@ You are trying to discern whether a statement about Alice is true given some fac
 If you do not have enough information yet, you may ask questions about at most three attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
 Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
 Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]?" or "End questioning" and nothing else.""",
+
+          # Ask up to 4
           "vanilla_k4": """Suppose you know the following rules about Alice:
     {rules_nl}
 
 You are trying to discern whether a statement about Alice is true given some facts. You must decide whether you have enough information to determine whether the final statement is true. You may respond with one of the following:
-If you do not have enough information yet, you may ask questions about at most three attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]? Is Alice [attribute_4]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
+If you do not have enough information yet, you may ask questions about at most four attributes of Alice, in the form of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]? Is Alice [attribute_4]?". Ask the best question that, regardless of how it is answered, provides the most information about the final statement.
 Once you have enough information necessary to determine the truth value of the statement, you can terminate with "End questioning".
 Generate one of "Question: Is Alice [attribute_1]? Is Alice [attribute_2]? Is Alice [attribute_3]? Is Alice [attribute_4]?" or "End questioning" and nothing else."""
         },
@@ -128,7 +160,7 @@ Is Alice {goal}?""",
         "system_prompt": """Suppose you know the following rules about Alice:
 {rules_nl}
 
-You will presented with a binary question about an attribute of Alice. Please answer it with "Yes" or "No" or "Not sure"."""
+You will be presented with a binary question about an attribute of Alice. Please answer it with "Yes" or "No" or "Not sure"."""
       },
       "fullinfo": {
         "system_prompt": """Suppose you know the following rules about Alice:
@@ -197,9 +229,9 @@ Generate "Answer:" followed by the answer and nothing else."""
         # self.system_prompt = self.vanilla_prompt
         self.system_prompt = None
       elif self.eval_mode == "isambig":
-        self.system_prompt = self.vanilla_isambig_prompt
+        self.system_prompt = None
       elif self.eval_mode == "fullinfo":
-        self.system_prompt = self.vanilla_fullinfo_prompt
+        self.system_prompt = None
       # self.request = self.non_fs_request
       self.user_prompt = self.prompts[self.eval_mode]["user_prompt"]["non_fs"]
 
@@ -210,7 +242,6 @@ Generate "Answer:" followed by the answer and nothing else."""
       batch_user_prompts,
       batch_system_prompts,
       model_name,
-      model_url,
       batch_gt_queries,
       cache=None,
       cache_file=None,
@@ -222,7 +253,6 @@ Generate "Answer:" followed by the answer and nothing else."""
       batch_requests: The batch of requests.
       batch_system_prompts: The batch of system prompts.
       model_name: The name of the model to evaluate.
-      model_url: The url of the model to evaluate.
       batch_gt_queries: The batch of ground truth responses.
       cache: The cache of LLM responses.
       cache_file: The cache file of LLM responses.
@@ -246,14 +276,12 @@ Generate "Answer:" followed by the answer and nothing else."""
         ])
       batch_prompts.append(assist_prompt)
     
-    batch_responses, cost, all_cots = cached_generate(
+    batch_responses, all_num_thinking_tokens, all_cots = cached_generate(
         batch_prompts,
         model_name,
-        model_url,
         cache=cache,
         cache_file=cache_file,
         generation_config=self.generation_config,
-        # parallel_model_calls=self.parallel_model_calls,
     )
 
     # Initialize conversations from batch_prompts (using "text" key instead of "content")
@@ -318,22 +346,19 @@ Generate "Answer:" followed by the answer and nothing else."""
         break
       
       # Batch generate retries
-      retry_responses, retry_cost, retry_cots = cached_generate(
+      retry_responses, retry_num_tokens, retry_cots = cached_generate(
           retry_prompts,
           model_name,
-          model_url,
           cache=cache,
           cache_file=cache_file,
           generation_config=self.generation_config,
-          # parallel_model_calls=self.parallel_model_calls,
       )
       
-      # Update responses, cots, cost, and conversations
+      # Update responses, cots, and conversations
       for idx, retry_idx in enumerate(retry_indices):
         batch_responses[retry_idx] = retry_responses[idx]
-        # Replace cots and cost for retried items (we want the final cot)
         all_cots[retry_idx] = retry_cots[idx]
-        cost[retry_idx] = retry_cost[idx]
+        all_num_thinking_tokens[retry_idx] = retry_num_tokens[idx]
         # Add retry exchange to conversation
         batch_convos[retry_idx].append({
             "role": "user",
@@ -400,7 +425,7 @@ Generate "Answer:" followed by the answer and nothing else."""
       )
       batch_correct.append(is_match)
     
-    return batch_convos, batch_responses, batch_correct, cost, all_cots
+    return batch_convos, batch_responses, batch_correct, all_num_thinking_tokens, all_cots
 
   def parse_rules(self, rules):
     """Parses a list of SimpleLogic rules into a natural language format.
@@ -427,7 +452,7 @@ Generate "Answer:" followed by the answer and nothing else."""
       )
     return "\n".join(sorted(rules_nl))
 
-  def make_batches(self, data, batch_size=None):
+  def make_batches(self, data, prompt_mode, batch_size=None):
     """Make data batches for Logic-Q.
 
     Args:
@@ -476,20 +501,24 @@ Generate "Answer:" followed by the answer and nothing else."""
           batch_ids.append([])
 
         if self.fs_samples == 0:
-          if str(datum["k"]) == "1":
-            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k1"]
-          elif str(datum["k"]) == "2":
-            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k2"]
-          elif str(datum["k"]) == "3":
-            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k3"]
-          elif str(datum["k"]) == "4":
-            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k4"]
-          else:
-            raise Exception(f"Invalid k value: {datum['k']}")
-            # continue
-          batch_system_prompts[-1].append(
-              system_prompt.format(rules_nl=rules_nl)
-          )
+          if prompt_mode == "at_most_k":
+            if str(datum["k"]) == "1":
+              system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k1"]
+            elif str(datum["k"]) == "2":
+              system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k2"]
+            elif str(datum["k"]) == "3":
+              system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k3"]
+            elif str(datum["k"]) == "4":
+              system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k4"]
+            else:
+              raise Exception(f"Invalid k value: {datum['k']}")
+              # continue
+            system_prompt = system_prompt.format(rules_nl=rules_nl)
+          elif prompt_mode == "exact_k":
+            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_exact_k"].format(**{"k": str(datum["k"]), "rules_nl": rules_nl})
+          elif prompt_mode == "at_most_K":
+            system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_at_most_K"].format(**{"max_k": str(4), "rules_nl": rules_nl})
+          batch_system_prompts[-1].append(system_prompt)
           batch_requests[-1].append(
               # self.request.format(
               self.user_prompt.format(
@@ -560,17 +589,35 @@ Generate "Answer:" followed by the answer and nothing else."""
               batch_ids.append([])
 
             if self.fs_samples == 0:
-              if str(datum["k"]) == "1":
-                system_prompt = self.vanilla_prompt_k1
-              elif str(datum["k"]) == "2":
-                system_prompt = self.vanilla_prompt_k2
-              elif str(datum["k"]) == "3":
-                system_prompt = self.vanilla_prompt_k3
-              else:
-                raise Exception(f"Invalid k value: {datum['k']}")
-              batch_system_prompts[-1].append(
-                  system_prompt.format(rules_nl=rules_nl)
-              )
+              # if str(datum["k"]) == "1":
+              #   system_prompt = self.vanilla_prompt_k1
+              # elif str(datum["k"]) == "2":
+              #   system_prompt = self.vanilla_prompt_k2
+              # elif str(datum["k"]) == "3":
+              #   system_prompt = self.vanilla_prompt_k3
+              # else:
+              #   raise Exception(f"Invalid k value: {datum['k']}")
+              # batch_system_prompts[-1].append(
+              #     system_prompt.format(rules_nl=rules_nl)
+              # )
+              if prompt_mode == "at_most_k":
+                if str(datum["k"]) == "1":
+                  system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k1"]
+                elif str(datum["k"]) == "2":
+                  system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k2"]
+                elif str(datum["k"]) == "3":
+                  system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k3"]
+                elif str(datum["k"]) == "4":
+                  system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_k4"]
+                else:
+                  raise Exception(f"Invalid k value: {datum['k']}")
+                  # continue
+                system_prompt = system_prompt.format(rules_nl=rules_nl)
+              elif prompt_mode == "exact_k":
+                system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_exact_k"].format(**{"k": str(datum["k"]), "rules_nl": rules_nl})
+              elif prompt_mode == "at_most_K":
+                system_prompt = self.prompts["mc"]["system_prompt"]["vanilla_at_most_K"].format(**{"max_k": str(4), "rules_nl": rules_nl})
+              batch_system_prompts[-1].append(system_prompt)
               batch_requests[-1].append(
                   # self.request.format(
                   self.user_prompt.format(
@@ -721,7 +768,7 @@ Generate "Answer:" followed by the answer and nothing else."""
     
     return fewshot_prefix
 
-  def evaluate_data(self, data: pd.DataFrame, prompt_data: pd.DataFrame):
+  def evaluate_data(self, data: pd.DataFrame, prompt_data: pd.DataFrame, prompt_mode: str = "exact_k"):
     """Evaluates LLMs on Logic-Q data.
 
     Args:
@@ -775,26 +822,25 @@ Generate "Answer:" followed by the answer and nothing else."""
 
     fs_turns = self.make_fewshot_turns(prompt_data)
     batch_ids, batch_system_prompts, batch_requests, batch_gt_queries = (
-        self.make_batches(data)
+        self.make_batches(data, prompt_mode)
     )
     pbar = tqdm.tqdm(
         zip(batch_ids, batch_system_prompts, batch_requests, batch_gt_queries),
         total=len(batch_ids),
     )
     for i, (batch_id, batch_system_prompt, batch_request, batch_gt_query) in enumerate(pbar):
-      batch_conversation, batch_generated_q, batch_correct, cost, cots = (
+      batch_conversation, batch_generated_q, batch_correct, num_thinking_tokens, cots = (
           self.evaluate_batch(
               batch_request,
               batch_system_prompt,
               model_name=self.model_name,
-              model_url=self.model_url,
               batch_gt_queries=batch_gt_query,
               cache=self.cache,
               cache_file=self.cache_file,
               fs_turns=fs_turns,
           )
       )
-      total_cost += cost
+      total_cost += num_thinking_tokens  # num_thinking_tokens is your "cost"
       all_cots += cots
       for i, item_id in enumerate(batch_id):
         datum = data.iloc[item_id]

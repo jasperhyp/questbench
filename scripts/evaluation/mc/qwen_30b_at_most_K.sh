@@ -8,5 +8,6 @@ python mc_eval.py \
 --eval_mode mc \
 --data_dir /n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k \
 --data_file /n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k/simplelogic_heldout_k_sufficient_data_new_sampled.csv \
---results_dir ./results/mc/qwen_30b \
+--results_dir ./results/mc/at_most_K/qwen_30b/ \
+--prompt_mode at_most_K \
 --batch_size 64

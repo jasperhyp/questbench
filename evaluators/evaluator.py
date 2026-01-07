@@ -52,42 +52,34 @@ class Evaluator:
   ):
     self.model_name = model_name
     self.generation_config = {
-        "temperature": 0.0,
-        "max_completion_tokens": 512,
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "max_tokens": 16384,
     }
     if "gemini" in self.model_name:
       self.model_url = self.model_name
-    # elif "gemma" in self.model_name:
-    #   # For Gemma models, we'll use the VLLM server URL
-    #   self.model_url = f"http://localhost:{vllm_port}/v1/chat/completions"
-    #   if self.model_name == "gemma_2_2b":
-    #     self.model_name = "google/gemma-2-2b-it"
-    #   elif self.model_name == "gemma_2_9b":
-    #     self.model_name = "google/gemma-2-9b-it"
-    #   elif self.model_name == "gemma_2_27b":
-    #     self.model_name = "google/gemma-2-27b-it"
-    #   else:
-    #     raise ValueError(f"Invalid model name: {self.model_name}")
-    elif "qwen" in self.model_name:
-      self.model_url = f"http://localhost:{vllm_port}/v1"
-      self.model_name = "Qwen/Qwen3-30B-A3B-Thinking-2507-FP8"
     elif self.model_name in GPT_COSTS:
       self.generation_config = {
-          "temperature": 0.0,
-          "max_completion_tokens": 512,
-          "top_p": 1.0,
-          "frequency_penalty": 0.0,
-          "presence_penalty": 0.0,
+          # "temperature": 0.0,
+          "max_completion_tokens": 16384,
+          # "top_p": 1.0,
       }
-      self.model_url = "https://api.openai.com/v1/chat/completions"
     elif self.model_name in CLAUDE_MODELS:
       self.generation_config = {
           "temperature": 0.0,
-          "max_tokens": 512,
+          "max_tokens": 16384,
       }
-      self.model_url = "https://api.anthropic.com/v1/messages"
+    elif "qwen" in self.model_name:
+      if self.model_name == "qwen_30b":
+        self.model_name = "Qwen/Qwen3-30B-A3B-Thinking-2507-FP8"
+      elif self.model_name == "qwen_4b":
+        self.model_name = "Qwen/Qwen3-4B-Thinking-2507-FP8"
+    elif self.model_name == "magistral":
+      self.model_name = "MistralAI/Magistral-Small-2507"
+    elif self.model_name == "gpt_oss_20b":
+      self.model_name = "openai/gpt-oss-20b"
     else:
-      self.model_url = self.model_name
+      pass
     self.cache = cache
     self.cache_file = cache_file
     if cache is None and cache_file is not None:

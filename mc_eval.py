@@ -28,12 +28,12 @@ def main(user_args) -> None:
   domain_main_name = user_args.domain_name.split("_")[0]
   use_cot = False
   fs_samples = 0
-  use_phys_constraints = False
-  if user_args.prompt_mode == "cot":
-    use_cot = True
-  elif user_args.prompt_mode == "phys":
-    use_phys_constraints = True
-  elif user_args.prompt_mode.startswith("fs"):
+  # use_phys_constraints = False
+  # if user_args.prompt_mode == "cot":
+  #   use_cot = True
+  # elif user_args.prompt_mode == "phys":
+  #   use_phys_constraints = True
+  if user_args.few_shot_prompt:
     fs_samples = int(user_args.prompt_mode[2:])
 
   # Make directories for results and cache
@@ -142,7 +142,7 @@ def main(user_args) -> None:
       prompt_data = pd.read_csv(f)
 
   print("Starting Evaluation")
-  results, all_cots, total_cost = evaluator.evaluate_data(data, prompt_data)
+  results, all_cots, total_cost = evaluator.evaluate_data(data, prompt_data, user_args.prompt_mode)
 
   with open(output_file, "w") as wf:
     results.to_csv(wf)
@@ -162,9 +162,7 @@ if __name__ == "__main__":
       type=str,
       default="Qwen/Qwen3-30B-A3B-Thinking-2507-FP8",
       help=(
-          "The name of the model to evaluate. Currently support `gpt-4o`,"
-          " `o1-preview`, `gemini-1.5-flash`, `gemini-1.5-pro`, `gemma_2_2b`,"
-          " `gemma_2_9b`, and `gemma_2_27b`"
+          "The name of the model to evaluate. Currently support `gpt-4o`, `gpt-5`, `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash`, `gemini-3-pro`, `Qwen/Qwen3-30B-A3B-Thinking-2507-FP8`, and `Qwen/Qwen3-4B-Thinking-2507-FP8`."
       ),
   )
   parser.add_argument(
@@ -214,12 +212,17 @@ if __name__ == "__main__":
           " current directory."
       ),
   )
+  # parser.add_argument(
+  #     "--prompt_mode",
+  #     type=str,
+  #     choices=["", "cot", "fs4"],
+  #     default="",
+  #     help="Use vanilla, CoT, or fewshot prompting (with 4 samples).",
+  # )
   parser.add_argument(
-      "--prompt_mode",
-      type=str,
-      choices=["", "cot", "fs4"],
-      default="",
-      help="Use vanilla, CoT, or fewshot prompting (with 4 samples).",
+      "--few_shot_prompt",
+      action="store_true",
+      help="Whether to use few-shot prompting.",
   )
   parser.add_argument(
       "--results_dir",
@@ -261,5 +264,9 @@ if __name__ == "__main__":
       default=8011,
       help="Port for the VLLM server. Default is 8011.",
   )
+  parser.add_argument("--prompt_mode", 
+                      type=str, 
+                      default="exact_k",
+                      help="Prompt mode to use.", choices=["at_most_k", "exact_k", "at_most_K"])
   args = parser.parse_args()
   main(args)

@@ -26,66 +26,6 @@ from SimpleLogic import derivation_new
 from SimpleLogic import ruleset
 
 
-def check_sufficiency_new(rule_tree, context, vars_to_check, target):
-  """Checks if vars_to_check are sufficient to determine target given context.
-
-  Args:
-    rule_tree: RuleTree
-    context: Set[str] of facts (e.g. {"a", "not b"})
-    vars_to_check: Set[str] of variable names (e.g. {"c", "d"})
-    target: str target variable name
-
-  Returns:
-    bool: True if for all consistent assignments of vars_to_check, the target's
-      truth value is determined. False otherwise.
-  """
-  var_list = list(vars_to_check)
-  num_consistent_assignments = 0
-  
-  # Iterate over all possible truth value assignments for vars_to_check
-  for values in it.product([False, True], repeat=len(var_list)):
-    assignment_facts = set()
-    for i, val in enumerate(values):
-      if val:
-        assignment_facts.add(var_list[i])
-      else:
-        assignment_facts.add(ruleset.negate(var_list[i]))
-
-    full_facts = context.union(assignment_facts)
-
-    # Split into true/false for get_all_inferrable_facts
-    true_facts = {f for f in full_facts if not f.startswith("not ")}
-    false_facts = {f for f in full_facts if f.startswith("not ")}
-
-    # Check for immediate contradiction in the input facts
-    contradiction = False
-    for f in true_facts:
-      if ruleset.negate(f) in full_facts:
-        contradiction = True
-        break
-    if contradiction:
-      continue  # Vacuously true if the assignment is impossible
-
-    inferred = derivation_new.get_all_inferrable_facts(rule_tree, true_facts, false_facts)
-
-    # Check for consistency in inferred facts
-    for f in inferred:
-      if ruleset.negate(f) in inferred:
-        contradiction = True
-        break
-    if contradiction:
-      continue
-    
-    num_consistent_assignments += 1
-
-    # If consistent, check if target is determined
-    if target not in inferred and ruleset.negate(target) not in inferred:
-      return False
-
-  return inferred
-
-
-
 def check_sufficiency(rule_tree, context, vars_to_check, target):
   """Checks if vars_to_check are sufficient to determine target given context.
 
@@ -413,87 +353,83 @@ def make_heldout_ruleset(rules_dict, max_k=4):
           assignment_key = tuple(assignment_facts)
           full_context = context_k | set(assignment_facts)
           
+          # Determine whether this full assignment is consistent and what value it gives the target.
+          true_facts = {f for f in full_context if not f.startswith("not ")}
+          false_facts = {f for f in full_context if f.startswith("not ")}
+
+          # Check for immediate contradiction in input facts
+          is_contradictory = False
+          for f in true_facts:
+            if ruleset.negate(f) in full_context:
+              is_contradictory = True
+              break
+
+          inferred = set()
+          if not is_contradictory:
+            inferred = derivation_new.get_all_inferrable_facts(rule_tree_obj, true_facts, false_facts)
+
+            # Check for contradiction via inference
+            for f in inferred:
+              if ruleset.negate(f) in inferred:
+                is_contradictory = True
+                break
+
+          if is_contradictory:
+            # This assignment is impossible; keep a placeholder so downstream code can skip it.
+            unified_derivations_min_rules[assignment_key] = {
+              'target_value': None,
+              'derivation': None,
+            }
+            unified_derivations_min_depth[assignment_key] = {
+              'target_value': None,
+              'derivation': None,
+            }
+            not_found_count += 1
+            continue
+          
+          # Target must be determined under a consistent assignment (k-sufficiency).
+          if rules_dict["query"] in inferred:
+            target_literal = rules_dict["query"]
+            deriv_pool = true_derivations
+          elif ruleset.negate(rules_dict["query"]) in inferred:
+            target_literal = ruleset.negate(rules_dict["query"])
+            deriv_pool = false_derivations
+          else:
+            raise ValueError(
+              f"Assignment {assignment_key} under context {context_k} is consistent "
+              f"but does not determine the target. This indicates s_k={s_k} is not truly sufficient."
+            )
+          
           # Find matching (minimal) derivation from true_derivations or false_derivations
           found = False
           min_num_rules = None
           min_depth = None
-          for derive_set, derive_obj in true_derivations.items():
+          for derive_set, derive_obj in deriv_pool.items():
             if derive_set <= full_context:
               found = True
               num_rules = len(derive_obj.derivation)
-              depth = max(derive_obj.leaf_words.values())
+              depth = max(derive_obj.leaf_words.values()) if derive_obj.leaf_words else 0
+
               if min_num_rules is None or num_rules < min_num_rules:
                 unified_derivations_min_rules[assignment_key] = {
-                  'target_value': rules_dict["query"],
+                  'target_value': target_literal,
                   'derivation': derive_obj.serialize(),
                 }
                 min_num_rules = num_rules
+
               if min_depth is None or depth < min_depth:
                 unified_derivations_min_depth[assignment_key] = {
-                  'target_value': rules_dict["query"],
+                  'target_value': target_literal,
                   'derivation': derive_obj.serialize(),
                 }
                 min_depth = depth
-          
+
           if not found:
-            for derive_set, derive_obj in false_derivations.items():
-              if derive_set <= full_context:
-                found = True
-                num_rules = len(derive_obj.derivation)
-                depth = max(derive_obj.leaf_words.values())
-                if min_num_rules is None or num_rules < min_num_rules:
-                  unified_derivations_min_rules[assignment_key] = {
-                    'target_value': ruleset.negate(rules_dict["query"]),
-                    'derivation': derive_obj.serialize(),
-                  }
-                  min_num_rules = num_rules
-                if min_depth is None or depth < min_depth:
-                  unified_derivations_min_depth[assignment_key] = {
-                    'target_value': ruleset.negate(rules_dict["query"]),
-                    'derivation': derive_obj.serialize(),
-                  }
-                  min_depth = depth
-          
-          if not found:
-            # Check if this assignment is contradictory
-            true_facts = {f for f in full_context if not f.startswith("not ")}
-            false_facts = {f for f in full_context if f.startswith("not ")}
-            
-            # Check for immediate contradiction in input facts
-            is_contradictory = False
-            for f in true_facts:
-              if ruleset.negate(f) in full_context:
-                is_contradictory = True
-                break
-            
-            if not is_contradictory:
-              # Check for contradiction via inference
-              inferred = derivation_new.get_all_inferrable_facts(rule_tree_obj, true_facts, false_facts)
-              for f in inferred:
-                if ruleset.negate(f) in inferred:
-                  is_contradictory = True
-                  break
-            
-            if is_contradictory:
-              # Mark as contradictory - this assignment is impossible
-              unified_derivations_min_rules[assignment_key] = {
-                'target_value': None,
-                'derivation': None,
-                # 'is_contradictory': True,
-              }
-              unified_derivations_min_depth[assignment_key] = {
-                'target_value': None,
-                'derivation': None,
-                # 'is_contradictory': True,
-              }
-            else:
-              # This is a real error - assignment is consistent but no derivation found
-              raise ValueError(
-                f"Assignment {assignment_key} under context {context_k} is consistent "
-                f"but no derivation found. This indicates s_k={s_k} is not truly sufficient."
-              )
-            not_found_count += 1
-        
+            raise ValueError(
+              f"Assignment {assignment_key} under context {context_k} determines {target_literal} "
+              f"but no stored derivation matches. This indicates the derivation pool is incomplete."
+            )
+
         if not_found_count >= 2 ** len(s_k) - len(s_k):
           # NOTE: We need at least k+1 valid derivations to ensure k is minimal sufficient
           raise ValueError(f"Insufficient derivations found for assignments in k-sufficient set {s_k} under context {context_k}.")
