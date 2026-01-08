@@ -319,7 +319,7 @@ Possible questions:
         ])
       batch_prompts.append(assist_prompt)
 
-    batch_responses, cost, all_cots, cost_usd = cached_generate(
+    batch_responses, think_token_num, all_cots, cost_usd = cached_generate(
         batch_prompts,
         model_name,
         model_url,
@@ -381,7 +381,7 @@ Possible questions:
         print(f"Max retries reached for {len(retry_indices)} responses")
         break
 
-      retry_responses, retry_cost, retry_cots, retry_cost_usd = cached_generate(
+      retry_responses, retry_think_token_num, retry_cots, retry_cost_usd = cached_generate(
           retry_prompts,
           model_name,
           model_url,
@@ -400,7 +400,7 @@ Possible questions:
       for idx, orig_i in enumerate(retry_indices):
         batch_responses[orig_i] = retry_responses[idx]
         all_cots[orig_i] = retry_cots[idx]
-        cost[orig_i] = retry_cost[idx]
+        think_token_num[orig_i] = retry_think_token_num[idx]
         cost_usd[orig_i] = retry_cost_usd[idx]
 
         batch_convos[orig_i].append({"role": "user", "text": retry_messages[idx]})
@@ -479,7 +479,7 @@ Possible questions:
         batch_preds.append(pred)
         batch_correct.append(is_match)
 
-    return batch_convos, batch_preds, batch_correct, cost, all_cots, cost_usd
+    return batch_convos, batch_preds, batch_correct, think_token_num, all_cots, cost_usd
 
   def make_convo_batches(self, data: pd.DataFrame, batch_size: Optional[int] = None):
     if batch_size is None:
@@ -748,7 +748,7 @@ Possible questions:
         batch_k,
     ) = self.make_convo_batches(data)
 
-    total_cost = []
+    total_think_token = []
     all_cots = []
     all_cost_usd = []
 
@@ -758,7 +758,7 @@ Possible questions:
     )
 
     for batch_id, batch_system_prompt, batch_request, batch_gt_answer, batch_gt_query, batch_k_vals in pbar:
-      batch_conversation, batch_pred, batch_correct, cost, cots, cost_usd = self.evaluate_batch(
+      batch_conversation, batch_pred, batch_correct, think_token_num, cots, cost_usd = self.evaluate_batch(
           batch_request,
           batch_system_prompt,
           batch_gt_query,
@@ -769,7 +769,7 @@ Possible questions:
           fs_turns=fs_turns,
       )
 
-      total_cost += cost
+      total_think_token += think_token_num
       all_cots += cots
       all_cost_usd += cost_usd
 
@@ -809,4 +809,4 @@ Possible questions:
         pass
 
     # print(f"Total cost: {total_cost}")
-    return results, all_cots, total_cost, all_cost_usd
+    return results, all_cots, total_think_token, all_cost_usd
