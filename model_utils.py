@@ -434,7 +434,7 @@ async def local_model_request(
       num_thinking_tokens = len(tokenizer.encode(cot))
     else:
       num_thinking_tokens = len(tokens) if tokens else 0
-      print(f"\nWARNING: No {config.thinking_end_token} token found in response\n")
+      print(f"\nWARNING: No {config.thinking_end_token} token found in response:\n{response_text}\n")
       cot = response_text
       final_output = ""
   elif "gpt-oss" in model:

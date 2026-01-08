@@ -5,7 +5,7 @@ import itertools
 def parse_clauses(rules_str):
     """
     Parses rule strings like "['a', 'not b', 'c']" into logical clauses.
-    Returns a list of sets, e.g., [{('a', True), ('b', False), ('c', True)}]
+    Returns: a list of sets, e.g., [{('a', True), ('b', False), ('c', True)}]
     """
     if isinstance(rules_str, str):
         raw_rules = ast.literal_eval(rules_str)
@@ -27,6 +27,7 @@ def solve_unit_prop(clauses, context):
     """
     Performs Unit Propagation to derive all implied facts.
     Returns: dict of derived facts, or "CONTRADICTION".
+    NOTE: Unit propagation only infers facts when a clause has all but one literal false. This is valid because we only have Horn clauses in SimpleLogic.
     """
     assignment = context.copy()
     
@@ -87,7 +88,9 @@ def verify_row(data, counter):
     base_facts = solve_unit_prop(clauses, context)
     if base_facts != "CONTRADICTION" and goal in base_facts:
         print("❌ FAIL: Goal is already known from context.")
-        counter['failed (goal inferred from context)'] += 1
+        if data["k"] not in counter['failed (goal inferred from context)'].keys():
+            counter['failed (goal inferred from context)'][data["k"]] = 0
+        counter['failed (goal inferred from context)'][data["k"]] += 1
         return False
 
     def build_table(qs):
@@ -142,17 +145,28 @@ def verify_row(data, counter):
         table, any_consistent = build_table(qs)
         if table is None:
             print(f"❌ FAIL: Some consistent branch for qs={qs} does not determine the goal.")
-            counter['failed (insufficient branch)'] += 1
+            if data["k"] not in counter['failed (insufficient branch)'].keys():
+                counter['failed (insufficient branch)'][data["k"]] = 0
+            counter['failed (insufficient branch)'][data["k"]] += 1
             return False
         if not any_consistent:
             print(f"❌ FAIL: All branches for qs={qs} are contradictions (degenerate problem).")
-            counter['failed (insufficient branch)'] += 1
+            if data["k"] not in counter['failed (insufficient branch)'].keys():
+                counter['failed (insufficient branch)'][data["k"]] = 0
+            counter['failed (insufficient branch)'][data["k"]] += 1
             return False
 
         # Check 3: Essentiality (each variable must be essential under consistent assignments)
         if len(qs) > 1 and not essentiality_holds(table, qs):
             print(f"❌ FAIL: qs={qs} is sufficient but not minimal (violates essentiality).")
-            counter['failed (not minimal)'] += 1
+            print(f"Ground truth qs: {qs}")
+            print(f"Context: {context}")
+            print(f"Rules: {clauses}")
+            print(f"Goal: {goal}")
+            print(f"Table: {table}")
+            if data["k"] not in counter['failed (not minimal)'].keys():
+                counter['failed (not minimal)'][data["k"]] = 0
+            counter['failed (not minimal)'][data["k"]] += 1
             return False
 
         # Optional Check 4: Local minimality by subsets of size k-1
@@ -160,13 +174,16 @@ def verify_row(data, counter):
             subset = qs[:i] + qs[i+1:]
             if subset and subset_is_sufficient(subset):
                 print(f"❌ FAIL: Subset {subset} is sufficient (Not Minimal).")
-                counter['failed (not minimal)'] += 1
+                if data["k"] not in counter['failed (not minimal)'].keys():
+                    counter['failed (not minimal)'][data["k"]] = 0
+                counter['failed (not minimal)'][data["k"]] += 1
                 return False
 
     print(f"✅ Row Verified (k={data['k'] if 'k' in data else 'N/A'})")
-    counter['verified'] += 1
+    if data["k"] not in counter['verified'].keys():
+        counter['verified'][data["k"]] = 0
+    counter['verified'][data["k"]] += 1
     return True
-
 
 
 if __name__ == "__main__":
@@ -175,10 +192,10 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     
     args = ArgumentParser()
-    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k/simplelogic_heldout_k_sufficient_data_new_sampled.csv", help="Path to the CSV file with results to verify.")
+    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k/simplelogic_heldout_k_sufficient_data_new.csv", help="Path to the CSV file with results to verify.")
     arguments = args.parse_args()
 
-    counter = {'verified': 0, 'failed (goal inferred from context)': 0, 'failed (insufficient branch)': 0, 'failed (not minimal)': 0}
+    counter = {'verified': {1:0}, 'failed (goal inferred from context)': {1:0}, 'failed (insufficient branch)': {1:0}, 'failed (not minimal)': {1:0}}
     data = pd.read_csv(arguments.input_csv)
     for idx, row in tqdm(data.iterrows(), total=len(data), desc="Verifying results"):
         print(f"Verifying row {idx}:")

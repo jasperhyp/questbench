@@ -25,38 +25,137 @@ import ast
 
 import pandas as pd
 from SimpleLogic import ruleset
-from SimpleLogic import derivation_new
+# from SimpleLogic import derivation_new
 import tqdm
 import itertools as it
 
 tqdm = tqdm.tqdm
+random.seed(42)
 
 
-def _is_contradictory_factset(facts: set[str]) -> bool:
-  # Detect immediate x / not x pairs
-  for f in facts:
-    if ruleset.negate(f) in facts:
-      return True
-    # if f.startswith("not "):
-    #   if f[4:] in facts:
-    #     return True
-    # else:
-    #   if f"not {f}" in facts:
-    #     return True
-  return False
+def _parse_clauses(rules):
+    """
+    rules: list[list[str]] where each inner list is a CNF clause like
+      ['c', 'not a', 'not b']  meaning (c ∨ ¬a ∨ ¬b)
+    Returns: list[set[(var:str, val:bool)]]
+    """
+    clauses = []
+    for rule in rules:
+        clause = set()
+        for lit in rule:
+            if lit.startswith("not "):
+                clause.add((lit[4:], False))
+            else:
+                clause.add((lit, True))
+        clauses.append(clause)
+    return clauses
 
 
-def _infer_closure(rule_tree, full_facts: set[str]) -> tuple[bool, set[str]]:
-  """Returns (is_contradictory, inferred_facts)."""
-  if _is_contradictory_factset(full_facts):
-    return True, set()
-  true_facts = {f for f in full_facts if not f.startswith("not ")}
-  false_facts = {f for f in full_facts if f.startswith("not ")}
-  inferred = derivation_new.get_all_inferrable_facts(rule_tree, true_facts, false_facts)
-  for f in inferred:
-    if ruleset.negate(f) in inferred:
-      return True, inferred
-  return False, inferred
+def _solve_unit_prop(clauses, context):
+    """
+    clauses: list[set[(var, val)]]
+    context: dict[var -> bool]
+    Returns: dict[var -> bool] (closure) OR "CONTRADICTION"
+    NOTE: Unit propagation only infers facts when a clause has all but one literal false. This is valid because we only have Horn clauses in SimpleLogic.
+    """
+    assignment = dict(context)
+
+    while True:
+        changed = False
+        for clause in clauses:
+            satisfied = False
+            unknown_lits = []
+            false_lits_count = 0
+
+            for var, val in clause:
+                if var in assignment:
+                    if assignment[var] == val:
+                        satisfied = True
+                        break
+                    else:
+                        false_lits_count += 1
+                else:
+                    unknown_lits.append((var, val))
+
+            if satisfied:
+                continue
+
+            # Empty clause under current partial assignment => contradiction
+            if false_lits_count == len(clause):
+                return "CONTRADICTION"
+
+            # Unit clause => infer
+            if len(unknown_lits) == 1 and false_lits_count == len(clause) - 1:
+                var, val = unknown_lits[0]
+                if var not in assignment:
+                    assignment[var] = val
+                    changed = True
+                elif assignment[var] != val:
+                    return "CONTRADICTION"
+
+        if not changed:
+            break
+
+    return assignment
+
+
+def _facts_to_assignment(full_facts: set[str]) -> dict:
+    """
+    full_facts contains strings like "x" or "not x".
+    """
+    assignment = {}
+    for f in full_facts:
+        if f.startswith("not "):
+            var, val = f[4:], False
+        else:
+            var, val = f, True
+
+        if var in assignment and assignment[var] != val:
+            return "CONTRADICTION"
+        assignment[var] = val
+    return assignment
+  
+  
+# def _is_contradictory_factset(facts: set[str]) -> bool:
+#   # Detect immediate x / not x pairs
+#   for f in facts:
+#     if ruleset.negate(f) in facts:
+#       return True
+#     # if f.startswith("not "):
+#     #   if f[4:] in facts:
+#     #     return True
+#     # else:
+#     #   if f"not {f}" in facts:
+#     #     return True
+#   return False
+
+
+def _infer_closure(clauses, full_facts: set[str]) -> tuple[bool, dict]:
+    """
+    Returns (is_contradictory, closure_assignment_dict).
+    closure_assignment_dict maps var -> bool.
+    """
+    base = _facts_to_assignment(full_facts)
+    if base == "CONTRADICTION":
+        return True, {}
+
+    result = _solve_unit_prop(clauses, base)
+    if result == "CONTRADICTION":
+        return True, {}
+
+    return False, result
+  
+# def _infer_closure(rule_tree, full_facts: set[str]) -> tuple[bool, set[str]]:
+#   """Returns (is_contradictory, inferred_facts)."""
+#   if _is_contradictory_factset(full_facts):
+#     return True, set()
+#   true_facts = {f for f in full_facts if not f.startswith("not ")}
+#   false_facts = {f for f in full_facts if f.startswith("not ")}
+#   inferred = derivation_new.get_all_inferrable_facts(rule_tree, true_facts, false_facts)
+#   for f in inferred:
+#     if ruleset.negate(f) in inferred:
+#       return True, inferred
+#   return False, inferred
 
 
 def _truth_table_for_qset(rule_tree, base_context: set[str], q_set: list[str], goal: str):
@@ -70,6 +169,7 @@ def _truth_table_for_qset(rule_tree, base_context: set[str], q_set: list[str], g
   table = {}
   consistent_keys = set()
   expected_target_value = {}
+  
   for answers in it.product([True, False], repeat=len(q_set)):
     assignment_facts = [q if val else ruleset.negate(q) for q, val in zip(q_set, answers)]
     full_facts = set(base_context) | set(assignment_facts)
@@ -77,17 +177,23 @@ def _truth_table_for_qset(rule_tree, base_context: set[str], q_set: list[str], g
     if is_contra:
       continue
 
-    # Goal must be determined (k-sufficiency)
-    if goal in inferred:
-      y_val = True
-      tgt_lit = goal
-    elif ruleset.negate(goal) in inferred:
-      y_val = False
-      tgt_lit = ruleset.negate(goal)
-    else:
+    # Goal must be determined (Known(goal) under UP)
+    # if goal in inferred:
+    #   y_val = True
+    #   tgt_lit = goal
+    # elif ruleset.negate(goal) in inferred:
+    #   y_val = False
+    #   tgt_lit = ruleset.negate(goal)
+    # else:
+    #   raise ValueError("Goal value is not determined under this assignment. Check holdout_utils_new.py for k-sufficiency enforcement.")
+    #   # return None, None, None  # insufficient
+    
+    if goal not in inferred:
       raise ValueError("Goal value is not determined under this assignment. Check holdout_utils_new.py for k-sufficiency enforcement.")
       # return None, None, None  # insufficient
-
+    y_val = bool(inferred[goal])
+    tgt_lit = goal if y_val else ruleset.negate(goal)
+        
     table[answers] = y_val
     key_json = json.dumps(assignment_facts)
     consistent_keys.add(key_json)
@@ -155,26 +261,27 @@ def validate_and_filter_problem(rule_tree, base_context: set[str], q_set: list[s
   filtered_rules = {}
   filtered_depth = {}
 
-  # Note: derivation dict keys are JSON-encoded lists of facts.
-  for k_json in list(derivs_min_rules.keys()):
+  # NOTE: derivation dict keys are JSON-encoded lists of facts.
+  for k_json in list(derivs_min_rules.keys()):  # k_json is assignment key
     if k_json not in consistent_keys:
       continue
     v_rules = derivs_min_rules.get(k_json)
     v_depth = derivs_min_depth.get(k_json)
     if v_rules is None or v_depth is None:
-      return False, {}, {}
+      raise Exception(f"{k_json} missing in one of the derivation dicts, WEIRD.")
+    if v_rules["target_value"] is None:
+      assert v_depth["target_value"] is None
+      raise Exception("Contradiction found before but not here?")
     if v_rules.get("target_value") != expected_target_value[k_json]:
-      return False, {}, {}
+      raise Exception("Mismatched target value in min-rules derivation.")
     if v_depth.get("target_value") != expected_target_value[k_json]:
-      return False, {}, {}
-    if v_rules.get("derivation") is None or v_depth.get("derivation") is None:
-      return False, {}, {}
+      raise Exception("Mismatched target value in min-depth derivation.")
     filtered_rules[k_json] = v_rules
     filtered_depth[k_json] = v_depth
 
   # Ensure we have derivations for every consistent assignment
   if set(filtered_rules.keys()) != consistent_keys or set(filtered_depth.keys()) != consistent_keys:
-    return False, {}, {}
+    raise Exception("Filtered derivations do not cover all consistent assignments.")
 
   return True, filtered_rules, filtered_depth
 
@@ -235,6 +342,7 @@ def main(arguments) -> None:
         continue
         
     rule_tree = ruleset.RuleTree.deserialize(rs["rules"])
+    clauses = _parse_clauses(rule_tree.serialize())
     target_attr = rs["query"]
     
     k_data_source = {}
@@ -251,16 +359,9 @@ def main(arguments) -> None:
       for context_str, dict_lst in context_map.items():
         all_problems.append((int(k_str), context_str, [dct["s_set"] for dct in dict_lst], [dct["derivations_min_rules"] for dct in dict_lst], [dct["derivations_min_depth"] for dct in dict_lst]))
 
-    # 3. Subsample problems per ruleset (Robustness from original make_data)
-    if len(all_problems) > arguments.max_problems_to_sample_per_ruleset:
-      sampled_problems = random.sample(
-          all_problems, arguments.max_problems_to_sample_per_ruleset
-      )
-    else:
-      sampled_problems = all_problems
-
-    # 4. Process each problem
-    for k, context_str, valid_sets, derivations_min_rules, derivations_min_depth in sampled_problems:
+    # 3. Process each problem
+    filtered_rows = []
+    for k, context_str, valid_sets, derivations_min_rules, derivations_min_depth in all_problems:
       # Parse context
       # try:
       context_set = set(json.loads(context_str))
@@ -320,7 +421,7 @@ def main(arguments) -> None:
       for q_set, derivs_min_rules, derivs_min_depth in zip(valid_sets, derivations_min_rules, derivations_min_depth):
           if (not frozenset(q_set) in invalid_q_sets) and (not set(q_set).intersection(invalid_qs)):
               ok, filtered_rules, filtered_depth = validate_and_filter_problem(
-                  rule_tree, context_set, list(q_set), target_attr, derivs_min_rules, derivs_min_depth
+                  clauses, context_set, list(q_set), target_attr, derivs_min_rules, derivs_min_depth
               )
               if not ok:
                   continue
@@ -342,7 +443,7 @@ def main(arguments) -> None:
       num_total_rules = rule_tree.num_rules()
       num_words = rule_tree.num_words()
 
-      data.loc[len(data)] = [
+      filtered_rows.append((
           k,
           true_facts,
           false_facts,
@@ -356,11 +457,47 @@ def main(arguments) -> None:
           num_words,
           sorted(list(all_qs_atoms)),
           valid_qs_atoms,
-          clean_gt_qs,          # The main target for k-sufficient
-          clean_derivations_min_rules,   # List of dicts of derivations for each gt_q
-          clean_derivations_min_depth,   # List of dicts of derivations for each gt_q
-      ]
+          clean_gt_qs,
+          clean_derivations_min_rules,
+          clean_derivations_min_depth,
+      ))
+      # data.loc[len(data)] = [
+      #     k,
+      #     true_facts,
+      #     false_facts,
+      #     sorted(list(invalid_qs)),
+      #     [sorted(q_set) for q_set in invalid_q_sets],
+      #     target_attr,
+      #     rule_tree.serialize(),
+      #     depth,
+      #     num_rules,
+      #     num_total_rules,
+      #     num_words,
+      #     sorted(list(all_qs_atoms)),
+      #     valid_qs_atoms,
+      #     clean_gt_qs,          # The main target for k-sufficient
+      #     clean_derivations_min_rules,   # List of dicts of derivations for each gt_q
+      #     clean_derivations_min_depth,   # List of dicts of derivations for each gt_q
+      # ]
 
+    # 4. Subsample problems per ruleset (avoid bias from individual problems)
+    # Sample max_problems_to_sample_per_ruleset problems per k value
+    rows_by_k = {}
+    for row in filtered_rows:
+        k_val = row[0]
+        rows_by_k.setdefault(k_val, []).append(row)
+
+    sampled_rows = []
+    for k_val, rows in rows_by_k.items():
+        if len(rows) > arguments.max_problems_to_sample_per_ruleset:
+            sampled_rows.extend(random.sample(rows, arguments.max_problems_to_sample_per_ruleset))
+        else:
+            sampled_rows.extend(rows)
+    
+    # Append to dataframe
+    for row in sampled_rows:
+        data.loc[len(data)] = list(row)
+  
   # Split into prompts and data
   if len(data) > 0:
       # Sample 25 prompts for few-shot usage
