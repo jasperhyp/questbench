@@ -28,5 +28,6 @@ questbench_data/
 questbench_data.tar.gz
 results/
 *archived*
-*/*.log
+logs_make_data/
+logs_evaluation/
 logs_generation/

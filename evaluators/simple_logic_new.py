@@ -325,9 +325,12 @@ Generate "Answer:" followed by the answer and nothing else."""
                 " and nothing else."
             )
           elif self.eval_mode == "isambig":
+            # retry_msg = (
+            #     'Wrong format. Please answer either "Answer: Yes" or'
+            #     ' "Answer: No" or "Answer: Not sure" and nothing else.'
+            # )
             retry_msg = (
-                'Wrong format. Please answer either "Answer: Yes" or'
-                ' "Answer: No" or "Answer: Not sure" and nothing else.'
+                'Wrong format. Please answer either "Answer: No" or "Answer: 1" or "Answer: 2" or "Answer: 3" or "Answer: 4" or "Answer: Yes, but not sure about how many" and nothing else.'
             )
           elif self.eval_mode == "fullinfo":
             retry_msg = (
@@ -543,9 +546,8 @@ Generate "Answer:" followed by the answer and nothing else."""
 
         batch_ids[-1].append(d)
         batch_gt_queries[-1].append(datum["gt_qs"])
-        
       else:
-        # FIXME: Isambig/which-k/fullinfo
+        # FIXME: fullinfo/isambig
         original_known_facts = known_facts
         original_known_untrue_facts = known_untrue_facts
         for gt_q in datum["gt_q_to_true_derivation"]:
@@ -700,8 +702,7 @@ Generate "Answer:" followed by the answer and nothing else."""
                 "content": f"Question: Is Alice {random_gt_attr}?",
             },
         ])
-        
-      else:
+      else:  # fulinfo/isambig
         # FIXME
         gt_q = random.choice(list(datum["gt_q_to_true_derivation"].keys()))
         if self.eval_mode == "isambig":

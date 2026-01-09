@@ -22,6 +22,7 @@ from evaluators.gsm import GSMEvaluator
 from evaluators.simple_logic_new import SimpleLogicEvaluator
 import pandas as pd
 import json
+from datetime import datetime
 
 
 def main(user_args) -> None:
@@ -45,7 +46,8 @@ def main(user_args) -> None:
   data_file_base_name = os.path.splitext(os.path.basename(user_args.data_file))[
       0
   ]
-  output_file_name = f"{user_args.model_name}-{user_args.domain_name}-{user_args.eval_mode}-{user_args.prompt_mode}-{data_file_base_name}"
+  time_tag = datetime.now().strftime("%m_%d_%H_%M_%S")
+  output_file_name = f"{user_args.domain_name}/{user_args.eval_mode}/{user_args.model_name.replace('/', '_')}/{user_args.prompt_mode}/{data_file_base_name}_{time_tag}"
   cache_file = os.path.join(cache_dir, f"{output_file_name}.jsonl")
   if not os.path.exists(cache_file):
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)

@@ -61,6 +61,8 @@ class Sample:
     gt_min_sets: List[List[str]]  # Minimal sufficient sets
     worlds: List[World]
     k: int  # Minimal sufficient size
+    gt_qs: List[List[str]] = field(default_factory=list)  # Ground truth question sets
+    cannot_ask_facts_sets: List[List[str]] = field(default_factory=list)  # Other valid question sets
 
 
 @dataclass
@@ -166,11 +168,17 @@ def solve_unit_prop(clauses: List[Set[Tuple[str, bool]]],
 def oracle_answer(clauses: List[Set[Tuple[str, bool]]],
                   base_context: Dict[str, bool],
                   world: World,
-                  questions: List[str]) -> str:
+                  questions: List[str],
+                  cannot_ask: Set[str] = None) -> str:
     """
     Answer questions based on world + unit propagation inference.
     Returns natural language answer string.
+    
+    If a question is in cannot_ask (already given or is target), refuse to answer.
     """
+    if cannot_ask is None:
+        cannot_ask = set()
+    
     # Combine base context with world assignments
     full_context = dict(base_context)
     full_context.update(world.assignments)
@@ -185,6 +193,11 @@ def oracle_answer(clauses: List[Set[Tuple[str, bool]]],
     for q in questions:
         # Normalize question (remove "not " prefix if present)
         var = q.replace("not ", "") if q.startswith("not ") else q
+        
+        # Check if this is a forbidden question
+        if var in cannot_ask:
+            answers.append(f"Sorry, I cannot answer whether Alice is {var} because this variable is either already given or is the target variable.")
+            continue
         
         if var in inferred:
             if inferred[var]:
@@ -252,6 +265,11 @@ def load_data(csv_path: str) -> List[Sample]:
                 target_value = value["target_value"]
                 worlds.append(World(assignments=assignments, target_value=target_value))
         
+        # Parse cannot_ask_facts_sets if present
+        cannot_ask_facts_sets = []
+        if "cannot_ask_facts_sets" in row and pd.notna(row["cannot_ask_facts_sets"]):
+            cannot_ask_facts_sets = ast.literal_eval(row["cannot_ask_facts_sets"])
+        
         sample = Sample(
             sample_id=idx,
             rules=rules,
@@ -264,10 +282,72 @@ def load_data(csv_path: str) -> List[Sample]:
             gt_min_sets=gt_qs,
             worlds=worlds,
             k=int(row["k"]),
+            gt_qs=gt_qs,  # Ground truth question sets
+            cannot_ask_facts_sets=cannot_ask_facts_sets,  # Other valid question sets
         )
         samples.append(sample)
     
     return samples
+
+
+# ============ Flipping (Negation) ============
+
+def flip_literal(lit: str) -> str:
+    """Flip a literal: 'x' -> 'not x', 'not x' -> 'x'."""
+    if lit.startswith("not "):
+        return lit[4:]
+    else:
+        return f"not {lit}"
+
+
+def flip_rules(rules: List[List[str]]) -> List[List[str]]:
+    """Flip all literals in all rules."""
+    return [[flip_literal(lit) for lit in rule] for rule in rules]
+
+
+def flip_target(target: str, goal: str) -> str:
+    """Flip target value: 'goal' -> 'not goal', 'not goal' -> 'goal'."""
+    if target.startswith("not "):
+        return target[4:]
+    else:
+        return f"not {target}"
+
+
+def create_flipped_sample(sample: Sample) -> Sample:
+    """
+    Create a flipped version of a sample by:
+    - Swapping known_facts and known_untrue_facts
+    - Flipping all rules (each literal negated)
+    - Flipping world assignments and target values
+    """
+    flipped_rules = flip_rules(sample.rules)
+    flipped_rules_nl = parse_rules_to_nl(flipped_rules)
+    
+    # Flip worlds
+    flipped_worlds = []
+    for world in sample.worlds:
+        flipped_assignments = {var: not val for var, val in world.assignments.items()}
+        flipped_target = flip_target(world.target_value, sample.goal)
+        flipped_worlds.append(World(
+            assignments=flipped_assignments,
+            target_value=flipped_target,
+        ))
+    
+    return Sample(
+        sample_id=sample.sample_id,
+        rules=flipped_rules,
+        rules_nl=flipped_rules_nl,
+        goal=sample.goal,  # Goal stays the same
+        known_facts=sample.known_untrue_facts,  # Swap
+        known_untrue_facts=sample.known_facts,  # Swap
+        cannot_ask=sample.cannot_ask,
+        all_valid_qs=sample.all_valid_qs,
+        gt_min_sets=sample.gt_min_sets,
+        worlds=flipped_worlds,
+        k=sample.k,
+        gt_qs=sample.gt_qs,
+        cannot_ask_facts_sets=sample.cannot_ask_facts_sets,
+    )
 
 
 # ============ Prompting ============
@@ -488,7 +568,7 @@ def run_episode(
             retry_count = 0  # Reset retry count on valid action
             
             # Get oracle answer
-            oracle_resp = oracle_answer(clauses, base_context, world, action.questions)
+            oracle_resp = oracle_answer(clauses, base_context, world, action.questions, sample.cannot_ask)
             if verbose:
                 print(f"    => Asked: {action.questions}, Oracle: {oracle_resp}")
             
@@ -583,11 +663,12 @@ async def run_episode_async(
         # Use asyncio.to_thread to run cached_generate in thread pool
         responses, thinking_tokens, cots, costs = await asyncio.to_thread(
             cached_generate,
-            [current_messages],
-            model_name,
-            cache,
-            cache_file,
-            generation_config,
+            [current_messages],  # batch_prompts
+            model_name,          # model_name
+            None,                # model_url (not used for local models)
+            cache,               # cache
+            cache_file,          # cache_file  
+            generation_config,   # generation_config
         )
         response = responses[0]
         if verbose:
@@ -612,7 +693,7 @@ async def run_episode_async(
             retry_count = 0  # Reset retry count on valid action
             
             # Get oracle answer
-            oracle_resp = oracle_answer(clauses, base_context, world, action.questions)
+            oracle_resp = oracle_answer(clauses, base_context, world, action.questions, sample.cannot_ask)
             if verbose:
                 print(f"    => Asked: {action.questions}, Oracle: {oracle_resp}")
             
@@ -836,8 +917,13 @@ def main():
     total_episodes = sum(len(s.worlds) for s in samples)
     print(f"Total episodes (samples × worlds): {total_episodes}")
     
-    # Build episode list
+    # Build episode list (original)
     episodes = [(sample, world) for sample in samples for world in sample.worlds]
+    
+    # Create flipped samples and episodes
+    flipped_samples = [create_flipped_sample(s) for s in samples]
+    flipped_episodes = [(sample, world) for sample in flipped_samples for world in sample.worlds]
+    print(f"Total flipped episodes: {len(flipped_episodes)}")
     
     # Run evaluation
     if args.use_async:
@@ -880,41 +966,115 @@ def main():
         
         pbar.close()
     
-    # Compute metrics
+    # Run flipped episodes evaluation
+    print("\n--- Running flipped episodes ---")
+    if args.use_async:
+        flipped_results = asyncio.run(
+            process_episodes_async(
+                episodes=flipped_episodes,
+                model_name=model_name,
+                budget=args.budget,
+                cache=cache,
+                cache_file=cache_file,
+                generation_config=generation_config,
+                keep_thinking_trace=args.keep_thinking_trace,
+                verbose=args.verbose,
+                emphasize_uncertainty=args.emphasize_uncertainty,
+                max_concurrent=args.max_concurrent,
+            )
+        )
+    else:
+        flipped_results = []
+        pbar = tqdm.tqdm(total=len(flipped_episodes), desc="Running flipped episodes")
+        
+        for sample in flipped_samples:
+            for world in sample.worlds:
+                result = run_episode(
+                    model_name=model_name,
+                    sample=sample,
+                    world=world,
+                    budget=args.budget,
+                    cache=cache,
+                    cache_file=cache_file,
+                    generation_config=generation_config,
+                    keep_thinking_trace=args.keep_thinking_trace,
+                    verbose=args.verbose,
+                    emphasize_uncertainty=args.emphasize_uncertainty,
+                )
+                flipped_results.append(result)
+                pbar.update(1)
+        
+        pbar.close()
+    
+    # Compute metrics for original
     metrics = compute_metrics(all_results, samples)
-    print("\n=== Results ===")
+    print("\n=== Original Results ===")
     for k, v in metrics.items():
+        print(f"  {k}: {v:.4f}" if isinstance(v, float) else f"  {k}: {v}")
+    
+    # Compute metrics for flipped
+    flipped_metrics = compute_metrics(flipped_results, flipped_samples)
+    print("\n=== Flipped Results ===")
+    for k, v in flipped_metrics.items():
         print(f"  {k}: {v:.4f}" if isinstance(v, float) else f"  {k}: {v}")
     
     # Save results
     results_file = os.path.join(args.results_dir, f"{output_name}_results.json")
     
+    # Helper to build episode data
+    def build_episode_data(r, sample, is_flipped=False):
+        return {
+            "sample_id": r.sample_id,
+            "is_flipped": is_flipped,
+            "k": sample.k if sample else None,
+            "gt_qs": sample.gt_qs if sample else [],
+            "cannot_ask_facts_sets": sample.cannot_ask_facts_sets if sample else [],
+            "world": r.world.assignments,
+            "target_gt": r.world.target_value,
+            "final_answer": r.final_answer,
+            "correct": r.correct,
+            "answered": r.answered,
+            "turns_used": r.turns_used,
+            "questions_asked": r.questions_asked,
+            "turn_logs": [
+                {
+                    "turn": t.turn,
+                    "questions": t.questions,
+                    "oracle_answer": t.oracle_answer,
+                }
+                for t in r.turn_logs
+            ],
+        }
+    
     # Convert results to serializable format
     results_data = {
         "config": vars(args),
-        "metrics": metrics,
-        "episodes": [
-            {
-                "sample_id": r.sample_id,
-                "world": r.world.assignments,
-                "target_gt": r.world.target_value,
-                "final_answer": r.final_answer,
-                "correct": r.correct,
-                "answered": r.answered,
-                "turns_used": r.turns_used,
-                "questions_asked": r.questions_asked,
-                "turn_logs": [
-                    {
-                        "turn": t.turn,
-                        "questions": t.questions,
-                        "oracle_answer": t.oracle_answer,
-                    }
-                    for t in r.turn_logs
-                ],
+        "metrics_original": metrics,
+        "metrics_flipped": flipped_metrics,
+        "samples_meta": {
+            s.sample_id: {
+                "k": s.k,
+                "gt_qs": s.gt_qs,
+                "cannot_ask_facts_sets": s.cannot_ask_facts_sets,
+                "goal": s.goal,
             }
-            for r in all_results
-        ],
+            for s in samples
+        },
+        "episodes_original": [],
+        "episodes_flipped": [],
     }
+    
+    # Build sample_id -> sample lookup
+    sample_by_id = {s.sample_id: s for s in samples}
+    flipped_sample_by_id = {s.sample_id: s for s in flipped_samples}
+    
+    for r in all_results:
+        sample = sample_by_id.get(r.sample_id)
+        results_data["episodes_original"].append(build_episode_data(r, sample, is_flipped=False))
+    
+    for r in flipped_results:
+        sample = flipped_sample_by_id.get(r.sample_id)
+        results_data["episodes_flipped"].append(build_episode_data(r, sample, is_flipped=True))
     
     with open(results_file, "w") as f:
         json.dump(results_data, f, indent=2)
