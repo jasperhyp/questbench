@@ -16,7 +16,8 @@ MAX_EXPANSIONS_PER_LAYER=$3
 cd "/n/home09/yeh803/workspace/Reasoning/external/questbench"
 
 # Base path for the data
-BASE_SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP"
+# BASE_SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP"
+SCRATCH_SL_DIR="/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data"
 
 # 1. IMPORTANT: Restrict each Python job to 1 CPU core
 export OMP_NUM_THREADS=1
@@ -32,9 +33,9 @@ for ((i=START_NUM; i<=END_NUM; i++)); do
 
     # Construct the specific directory for this batch (new_0, new_1, etc.)
     if [ "$MAX_EXPANSIONS_PER_LAYER" -eq 500000 ]; then
-        SL_DIR="${BASE_SL_DIR}/new_${i}_500k"
+        SL_DIR="${SCRATCH_SL_DIR}/new_${i}_500k"
     elif [ "$MAX_EXPANSIONS_PER_LAYER" -eq 1000000 ]; then
-        SL_DIR="${BASE_SL_DIR}/new_${i}_1m"
+        SL_DIR="${SCRATCH_SL_DIR}/new_${i}_1m"
     else
         echo "Error: Unsupported max_expansions_per_layer value: $MAX_EXPANSIONS_PER_LAYER"
         exit 1

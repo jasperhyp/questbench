@@ -1,0 +1,13 @@
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_11_500k/prop_examples_11_0_100_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]4it [00:00, 28.02it/s]7it [00:00, 21.21it/s]10it [00:00, 17.34it/s]20it [00:00, 38.54it/s]25it [00:00, 40.79it/s]34it [00:04,  5.07it/s]41it [00:07,  3.31it/s]51it [00:11,  3.13it/s]66it [00:11,  5.68it/s]70it [00:11,  6.44it/s]74it [00:11,  7.34it/s]109it [00:12, 22.34it/s]120it [00:14, 10.29it/s]129it [00:16,  8.33it/s]141it [00:19,  6.32it/s]156it [00:19,  9.30it/s]179it [00:20, 15.69it/s]193it [00:20, 20.61it/s]211it [00:20, 28.80it/s]228it [00:20, 37.15it/s]240it [00:20, 40.04it/s]250it [00:20, 42.21it/s]261it [00:21, 47.18it/s]271it [00:21, 52.64it/s]294it [00:21, 13.86it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_11_500k/prop_examples_11_1000_1100_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]6it [00:00, 26.43it/s]9it [00:00, 16.86it/s]24it [00:00, 46.34it/s]44it [00:00, 54.12it/s]54it [00:01, 41.94it/s]73it [00:01, 58.06it/s]88it [00:01, 63.33it/s]114it [00:01, 91.05it/s]126it [00:01, 93.60it/s]137it [00:02, 46.11it/s]146it [00:05, 11.30it/s]152it [00:05, 11.94it/s]157it [00:06, 12.78it/s]170it [00:06, 18.27it/s]175it [00:06, 20.16it/s]188it [00:06, 29.71it/s]195it [00:06, 28.83it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_11_500k/prop_examples_11_100_200_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]22it [00:00, 182.96it/s]41it [00:00, 73.37it/s] 52it [00:00, 74.73it/s]62it [00:01, 29.68it/s]83it [00:01, 48.41it/s]112it [00:01, 79.81it/s]129it [00:02, 61.82it/s]132it [00:02, 48.95it/s]
+Traceback (most recent call last):
+  File "/n/home09/yeh803/workspace/Reasoning/external/questbench/SimpleLogic/make_data_new.py", line 539, in <module>
+    main(parser.parse_args())
+  File "/n/home09/yeh803/workspace/Reasoning/external/questbench/SimpleLogic/make_data_new.py", line 308, in main
+    rulesets.append(orjson.loads(line))
+                    ^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

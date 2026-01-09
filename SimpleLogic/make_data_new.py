@@ -365,6 +365,9 @@ def main(arguments) -> None:
       # Parse context
       # try:
       context_set = set(json.loads(context_str))
+      # Filter: require at least 1 known fact in context
+      if len(context_set) < 1:
+          continue
       # except:
       #     # Fallback if context_str is somehow malformed (e.g. single quotes)
       #     try:

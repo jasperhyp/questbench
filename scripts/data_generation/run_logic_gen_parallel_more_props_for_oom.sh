@@ -14,7 +14,8 @@ MAX_EXPANSIONS_PER_LAYER=$3
 MAX_PARALLEL_JOBS=$4
 
 WORK_DIR="/n/home09/yeh803/workspace/Reasoning/external/questbench"
-BASE_SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP"
+# BASE_SL_DIR="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP"
+SCRATCH_SL_DIR="/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data"
 
 cd "$WORK_DIR" || { echo "Directory $WORK_DIR not found"; exit 1; }
 
@@ -36,7 +37,7 @@ for ((i=START_NUM; i<=END_NUM; i++)); do
         exit 1
     fi
 
-    SL_DIR="${BASE_SL_DIR}/new_${i}_${SUFFIX}"
+    SL_DIR="${SCRATCH_SL_DIR}/new_${i}_${SUFFIX}"
     CURRENT_LOG_DIR="logs_generation/new_${i}_${SUFFIX}"
     mkdir -p "$CURRENT_LOG_DIR"
 

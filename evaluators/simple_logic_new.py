@@ -276,7 +276,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         ])
       batch_prompts.append(assist_prompt)
     
-    batch_responses, all_num_thinking_tokens, all_cots = cached_generate(
+    batch_responses, all_num_thinking_tokens, all_cots, all_costs = cached_generate(
         batch_prompts,
         model_name,
         cache=cache,
@@ -346,7 +346,7 @@ Generate "Answer:" followed by the answer and nothing else."""
         break
       
       # Batch generate retries
-      retry_responses, retry_num_tokens, retry_cots = cached_generate(
+      retry_responses, retry_num_tokens, retry_cots, all_costs = cached_generate(
           retry_prompts,
           model_name,
           cache=cache,

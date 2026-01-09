@@ -37,10 +37,9 @@ class GenerationResult:
   text: str
   num_thinking_tokens: int = 0
   cot: str = ""
-  cost_usd: float = 0.0
 
 
-@dataclass
+@dataclass  
 class LocalModelConfig:
   """Configuration for a local model."""
   tokenizer_name: str
@@ -112,51 +111,27 @@ GPT_COSTS = {
     },
 }
 
-GEMINI_COSTS = {
-    # gemini-3-pro-preview (text + thinking)
-    "gemini-3-pro-preview": {
-        "in": 2.00,
-        "out": 12.00,
-    },
-    # gemini-3-flash-preview (text)
-    "gemini-3-flash-preview": {
-        "in": 0.50,
-        "out": 2.00,
-    },
-}
-
-def _gemini_cost_usd(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-  # find best prefix match
-  key = None
-  for k in GEMINI_COSTS.keys():
-    if model == k or model.startswith(k):
-      key = k
-      break
-  if key is None:
-    return 0.0
-
-  spec = GEMINI_COSTS[key]
-  pt = float(prompt_tokens or 0)
-  ct = float(completion_tokens or 0)
-  in_rate = float(spec["in"])
-  out_rate = float(spec["out"])
-
-  return pt * in_rate / 1_000_000.0 + ct * out_rate / 1_000_000.0
-
 # Claude models
 CLAUDE_MODELS = [
     "claude-sonnet-4-20250514",
-    "claude-opus-4-20250514",
+    "claude-opus-4-20250514", 
     "claude-3-5-sonnet-20241022",
     "claude-3-5-haiku-20241022",
 ]
 
+# Gemini models (using google-genai SDK v1.x with unified API)
+GEMINI_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-3-pro-preview",
+    "gemini-3-flash-preview",
+]
+
 _azure_openai_client: Optional[AsyncAzureOpenAI] = None
 _anthropic_client: Optional[httpx.AsyncClient] = None
-_local_client: Optional[AsyncOpenAI] = None
+_local_client: Optional[AsyncOpenAI] = None  # Single local client
 
 _tokenizer: Dict[str, Any] = {}
-
 
 def get_tokenizer(tokenizer_name: str):
   """Get or create a tokenizer."""
@@ -230,22 +205,44 @@ def get_local_client(base_url: str = "http://0.0.0.0:8011/v1") -> AsyncOpenAI:
 
 def load_cache_file(cache_file: str) -> Dict[str, Any]:
   """Load cache from a JSONL file."""
-  cache: Dict[str, Any] = {}
+  cache = {}
   if not os.path.exists(cache_file):
     return cache
-
+    
   with open(cache_file, "r") as f:
     for line in f:
       entry = json.loads(line)
       prompt = entry["prompt"]
-
-      text = entry.get("completion", entry.get("text", ""))
-      cache[prompt] = {
-          "text": text,
-          "num_thinking_tokens": entry.get("num_thinking_tokens", 0),
-          "cot": entry.get("cot", ""),
-          "cost_usd": entry.get("cost_usd", 0.0),
-      }
+      
+      if "num_thinking_tokens" in entry and "cot" in entry:
+        text = entry.get("completion", entry.get("text", ""))
+        cache[prompt] = {
+            "text": text,
+            "num_thinking_tokens": entry.get("num_thinking_tokens", 0),
+            "cot": entry.get("cot", ""),
+        }
+      elif "completion" in entry:
+        completion = entry["completion"]
+        if isinstance(completion, dict):
+          if "choices" in completion:
+            text = completion["choices"][0]["message"]["content"]
+          elif "content" in completion:
+            text = completion["content"][0]["text"]
+          else:
+            text = str(completion)
+        else:
+          text = completion
+        cache[prompt] = {
+            "text": text,
+            "num_thinking_tokens": 0,
+            "cot": "",
+        }
+      elif "text" in entry:
+        cache[prompt] = {
+            "text": entry["text"],
+            "num_thinking_tokens": entry.get("num_thinking_tokens", 0),
+            "cot": entry.get("cot", ""),
+        }
   return cache
 
 
@@ -271,37 +268,26 @@ async def openai_chat_request(
     messages: List[Dict[str, str]],
     **generation_config
 ) -> Dict[str, Any]:
+  """Async request to OpenAI Chat Completions API."""
   client = get_azure_openai_client()
   response = await client.chat.completions.create(
       model=model,
       messages=messages,
       **generation_config
   )
-
-  usage = response.usage
-  # Chat Completions: usage.completion_tokens_details.reasoning_tokens
-  try:
-    details = getattr(usage, "completion_tokens_details", None)
-    if details is not None:
-      reasoning_tokens = int(getattr(details, "reasoning_tokens", 0) or 0)
-    else:
-      reasoning_tokens = int(getattr(usage, "reasoning_tokens", 0) or 0)
-  except Exception:
-    reasoning_tokens = 0
-
   return {
       "choices": [{"message": {"content": response.choices[0].message.content}}],
       "usage": {
-          "prompt_tokens": int(getattr(usage, "prompt_tokens", 0) or 0),
-          "completion_tokens": int(getattr(usage, "completion_tokens", 0) or 0),
-          "reasoning_tokens": reasoning_tokens,
+          "prompt_tokens": response.usage.prompt_tokens,
+          "completion_tokens": response.usage.completion_tokens,
+          "reasoning_tokens": getattr(response.usage, "reasoning_tokens", 0),
       }
   }
 
 
 @retry(
     stop=stop_after_attempt(3),
-    wait=wait_random_exponential(multiplier=1, max=10),
+    wait=wait_random_exponential(multiplier=1, max=10), 
 )
 async def claude_request(
     model: str,
@@ -310,7 +296,7 @@ async def claude_request(
 ) -> Dict[str, Any]:
   """Async request to Anthropic Claude API."""
   client = get_anthropic_client()
-
+  
   system_content = None
   filtered_messages = []
   for msg in messages:
@@ -318,61 +304,27 @@ async def claude_request(
       system_content = msg["content"]
     else:
       filtered_messages.append(msg)
-
+  
   data = {
       "model": model,
       "messages": filtered_messages,
-      "max_tokens": generation_config.get("max_tokens", 32768),
+      "max_tokens": generation_config.get("max_tokens", 16384),
   }
   if system_content:
     data["system"] = system_content
-
+  
   for key in ["temperature", "top_p"]:
     if key in generation_config:
       data[key] = generation_config[key]
-
+  
   response = await client.post("/v1/messages", json=data)
   response.raise_for_status()
   result = response.json()
-
+  
   if "content" not in result:
     raise ValueError(f"Unexpected response format: {result}")
-
+  
   return result
-
-
-def _extract_gemini_usage(resp: Any) -> Tuple[int, int, int, int]:
-  """
-  Returns: (prompt_tokens, candidates_tokens, thoughts_tokens, total_tokens)
-  """
-  usage = getattr(resp, "usage_metadata", None)
-  if usage is None and isinstance(resp, dict):
-    usage = resp.get("usage_metadata") or resp.get("usageMetadata")
-
-  pt = ct = tt = tot = 0
-
-  if usage is not None:
-    # object-like
-    pt = getattr(usage, "prompt_token_count", 0) or getattr(usage, "promptTokenCount", 0) or 0
-    ct = getattr(usage, "candidates_token_count", 0) or getattr(usage, "candidatesTokenCount", 0) or 0
-    tt = getattr(usage, "thoughts_token_count", 0) or getattr(usage, "thoughtsTokenCount", 0) or 0
-    tot = getattr(usage, "total_token_count", 0) or getattr(usage, "totalTokenCount", 0) or 0
-
-    # dict-like
-    if isinstance(usage, dict):
-      pt = usage.get("prompt_token_count", usage.get("promptTokenCount", pt)) or 0
-      ct = usage.get("candidates_token_count", usage.get("candidatesTokenCount", ct)) or 0
-      tt = usage.get("thoughts_token_count", usage.get("thoughtsTokenCount", tt)) or 0
-      tot = usage.get("total_token_count", usage.get("totalTokenCount", tot)) or 0
-
-  pt, ct, tt, tot = int(pt), int(ct), int(tt), int(tot)
-
-  if tt == 0 and tot > 0:
-    est = tot - pt - ct
-    if est > 0:
-      tt = est
-
-  return pt, ct, tt, tot
 
 
 @retry(
@@ -383,11 +335,12 @@ async def gemini_request(
     model: str,
     messages: List[Dict[str, str]],
     **generation_config
-) -> GenerationResult:
-  """Async request to Google Gemini API using google-generativeai SDK."""
+) -> str:
+  """Async request to Google Gemini API using google-genai SDK."""
+  # Convert messages to Gemini format
   gemini_messages = []
   system_instruction = None
-
+  
   for msg in messages:
     if msg["role"] == "system":
       system_instruction = msg["content"]
@@ -397,57 +350,47 @@ async def gemini_request(
           "role": role,
           "parts": [{"text": msg["content"]}]
       })
-
+  
+  # Combine consecutive messages with same role
   combined_messages = []
   for msg in gemini_messages:
     if combined_messages and combined_messages[-1]["role"] == msg["role"]:
       combined_messages[-1]["parts"].extend(msg["parts"])
     else:
       combined_messages.append(msg)
-
+  
+  # Create model with system instruction if provided
   model_kwargs = {}
   if system_instruction:
     model_kwargs["system_instruction"] = system_instruction
-
+  
   gen_model = genai.GenerativeModel(model, **model_kwargs)
   gen_config = genai.GenerationConfig(
       temperature=generation_config.get("temperature", 0.0),
-      max_output_tokens=generation_config.get("max_tokens", 32768),
+      max_output_tokens=generation_config.get("max_tokens", 16384),
   )
-
+  
+  # Run in executor since genai doesn't have native async
   loop = asyncio.get_event_loop()
-
+  
   if len(combined_messages) > 1:
     chat = gen_model.start_chat(history=combined_messages[:-1])
-    resp = await loop.run_in_executor(
-        None,
+    response = await loop.run_in_executor(
+        None, 
         lambda: chat.send_message(
             combined_messages[-1]["parts"][0]["text"],
             generation_config=gen_config
         )
     )
   else:
-    resp = await loop.run_in_executor(
+    response = await loop.run_in_executor(
         None,
         lambda: gen_model.generate_content(
             combined_messages[0]["parts"][0]["text"],
             generation_config=gen_config
         )
     )
-
-  text = getattr(resp, "text", None)
-  if text is None:
-    text = str(resp)
-
-  pt, ct, tt, tot = _extract_gemini_usage(resp)
-  cost = _gemini_cost_usd(model, pt, ct + tt)
-
-  return GenerationResult(
-      text=text,
-      num_thinking_tokens=tt,
-      cot="",
-      cost_usd=cost,
-  )
+  return response
 
 
 @retry(
@@ -465,29 +408,32 @@ async def local_model_request(
     config = get_local_model_config(model)
     if config is None:
       raise ValueError(f"No config found for local model: {model}")
-
+  
   client = get_local_client(config.base_url)
   tokenizer = get_tokenizer(config.tokenizer_name)
-
+  
+  # Build prompt using tokenizer
   apply_kwargs = {
       "conversation": messages,
       "add_generation_prompt": True,
-      "tokenize": False,
+      "tokenize": False,  # IMPORTANT: Return string, not token IDs
   }
-
+  
+  # Add reasoning flag if supported by tokenizer
   if config.enable_reasoning:
     apply_kwargs["enable_reasoning"] = True
     apply_kwargs["add_special_tokens"] = True
-
+  
   try:
     raw_prompt_text = tokenizer.apply_chat_template(**apply_kwargs)
   except TypeError:
+    # Fallback if tokenizer doesn't support all kwargs
     raw_prompt_text = tokenizer.apply_chat_template(
         conversation=messages,
         add_generation_prompt=True,
         tokenize=False,
     )
-
+  
   response = await client.completions.create(
       model=model,
       prompt=raw_prompt_text,
@@ -495,12 +441,13 @@ async def local_model_request(
       echo=False,
       temperature=generation_config.get("temperature", 0.6),
       top_p=generation_config.get("top_p", 0.95),
-      max_tokens=generation_config.get("max_tokens", 32768),
+      max_tokens=generation_config.get("max_tokens", 16384),
   )
-
+  
   choice = response.choices[0]
   response_text = choice.text
-
+  
+  # Parse thinking tokens if model supports reasoning
   if config.enable_reasoning and config.thinking_end_token:
     tokens = choice.logprobs.tokens if choice.logprobs else []
     if config.thinking_end_token in tokens:
@@ -521,22 +468,23 @@ async def local_model_request(
     num_thinking_tokens = 0
     cot = ""
     final_output = response_text
-
+  
   return GenerationResult(
       text=final_output.strip(),
       num_thinking_tokens=num_thinking_tokens,
       cot=cot.strip(),
-      cost_usd=0.0,
   )
 
 
 def is_local_model(model_name: str) -> bool:
+  """Check if a model should use local inference."""
   return get_local_model_config(model_name) is not None
 
 
 def is_gpt_model(model_name: str) -> bool:
+  """Check if model is a remote GPT model via Azure."""
   return model_name in GPT_COSTS or model_name.startswith("gpt-")
-
+      
 
 async def async_batch_generate(
     model_name: str,
@@ -545,56 +493,68 @@ async def async_batch_generate(
     max_concurrent: int = 64,
     local_model_config: Optional[LocalModelConfig] = None,
 ) -> List[GenerationResult]:
-  """Unified async batch generation for all model types."""
+  """
+  Unified async batch generation for all model types.
+  
+  Returns list of GenerationResult objects.
+  """
   if not batch_messages:
     return []
-
+  
+  # Reduce concurrency for Azure OpenAI to avoid WAF blocking
+  if is_gpt_model(model_name):
+    max_concurrent = min(max_concurrent, 5)
+  
   semaphore = asyncio.Semaphore(max_concurrent)
-
+  
   async def generate_one(idx: int, messages: List[Dict[str, str]]) -> Tuple[int, GenerationResult]:
     async with semaphore:
       try:
+        # Check local models first (qwen_30b, qwen_4b, gpt_oss_20b, magistral)
         if is_local_model(model_name):
           result = await local_model_request(
               model_name, messages, config=local_model_config, **generation_config
           )
           return idx, result
+        
+        # Remote GPT models via Azure OpenAI
         elif is_gpt_model(model_name):
-          resp = await openai_chat_request(model_name, messages, **generation_config)
-          text = resp["choices"][0]["message"]["content"]
-          usage = resp["usage"]
-          pt = usage["prompt_tokens"]
-          ct = usage["completion_tokens"]
-          rt = usage["reasoning_tokens"]
-          cost = _gpt_cost_usd(model_name, pt, ct)
-          return idx, GenerationResult(
-              text=text,
-              num_thinking_tokens=rt,
-              cost_usd=cost,
-          )
+          response = await openai_chat_request(model_name, messages, **generation_config)
+          text = response["choices"][0]["message"]["content"]
+          num_thinking_tokens = response["usage"].get("reasoning_tokens", 0)
+          if num_thinking_tokens == 0:
+            num_thinking_tokens = response["usage"]["completion_tokens"]
+          return idx, GenerationResult(text=text, num_thinking_tokens=num_thinking_tokens)
+        
+        # Claude models
         elif model_name in CLAUDE_MODELS or model_name.startswith("claude"):
-          resp = await claude_request(model_name, messages, **generation_config)
-          text = resp["content"][0]["text"]
+          response = await claude_request(model_name, messages, **generation_config)
+          text = response["content"][0]["text"]
           # FIXME
-          return idx, GenerationResult(text=text, cost_usd=0.0)
-        elif model_name in GEMINI_COSTS.keys() or "gemini" in model_name.lower():
-          result = await gemini_request(model_name, messages, **generation_config)
-          return idx, result
+          num_thinking_tokens = None
+          return idx, GenerationResult(text=text)
+        
+        # Gemini models
+        elif model_name in GEMINI_MODELS or "gemini" in model_name.lower():
+          response = await gemini_request(model_name, messages, **generation_config)
+          return idx, GenerationResult(text=response.text, num_thinking_tokens=response.usage_metadata.thoughts_token_count)
+        
         else:
           raise ValueError(f"Unknown model: {model_name}")
+      
       except Exception as e:
         print(f"Error generating response for index {idx}: {e}")
         raise
-
+  
   tasks = [generate_one(i, msg) for i, msg in enumerate(batch_messages)]
   results_with_idx = await asyncio.gather(*tasks, return_exceptions=True)
-
+  
   processed_results = []
-  for r in results_with_idx:
-    if isinstance(r, Exception):
-      raise r
-    processed_results.append(r)
-
+  for result in results_with_idx:
+    if isinstance(result, Exception):
+      raise result
+    processed_results.append(result)
+  
   processed_results.sort(key=lambda x: x[0])
   return [result for _, result in processed_results]
 
@@ -604,14 +564,14 @@ def model_call_wrapper(
     batch_messages: List[List[Dict[str, str]]],
     generation_config: Dict[str, Any],
     local_model_config: Optional[LocalModelConfig] = None,
-    max_concurrent: int = 64,
 ) -> List[GenerationResult]:
-  """Wrapper for calling various types of models."""
+  """
+  Wrapper for calling various types of models.
+  
+  Returns list of GenerationResult objects.
+  """
   return asyncio.run(async_batch_generate(
-      model_name,
-      batch_messages=batch_messages,
-      generation_config=generation_config,
-      max_concurrent=max_concurrent,
+      model_name, batch_messages, generation_config,
       local_model_config=local_model_config,
   ))
 
@@ -619,127 +579,113 @@ def model_call_wrapper(
 def cached_generate(
     batch_prompts: List[List[Dict[str, str]]],
     model_name: str,
-    model_url: Optional[str] = None,
-    cache: Optional[Dict[str, Any]] = None,
-    cache_file: Optional[str] = None,
-    generation_config: Optional[Dict[str, Any]] = None,
-    parallel_model_calls: bool = True,
+    cache: Optional[Dict[str, Any]],
+    cache_file: Optional[str],
+    generation_config: Dict[str, Any],
     local_model_config: Optional[LocalModelConfig] = None,
-) -> Tuple[List[str], List[int], List[str], List[float]]:
+) -> Tuple[List[str], List[int], List[str]]:
   """
-  Backwards-compatible cached generate.
+  Generate a batch of responses from a model, caching responses.
 
-  gsm.py expects:
-    batch_responses, think_token_num, all_cots, cost_usd = cached_generate(
-        batch_prompts, model_name, model_url, cache=..., cache_file=...,
-        generation_config=..., parallel_model_calls=...
-    )
+  Args:
+    batch_prompts: The batch of prompts.
+    model_name: The name of the model to generate from.
+    model_url: The URL of the model (for backwards compatibility).
+    cache: Cache of LLM responses.
+    cache_file: Cache file of LLM responses.
+    generation_config: Generation config for LLM.
+    local_model_config: Optional config for local models.
+
+  Returns:
+    Tuple of (batch_responses, all_num_thinking_tokens, all_cots).
   """
-  if generation_config is None:
-    generation_config = {}
-
-  max_concurrent = 64 if parallel_model_calls else 1
-  if not model_name in LOCAL_MODEL_CONFIGS:
-    max_concurrent = 8 if parallel_model_calls else 1
-
-  def _result_to_cache_dict(r: GenerationResult) -> Dict[str, Any]:
-    return {
-        "text": r.text,
-        "num_thinking_tokens": r.num_thinking_tokens,
-        "cot": r.cot,
-        "cost_usd": r.cost_usd,
-    }
-
-  def _cache_dict_to_outputs(v: Any) -> Tuple[str, int, str, float]:
-    if isinstance(v, dict):
-      return (
-          str(v.get("text", "")),
-          int(v.get("num_thinking_tokens", 0) or 0),
-          str(v.get("cot", "")),
-          float(v.get("cost_usd", 0.0) or 0.0),
-      )
-    if isinstance(v, tuple):
-      text = str(v[0]) if len(v) > 0 else ""
-      nt = int(v[1]) if len(v) > 1 else 0
-      cot = str(v[2]) if len(v) > 2 else ""
-      cost = float(v[3]) if len(v) > 3 else 0.0
-      return text, nt, cot, cost
-    return str(v), 0, "", 0.0
-
   if cache is None:
     results = model_call_wrapper(
         model_name,
         batch_messages=batch_prompts,
         generation_config=generation_config,
         local_model_config=local_model_config,
-        max_concurrent=max_concurrent,
     )
     batch_responses = [r.text for r in results]
     all_num_thinking_tokens = [r.num_thinking_tokens for r in results]
     all_cots = [r.cot for r in results]
-    cost_usd = [r.cost_usd for r in results]
-    return batch_responses, all_num_thinking_tokens, all_cots, cost_usd
-
+    return batch_responses, all_num_thinking_tokens, all_cots
+  
   new_batch_prompts = []
   new_prompt_indices = []
   for i, prompt in enumerate(batch_prompts):
-    jp = jsonify_prompt(prompt)
-    if jp not in cache:
+    jsonified_prompt = jsonify_prompt(prompt)
+    if jsonified_prompt not in cache:
       new_batch_prompts.append(prompt)
       new_prompt_indices.append(i)
-
+  
   if new_batch_prompts:
     batch_results = model_call_wrapper(
         model_name,
         batch_messages=new_batch_prompts,
         generation_config=generation_config,
         local_model_config=local_model_config,
-        max_concurrent=max_concurrent,
     )
-
+    
     for prompt, result in zip(new_batch_prompts, batch_results):
-      jp = jsonify_prompt(prompt)
-      cache[jp] = _result_to_cache_dict(result)
-
+      jsonified_prompt = jsonify_prompt(prompt)
+      
+      cache[jsonified_prompt] = {
+          "text": result.text,
+          "num_thinking_tokens": result.num_thinking_tokens,
+          "cot": result.cot,
+      }
+      
       if cache_file:
         cache_entry = {
-            "prompt": jp,
+            "prompt": jsonified_prompt,
             "completion": result.text,
             "num_thinking_tokens": result.num_thinking_tokens,
             "cot": result.cot,
-            "cost_usd": result.cost_usd,
         }
         with open(cache_file, "a") as f:
           f.write(json.dumps(cache_entry) + "\n")
-
-  batch_responses: List[str] = []
-  all_num_thinking_tokens: List[int] = []
-  all_cots: List[str] = []
-  cost_usd: List[float] = []
-
+  
+  batch_responses = []
+  all_num_thinking_tokens = []
+  all_cots = []
+  
   for prompt in batch_prompts:
-    jp = jsonify_prompt(prompt)
-    text_output, num_tokens, cot, cost = _cache_dict_to_outputs(cache[jp])
+    jsonified_prompt = jsonify_prompt(prompt)
+    cached_value = cache[jsonified_prompt]
+    
+    if isinstance(cached_value, dict):
+      text_output = cached_value.get("text", "")
+      num_tokens = cached_value.get("num_thinking_tokens", 0)
+      cot = cached_value.get("cot", "")
+    elif isinstance(cached_value, tuple):
+      text_output = cached_value[0]
+      num_tokens = cached_value[1] if len(cached_value) > 1 else 0
+      cot = cached_value[2] if len(cached_value) > 2 else ""
+    else:
+      text_output = str(cached_value)
+      num_tokens = 0
+      cot = ""
+    
     batch_responses.append(text_output)
     all_num_thinking_tokens.append(num_tokens)
     all_cots.append(cot)
-    cost_usd.append(cost)
-
-  return batch_responses, all_num_thinking_tokens, all_cots, cost_usd
+  
+  return batch_responses, all_num_thinking_tokens, all_cots
 
 
 async def cleanup_clients():
   """Close all async clients."""
   global _azure_openai_client, _anthropic_client, _local_client
-
+  
   if _anthropic_client:
     await _anthropic_client.aclose()
     _anthropic_client = None
-
+  
   if _azure_openai_client:
     await _azure_openai_client.close()
     _azure_openai_client = None
-
+  
   if _local_client:
     await _local_client.close()
     _local_client = None

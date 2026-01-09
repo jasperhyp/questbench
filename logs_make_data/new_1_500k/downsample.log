@@ -1,0 +1,25 @@
+Loading data from /n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_1_500k/simplelogic_heldout_k_sufficient_data_new.csv
+Original data shape: (57688, 16)
+Original k distribution:
+k
+1    49457
+2     7549
+3      646
+4       36
+Name: count, dtype: int64
+k=1: 49457 -> 2000
+k=2: 7549 -> 2000
+k=3: 646 -> 646 (keeping all)
+k=4: 36 -> 36 (keeping all)
+
+Final data shape: (4682, 16)
+Final k distribution:
+k
+1    2000
+2    2000
+3     646
+4      36
+Name: count, dtype: int64
+
+Saving to /n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_1_500k/simplelogic_heldout_k_sufficient_data_new_sampled.csv
+Done!

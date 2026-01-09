@@ -192,7 +192,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     
     args = ArgumentParser()
-    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k/simplelogic_heldout_k_sufficient_data_new.csv", help="Path to the CSV file with results to verify.")
+    args.add_argument("--input_csv", type=str, default="/n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_0_500k/simplelogic_heldout_k_sufficient_data_new.csv", help="Path to the CSV file with results to verify.")
     arguments = args.parse_args()
 
     counter = {'verified': {1:0}, 'failed (goal inferred from context)': {1:0}, 'failed (insufficient branch)': {1:0}, 'failed (not minimal)': {1:0}}

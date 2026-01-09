@@ -1,0 +1,1049 @@
+Verifying results:   0%|          | 0/794 [00:00<?, ?it/s]Verifying results:  14%|█▍        | 113/794 [00:00<00:00, 976.35it/s]Verifying results:  27%|██▋       | 211/794 [00:00<00:01, 409.86it/s]Verifying results:  34%|███▍      | 268/794 [00:00<00:01, 314.40it/s]Verifying results:  39%|███▉      | 309/794 [00:00<00:01, 312.74it/s]Verifying results:  44%|████▎     | 346/794 [00:01<00:01, 291.87it/s]Verifying results:  48%|████▊     | 379/794 [00:01<00:01, 294.65it/s]Verifying results:  52%|█████▏    | 411/794 [00:01<00:01, 284.12it/s]Verifying results:  56%|█████▋    | 447/794 [00:01<00:01, 293.58it/s]Verifying results:  60%|██████    | 480/794 [00:01<00:01, 298.41it/s]Verifying results:  65%|██████▌   | 519/794 [00:01<00:00, 322.31it/s]
+Verifying row 0:
+✅ Row Verified (k=1)
+Verifying row 1:
+✅ Row Verified (k=2)
+Verifying row 2:
+✅ Row Verified (k=1)
+Verifying row 3:
+✅ Row Verified (k=1)
+Verifying row 4:
+✅ Row Verified (k=1)
+Verifying row 5:
+✅ Row Verified (k=2)
+Verifying row 6:
+✅ Row Verified (k=1)
+Verifying row 7:
+✅ Row Verified (k=1)
+Verifying row 8:
+✅ Row Verified (k=1)
+Verifying row 9:
+✅ Row Verified (k=1)
+Verifying row 10:
+✅ Row Verified (k=1)
+Verifying row 11:
+✅ Row Verified (k=1)
+Verifying row 12:
+✅ Row Verified (k=1)
+Verifying row 13:
+✅ Row Verified (k=1)
+Verifying row 14:
+✅ Row Verified (k=1)
+Verifying row 15:
+✅ Row Verified (k=1)
+Verifying row 16:
+✅ Row Verified (k=1)
+Verifying row 17:
+✅ Row Verified (k=1)
+Verifying row 18:
+✅ Row Verified (k=2)
+Verifying row 19:
+✅ Row Verified (k=1)
+Verifying row 20:
+✅ Row Verified (k=1)
+Verifying row 21:
+✅ Row Verified (k=1)
+Verifying row 22:
+✅ Row Verified (k=1)
+Verifying row 23:
+✅ Row Verified (k=2)
+Verifying row 24:
+✅ Row Verified (k=1)
+Verifying row 25:
+✅ Row Verified (k=1)
+Verifying row 26:
+✅ Row Verified (k=1)
+Verifying row 27:
+✅ Row Verified (k=1)
+Verifying row 28:
+✅ Row Verified (k=1)
+Verifying row 29:
+✅ Row Verified (k=2)
+Verifying row 30:
+✅ Row Verified (k=1)
+Verifying row 31:
+✅ Row Verified (k=1)
+Verifying row 32:
+✅ Row Verified (k=1)
+Verifying row 33:
+✅ Row Verified (k=1)
+Verifying row 34:
+✅ Row Verified (k=1)
+Verifying row 35:
+✅ Row Verified (k=1)
+Verifying row 36:
+✅ Row Verified (k=1)
+Verifying row 37:
+✅ Row Verified (k=1)
+Verifying row 38:
+✅ Row Verified (k=3)
+Verifying row 39:
+✅ Row Verified (k=1)
+Verifying row 40:
+✅ Row Verified (k=1)
+Verifying row 41:
+✅ Row Verified (k=1)
+Verifying row 42:
+✅ Row Verified (k=1)
+Verifying row 43:
+✅ Row Verified (k=1)
+Verifying row 44:
+✅ Row Verified (k=1)
+Verifying row 45:
+✅ Row Verified (k=1)
+Verifying row 46:
+✅ Row Verified (k=1)
+Verifying row 47:
+✅ Row Verified (k=1)
+Verifying row 48:
+✅ Row Verified (k=1)
+Verifying row 49:
+✅ Row Verified (k=1)
+Verifying row 50:
+✅ Row Verified (k=1)
+Verifying row 51:
+✅ Row Verified (k=1)
+Verifying row 52:
+✅ Row Verified (k=1)
+Verifying row 53:
+✅ Row Verified (k=1)
+Verifying row 54:
+✅ Row Verified (k=1)
+Verifying row 55:
+✅ Row Verified (k=1)
+Verifying row 56:
+✅ Row Verified (k=1)
+Verifying row 57:
+✅ Row Verified (k=1)
+Verifying row 58:
+✅ Row Verified (k=1)
+Verifying row 59:
+✅ Row Verified (k=1)
+Verifying row 60:
+✅ Row Verified (k=1)
+Verifying row 61:
+✅ Row Verified (k=1)
+Verifying row 62:
+✅ Row Verified (k=1)
+Verifying row 63:
+✅ Row Verified (k=1)
+Verifying row 64:
+✅ Row Verified (k=1)
+Verifying row 65:
+✅ Row Verified (k=1)
+Verifying row 66:
+✅ Row Verified (k=1)
+Verifying row 67:
+✅ Row Verified (k=1)
+Verifying row 68:
+✅ Row Verified (k=1)
+Verifying row 69:
+✅ Row Verified (k=1)
+Verifying row 70:
+✅ Row Verified (k=1)
+Verifying row 71:
+✅ Row Verified (k=1)
+Verifying row 72:
+✅ Row Verified (k=3)
+Verifying row 73:
+✅ Row Verified (k=1)
+Verifying row 74:
+✅ Row Verified (k=1)
+Verifying row 75:
+✅ Row Verified (k=1)
+Verifying row 76:
+✅ Row Verified (k=1)
+Verifying row 77:
+✅ Row Verified (k=1)
+Verifying row 78:
+✅ Row Verified (k=1)
+Verifying row 79:
+✅ Row Verified (k=2)
+Verifying row 80:
+✅ Row Verified (k=2)
+Verifying row 81:
+✅ Row Verified (k=1)
+Verifying row 82:
+✅ Row Verified (k=1)
+Verifying row 83:
+✅ Row Verified (k=1)
+Verifying row 84:
+✅ Row Verified (k=1)
+Verifying row 85:
+✅ Row Verified (k=1)
+Verifying row 86:
+✅ Row Verified (k=2)
+Verifying row 87:
+✅ Row Verified (k=1)
+Verifying row 88:
+✅ Row Verified (k=1)
+Verifying row 89:
+✅ Row Verified (k=1)
+Verifying row 90:
+✅ Row Verified (k=1)
+Verifying row 91:
+✅ Row Verified (k=2)
+Verifying row 92:
+✅ Row Verified (k=1)
+Verifying row 93:
+✅ Row Verified (k=2)
+Verifying row 94:
+✅ Row Verified (k=1)
+Verifying row 95:
+✅ Row Verified (k=1)
+Verifying row 96:
+✅ Row Verified (k=2)
+Verifying row 97:
+✅ Row Verified (k=1)
+Verifying row 98:
+✅ Row Verified (k=1)
+Verifying row 99:
+✅ Row Verified (k=2)
+Verifying row 100:
+✅ Row Verified (k=1)
+Verifying row 101:
+✅ Row Verified (k=1)
+Verifying row 102:
+✅ Row Verified (k=1)
+Verifying row 103:
+✅ Row Verified (k=1)
+Verifying row 104:
+✅ Row Verified (k=1)
+Verifying row 105:
+✅ Row Verified (k=1)
+Verifying row 106:
+✅ Row Verified (k=1)
+Verifying row 107:
+✅ Row Verified (k=2)
+Verifying row 108:
+✅ Row Verified (k=1)
+Verifying row 109:
+✅ Row Verified (k=2)
+Verifying row 110:
+✅ Row Verified (k=1)
+Verifying row 111:
+✅ Row Verified (k=1)
+Verifying row 112:
+✅ Row Verified (k=1)
+Verifying row 113:
+✅ Row Verified (k=1)
+Verifying row 114:
+✅ Row Verified (k=2)
+Verifying row 115:
+✅ Row Verified (k=1)
+Verifying row 116:
+✅ Row Verified (k=1)
+Verifying row 117:
+✅ Row Verified (k=1)
+Verifying row 118:
+✅ Row Verified (k=1)
+Verifying row 119:
+✅ Row Verified (k=1)
+Verifying row 120:
+✅ Row Verified (k=1)
+Verifying row 121:
+✅ Row Verified (k=2)
+Verifying row 122:
+✅ Row Verified (k=1)
+Verifying row 123:
+✅ Row Verified (k=2)
+Verifying row 124:
+✅ Row Verified (k=1)
+Verifying row 125:
+✅ Row Verified (k=1)
+Verifying row 126:
+✅ Row Verified (k=1)
+Verifying row 127:
+✅ Row Verified (k=1)
+Verifying row 128:
+✅ Row Verified (k=1)
+Verifying row 129:
+✅ Row Verified (k=1)
+Verifying row 130:
+✅ Row Verified (k=1)
+Verifying row 131:
+✅ Row Verified (k=2)
+Verifying row 132:
+✅ Row Verified (k=1)
+Verifying row 133:
+✅ Row Verified (k=1)
+Verifying row 134:
+✅ Row Verified (k=1)
+Verifying row 135:
+✅ Row Verified (k=1)
+Verifying row 136:
+✅ Row Verified (k=1)
+Verifying row 137:
+✅ Row Verified (k=1)
+Verifying row 138:
+✅ Row Verified (k=1)
+Verifying row 139:
+✅ Row Verified (k=1)
+Verifying row 140:
+✅ Row Verified (k=1)
+Verifying row 141:
+✅ Row Verified (k=1)
+Verifying row 142:
+✅ Row Verified (k=1)
+Verifying row 143:
+✅ Row Verified (k=1)
+Verifying row 144:
+✅ Row Verified (k=1)
+Verifying row 145:
+✅ Row Verified (k=1)
+Verifying row 146:
+✅ Row Verified (k=1)
+Verifying row 147:
+✅ Row Verified (k=1)
+Verifying row 148:
+✅ Row Verified (k=1)
+Verifying row 149:
+✅ Row Verified (k=1)
+Verifying row 150:
+✅ Row Verified (k=1)
+Verifying row 151:
+✅ Row Verified (k=1)
+Verifying row 152:
+✅ Row Verified (k=1)
+Verifying row 153:
+✅ Row Verified (k=1)
+Verifying row 154:
+✅ Row Verified (k=1)
+Verifying row 155:
+✅ Row Verified (k=1)
+Verifying row 156:
+✅ Row Verified (k=1)
+Verifying row 157:
+✅ Row Verified (k=2)
+Verifying row 158:
+✅ Row Verified (k=1)
+Verifying row 159:
+✅ Row Verified (k=1)
+Verifying row 160:
+✅ Row Verified (k=1)
+Verifying row 161:
+✅ Row Verified (k=1)
+Verifying row 162:
+✅ Row Verified (k=1)
+Verifying row 163:
+✅ Row Verified (k=1)
+Verifying row 164:
+✅ Row Verified (k=1)
+Verifying row 165:
+✅ Row Verified (k=1)
+Verifying row 166:
+✅ Row Verified (k=1)
+Verifying row 167:
+✅ Row Verified (k=1)
+Verifying row 168:
+✅ Row Verified (k=1)
+Verifying row 169:
+✅ Row Verified (k=1)
+Verifying row 170:
+✅ Row Verified (k=2)
+Verifying row 171:
+✅ Row Verified (k=2)
+Verifying row 172:
+✅ Row Verified (k=1)
+Verifying row 173:
+✅ Row Verified (k=1)
+Verifying row 174:
+✅ Row Verified (k=1)
+Verifying row 175:
+✅ Row Verified (k=1)
+Verifying row 176:
+✅ Row Verified (k=1)
+Verifying row 177:
+✅ Row Verified (k=1)
+Verifying row 178:
+✅ Row Verified (k=1)
+Verifying row 179:
+✅ Row Verified (k=2)
+Verifying row 180:
+✅ Row Verified (k=1)
+Verifying row 181:
+✅ Row Verified (k=1)
+Verifying row 182:
+✅ Row Verified (k=1)
+Verifying row 183:
+✅ Row Verified (k=1)
+Verifying row 184:
+✅ Row Verified (k=1)
+Verifying row 185:
+✅ Row Verified (k=1)
+Verifying row 186:
+✅ Row Verified (k=1)
+Verifying row 187:
+✅ Row Verified (k=1)
+Verifying row 188:
+✅ Row Verified (k=1)
+Verifying row 189:
+✅ Row Verified (k=1)
+Verifying row 190:
+✅ Row Verified (k=1)
+Verifying row 191:
+✅ Row Verified (k=1)
+Verifying row 192:
+✅ Row Verified (k=1)
+Verifying row 193:
+✅ Row Verified (k=1)
+Verifying row 194:
+✅ Row Verified (k=1)
+Verifying row 195:
+✅ Row Verified (k=1)
+Verifying row 196:
+✅ Row Verified (k=1)
+Verifying row 197:
+✅ Row Verified (k=1)
+Verifying row 198:
+✅ Row Verified (k=1)
+Verifying row 199:
+✅ Row Verified (k=1)
+Verifying row 200:
+✅ Row Verified (k=1)
+Verifying row 201:
+✅ Row Verified (k=1)
+Verifying row 202:
+✅ Row Verified (k=1)
+Verifying row 203:
+✅ Row Verified (k=1)
+Verifying row 204:
+✅ Row Verified (k=1)
+Verifying row 205:
+✅ Row Verified (k=1)
+Verifying row 206:
+✅ Row Verified (k=1)
+Verifying row 207:
+✅ Row Verified (k=2)
+Verifying row 208:
+✅ Row Verified (k=1)
+Verifying row 209:
+✅ Row Verified (k=1)
+Verifying row 210:
+✅ Row Verified (k=1)
+Verifying row 211:
+✅ Row Verified (k=1)
+Verifying row 212:
+✅ Row Verified (k=1)
+Verifying row 213:
+✅ Row Verified (k=1)
+Verifying row 214:
+✅ Row Verified (k=1)
+Verifying row 215:
+✅ Row Verified (k=1)
+Verifying row 216:
+✅ Row Verified (k=1)
+Verifying row 217:
+✅ Row Verified (k=1)
+Verifying row 218:
+✅ Row Verified (k=1)
+Verifying row 219:
+✅ Row Verified (k=1)
+Verifying row 220:
+✅ Row Verified (k=1)
+Verifying row 221:
+✅ Row Verified (k=1)
+Verifying row 222:
+✅ Row Verified (k=1)
+Verifying row 223:
+✅ Row Verified (k=1)
+Verifying row 224:
+✅ Row Verified (k=1)
+Verifying row 225:
+✅ Row Verified (k=1)
+Verifying row 226:
+✅ Row Verified (k=1)
+Verifying row 227:
+✅ Row Verified (k=1)
+Verifying row 228:
+✅ Row Verified (k=2)
+Verifying row 229:
+✅ Row Verified (k=1)
+Verifying row 230:
+✅ Row Verified (k=1)
+Verifying row 231:
+✅ Row Verified (k=1)
+Verifying row 232:
+✅ Row Verified (k=1)
+Verifying row 233:
+✅ Row Verified (k=1)
+Verifying row 234:
+✅ Row Verified (k=1)
+Verifying row 235:
+✅ Row Verified (k=1)
+Verifying row 236:
+✅ Row Verified (k=1)
+Verifying row 237:
+✅ Row Verified (k=1)
+Verifying row 238:
+✅ Row Verified (k=1)
+Verifying row 239:
+✅ Row Verified (k=1)
+Verifying row 240:
+✅ Row Verified (k=1)
+Verifying row 241:
+✅ Row Verified (k=1)
+Verifying row 242:
+✅ Row Verified (k=2)
+Verifying row 243:
+✅ Row Verified (k=1)
+Verifying row 244:
+✅ Row Verified (k=1)
+Verifying row 245:
+✅ Row Verified (k=1)
+Verifying row 246:
+✅ Row Verified (k=1)
+Verifying row 247:
+✅ Row Verified (k=1)
+Verifying row 248:
+✅ Row Verified (k=1)
+Verifying row 249:
+✅ Row Verified (k=1)
+Verifying row 250:
+✅ Row Verified (k=2)
+Verifying row 251:
+✅ Row Verified (k=1)
+Verifying row 252:
+✅ Row Verified (k=1)
+Verifying row 253:
+✅ Row Verified (k=1)
+Verifying row 254:
+✅ Row Verified (k=1)
+Verifying row 255:
+✅ Row Verified (k=1)
+Verifying row 256:
+✅ Row Verified (k=1)
+Verifying row 257:
+✅ Row Verified (k=1)
+Verifying row 258:
+✅ Row Verified (k=1)
+Verifying row 259:
+✅ Row Verified (k=1)
+Verifying row 260:
+✅ Row Verified (k=1)
+Verifying row 261:
+✅ Row Verified (k=1)
+Verifying row 262:
+✅ Row Verified (k=2)
+Verifying row 263:
+✅ Row Verified (k=1)
+Verifying row 264:
+✅ Row Verified (k=1)
+Verifying row 265:
+✅ Row Verified (k=1)
+Verifying row 266:
+✅ Row Verified (k=1)
+Verifying row 267:
+✅ Row Verified (k=1)
+Verifying row 268:
+✅ Row Verified (k=1)
+Verifying row 269:
+✅ Row Verified (k=1)
+Verifying row 270:
+✅ Row Verified (k=1)
+Verifying row 271:
+✅ Row Verified (k=1)
+Verifying row 272:
+✅ Row Verified (k=1)
+Verifying row 273:
+✅ Row Verified (k=1)
+Verifying row 274:
+✅ Row Verified (k=1)
+Verifying row 275:
+✅ Row Verified (k=1)
+Verifying row 276:
+✅ Row Verified (k=1)
+Verifying row 277:
+✅ Row Verified (k=1)
+Verifying row 278:
+✅ Row Verified (k=1)
+Verifying row 279:
+✅ Row Verified (k=2)
+Verifying row 280:
+✅ Row Verified (k=1)
+Verifying row 281:
+✅ Row Verified (k=1)
+Verifying row 282:
+✅ Row Verified (k=1)
+Verifying row 283:
+✅ Row Verified (k=2)
+Verifying row 284:
+✅ Row Verified (k=1)
+Verifying row 285:
+✅ Row Verified (k=1)
+Verifying row 286:
+✅ Row Verified (k=1)
+Verifying row 287:
+✅ Row Verified (k=1)
+Verifying row 288:
+✅ Row Verified (k=1)
+Verifying row 289:
+✅ Row Verified (k=1)
+Verifying row 290:
+✅ Row Verified (k=2)
+Verifying row 291:
+✅ Row Verified (k=1)
+Verifying row 292:
+✅ Row Verified (k=1)
+Verifying row 293:
+✅ Row Verified (k=1)
+Verifying row 294:
+✅ Row Verified (k=1)
+Verifying row 295:
+✅ Row Verified (k=1)
+Verifying row 296:
+✅ Row Verified (k=1)
+Verifying row 297:
+✅ Row Verified (k=1)
+Verifying row 298:
+✅ Row Verified (k=1)
+Verifying row 299:
+✅ Row Verified (k=1)
+Verifying row 300:
+✅ Row Verified (k=1)
+Verifying row 301:
+✅ Row Verified (k=2)
+Verifying row 302:
+✅ Row Verified (k=2)
+Verifying row 303:
+✅ Row Verified (k=1)
+Verifying row 304:
+✅ Row Verified (k=1)
+Verifying row 305:
+✅ Row Verified (k=1)
+Verifying row 306:
+✅ Row Verified (k=1)
+Verifying row 307:
+✅ Row Verified (k=1)
+Verifying row 308:
+✅ Row Verified (k=1)
+Verifying row 309:
+✅ Row Verified (k=1)
+Verifying row 310:
+✅ Row Verified (k=1)
+Verifying row 311:
+✅ Row Verified (k=1)
+Verifying row 312:
+✅ Row Verified (k=1)
+Verifying row 313:
+✅ Row Verified (k=1)
+Verifying row 314:
+✅ Row Verified (k=1)
+Verifying row 315:
+✅ Row Verified (k=1)
+Verifying row 316:
+✅ Row Verified (k=1)
+Verifying row 317:
+✅ Row Verified (k=1)
+Verifying row 318:
+✅ Row Verified (k=1)
+Verifying row 319:
+✅ Row Verified (k=1)
+Verifying row 320:
+✅ Row Verified (k=1)
+Verifying row 321:
+✅ Row Verified (k=1)
+Verifying row 322:
+✅ Row Verified (k=1)
+Verifying row 323:
+✅ Row Verified (k=1)
+Verifying row 324:
+✅ Row Verified (k=1)
+Verifying row 325:
+✅ Row Verified (k=1)
+Verifying row 326:
+✅ Row Verified (k=1)
+Verifying row 327:
+✅ Row Verified (k=3)
+Verifying row 328:
+✅ Row Verified (k=2)
+Verifying row 329:
+✅ Row Verified (k=1)
+Verifying row 330:
+✅ Row Verified (k=1)
+Verifying row 331:
+✅ Row Verified (k=1)
+Verifying row 332:
+✅ Row Verified (k=2)
+Verifying row 333:
+✅ Row Verified (k=1)
+Verifying row 334:
+✅ Row Verified (k=1)
+Verifying row 335:
+✅ Row Verified (k=1)
+Verifying row 336:
+✅ Row Verified (k=1)
+Verifying row 337:
+✅ Row Verified (k=1)
+Verifying row 338:
+✅ Row Verified (k=1)
+Verifying row 339:
+✅ Row Verified (k=1)
+Verifying row 340:
+✅ Row Verified (k=1)
+Verifying row 341:
+✅ Row Verified (k=1)
+Verifying row 342:
+✅ Row Verified (k=2)
+Verifying row 343:
+✅ Row Verified (k=2)
+Verifying row 344:
+✅ Row Verified (k=1)
+Verifying row 345:
+✅ Row Verified (k=1)
+Verifying row 346:
+✅ Row Verified (k=1)
+Verifying row 347:
+✅ Row Verified (k=1)
+Verifying row 348:
+✅ Row Verified (k=1)
+Verifying row 349:
+✅ Row Verified (k=1)
+Verifying row 350:
+✅ Row Verified (k=1)
+Verifying row 351:
+✅ Row Verified (k=2)
+Verifying row 352:
+✅ Row Verified (k=1)
+Verifying row 353:
+✅ Row Verified (k=1)
+Verifying row 354:
+✅ Row Verified (k=1)
+Verifying row 355:
+✅ Row Verified (k=1)
+Verifying row 356:
+✅ Row Verified (k=1)
+Verifying row 357:
+✅ Row Verified (k=1)
+Verifying row 358:
+✅ Row Verified (k=1)
+Verifying row 359:
+✅ Row Verified (k=1)
+Verifying row 360:
+✅ Row Verified (k=1)
+Verifying row 361:
+✅ Row Verified (k=1)
+Verifying row 362:
+✅ Row Verified (k=1)
+Verifying row 363:
+✅ Row Verified (k=1)
+Verifying row 364:
+✅ Row Verified (k=1)
+Verifying row 365:
+✅ Row Verified (k=1)
+Verifying row 366:
+✅ Row Verified (k=1)
+Verifying row 367:
+✅ Row Verified (k=1)
+Verifying row 368:
+✅ Row Verified (k=1)
+Verifying row 369:
+✅ Row Verified (k=1)
+Verifying row 370:
+✅ Row Verified (k=1)
+Verifying row 371:
+✅ Row Verified (k=1)
+Verifying row 372:
+✅ Row Verified (k=1)
+Verifying row 373:
+✅ Row Verified (k=1)
+Verifying row 374:
+✅ Row Verified (k=2)
+Verifying row 375:
+✅ Row Verified (k=1)
+Verifying row 376:
+✅ Row Verified (k=1)
+Verifying row 377:
+✅ Row Verified (k=1)
+Verifying row 378:
+✅ Row Verified (k=1)
+Verifying row 379:
+✅ Row Verified (k=1)
+Verifying row 380:
+✅ Row Verified (k=1)
+Verifying row 381:
+✅ Row Verified (k=1)
+Verifying row 382:
+✅ Row Verified (k=2)
+Verifying row 383:
+✅ Row Verified (k=1)
+Verifying row 384:
+✅ Row Verified (k=1)
+Verifying row 385:
+✅ Row Verified (k=1)
+Verifying row 386:
+✅ Row Verified (k=1)
+Verifying row 387:
+✅ Row Verified (k=1)
+Verifying row 388:
+✅ Row Verified (k=1)
+Verifying row 389:
+✅ Row Verified (k=1)
+Verifying row 390:
+✅ Row Verified (k=1)
+Verifying row 391:
+✅ Row Verified (k=2)
+Verifying row 392:
+✅ Row Verified (k=1)
+Verifying row 393:
+✅ Row Verified (k=1)
+Verifying row 394:
+✅ Row Verified (k=1)
+Verifying row 395:
+✅ Row Verified (k=1)
+Verifying row 396:
+✅ Row Verified (k=1)
+Verifying row 397:
+✅ Row Verified (k=1)
+Verifying row 398:
+✅ Row Verified (k=1)
+Verifying row 399:
+✅ Row Verified (k=1)
+Verifying row 400:
+✅ Row Verified (k=1)
+Verifying row 401:
+✅ Row Verified (k=1)
+Verifying row 402:
+✅ Row Verified (k=1)
+Verifying row 403:
+✅ Row Verified (k=1)
+Verifying row 404:
+✅ Row Verified (k=1)
+Verifying row 405:
+✅ Row Verified (k=3)
+Verifying row 406:
+✅ Row Verified (k=1)
+Verifying row 407:
+✅ Row Verified (k=1)
+Verifying row 408:
+✅ Row Verified (k=1)
+Verifying row 409:
+✅ Row Verified (k=1)
+Verifying row 410:
+✅ Row Verified (k=1)
+Verifying row 411:
+✅ Row Verified (k=1)
+Verifying row 412:
+✅ Row Verified (k=1)
+Verifying row 413:
+✅ Row Verified (k=2)
+Verifying row 414:
+✅ Row Verified (k=1)
+Verifying row 415:
+✅ Row Verified (k=1)
+Verifying row 416:
+✅ Row Verified (k=1)
+Verifying row 417:
+✅ Row Verified (k=1)
+Verifying row 418:
+✅ Row Verified (k=1)
+Verifying row 419:
+✅ Row Verified (k=2)
+Verifying row 420:
+✅ Row Verified (k=2)
+Verifying row 421:
+✅ Row Verified (k=1)
+Verifying row 422:
+✅ Row Verified (k=1)
+Verifying row 423:
+✅ Row Verified (k=1)
+Verifying row 424:
+✅ Row Verified (k=1)
+Verifying row 425:
+✅ Row Verified (k=1)
+Verifying row 426:
+✅ Row Verified (k=1)
+Verifying row 427:
+✅ Row Verified (k=1)
+Verifying row 428:
+✅ Row Verified (k=1)
+Verifying row 429:
+✅ Row Verified (k=2)
+Verifying row 430:
+✅ Row Verified (k=1)
+Verifying row 431:
+✅ Row Verified (k=1)
+Verifying row 432:
+✅ Row Verified (k=1)
+Verifying row 433:
+✅ Row Verified (k=2)
+Verifying row 434:
+✅ Row Verified (k=1)
+Verifying row 435:
+✅ Row Verified (k=1)
+Verifying row 436:
+✅ Row Verified (k=1)
+Verifying row 437:
+✅ Row Verified (k=1)
+Verifying row 438:
+✅ Row Verified (k=1)
+Verifying row 439:
+✅ Row Verified (k=1)
+Verifying row 440:
+✅ Row Verified (k=1)
+Verifying row 441:
+✅ Row Verified (k=1)
+Verifying row 442:
+✅ Row Verified (k=1)
+Verifying row 443:
+✅ Row Verified (k=1)
+Verifying row 444:
+✅ Row Verified (k=1)
+Verifying row 445:
+✅ Row Verified (k=2)
+Verifying row 446:
+✅ Row Verified (k=1)
+Verifying row 447:
+✅ Row Verified (k=1)
+Verifying row 448:
+✅ Row Verified (k=1)
+Verifying row 449:
+✅ Row Verified (k=1)
+Verifying row 450:
+✅ Row Verified (k=1)
+Verifying row 451:
+✅ Row Verified (k=1)
+Verifying row 452:
+✅ Row Verified (k=1)
+Verifying row 453:
+✅ Row Verified (k=1)
+Verifying row 454:
+✅ Row Verified (k=1)
+Verifying row 455:
+✅ Row Verified (k=1)
+Verifying row 456:
+✅ Row Verified (k=1)
+Verifying row 457:
+✅ Row Verified (k=1)
+Verifying row 458:
+✅ Row Verified (k=1)
+Verifying row 459:
+✅ Row Verified (k=1)
+Verifying row 460:
+✅ Row Verified (k=1)
+Verifying row 461:
+✅ Row Verified (k=1)
+Verifying row 462:
+✅ Row Verified (k=1)
+Verifying row 463:
+✅ Row Verified (k=1)
+Verifying row 464:
+✅ Row Verified (k=1)
+Verifying row 465:
+✅ Row Verified (k=1)
+Verifying row 466:
+✅ Row Verified (k=1)
+Verifying row 467:
+✅ Row Verified (k=1)
+Verifying row 468:
+✅ Row Verified (k=1)
+Verifying row 469:
+✅ Row Verified (k=1)
+Verifying row 470:
+✅ Row Verified (k=1)
+Verifying row 471:
+✅ Row Verified (k=1)
+Verifying row 472:
+✅ Row Verified (k=1)
+Verifying row 473:
+✅ Row Verified (k=1)
+Verifying row 474:
+✅ Row Verified (k=1)
+Verifying row 475:
+✅ Row Verified (k=1)
+Verifying row 476:
+✅ Row Verified (k=1)
+Verifying row 477:
+✅ Row Verified (k=1)
+Verifying row 478:
+✅ Row Verified (k=1)
+Verifying row 479:
+✅ Row Verified (k=1)
+Verifying row 480:
+✅ Row Verified (k=1)
+Verifying row 481:
+✅ Row Verified (k=1)
+Verifying row 482:
+✅ Row Verified (k=1)
+Verifying row 483:
+✅ Row Verified (k=1)
+Verifying row 484:
+✅ Row Verified (k=1)
+Verifying row 485:
+✅ Row Verified (k=1)
+Verifying row 486:
+✅ Row Verified (k=1)
+Verifying row 487:
+✅ Row Verified (k=2)
+Verifying row 488:
+✅ Row Verified (k=1)
+Verifying row 489:
+✅ Row Verified (k=1)
+Verifying row 490:
+✅ Row Verified (k=1)
+Verifying row 491:
+✅ Row Verified (k=2)
+Verifying row 492:
+✅ Row Verified (k=1)
+Verifying row 493:
+✅ Row Verified (k=1)
+Verifying row 494:
+✅ Row Verified (k=1)
+Verifying row 495:
+✅ Row Verified (k=1)
+Verifying row 496:
+✅ Row Verified (k=2)
+Verifying row 497:
+✅ Row Verified (k=1)
+Verifying row 498:
+✅ Row Verified (k=1)
+Verifying row 499:
+✅ Row Verified (k=1)
+Verifying row 500:
+✅ Row Verified (k=1)
+Verifying row 501:
+✅ Row Verified (k=2)
+Verifying row 502:
+✅ Row Verified (k=1)
+Verifying row 503:
+✅ Row Verified (k=1)
+Verifying row 504:
+✅ Row Verified (k=2)
+Verifying row 505:
+✅ Row Verified (k=1)
+Verifying row 506:
+✅ Row Verified (k=2)
+Verifying row 507:
+✅ Row Verified (k=1)
+Verifying row 508:
+✅ Row Verified (k=1)
+Verifying row 509:
+✅ Row Verified (k=1)
+Verifying row 510:
+✅ Row Verified (k=1)
+Verifying row 511:
+✅ Row Verified (k=1)
+Verifying row 512:
+✅ Row Verified (k=2)
+Verifying row 513:
+✅ Row Verified (k=2)
+Verifying row 514:
+✅ Row Verified (k=1)
+Verifying row 515:
+✅ Row Verified (k=1)
+Verifying row 516:
+✅ Row Verified (k=1)
+Verifying row 517:
+✅ Row Verified (k=1)
+Verifying row 518:
+✅ Row Verified (k=1)
+Verifying row 519:
+Traceback (most recent call last):
+  File "/n/home09/yeh803/workspace/Reasoning/external/questbench/SimpleLogic/tests/verify_results.py", line 202, in <module>
+    verify_row(row, counter)
+  File "/n/home09/yeh803/workspace/Reasoning/external/questbench/SimpleLogic/tests/verify_results.py", line 73, in verify_row
+    clauses = parse_clauses(data['rules'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/n/home09/yeh803/workspace/Reasoning/external/questbench/SimpleLogic/tests/verify_results.py", line 20, in parse_clauses
+    clause.add((lit[4:], False))
+KeyboardInterrupt

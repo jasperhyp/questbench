@@ -1,0 +1,21 @@
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_6_500k/prop_examples_6_0_100_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]30it [00:00, 267.17it/s]57it [00:02, 20.83it/s] 70it [00:02, 26.98it/s]82it [00:03, 24.40it/s]96it [00:03, 32.28it/s]100it [00:03, 31.29it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_6_500k/prop_examples_6_1000_1100_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]6it [00:00, 18.02it/s]16it [00:00, 41.89it/s]30it [00:00, 58.31it/s]38it [00:01, 17.45it/s]57it [00:01, 31.48it/s]65it [00:04,  9.77it/s]70it [00:04, 11.04it/s]79it [00:04, 15.03it/s]93it [00:05, 14.90it/s]100it [00:05, 17.32it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_6_500k/prop_examples_6_100_200_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]17it [00:00, 136.14it/s]31it [00:00, 135.73it/s]45it [00:00, 55.35it/s] 55it [00:01, 42.50it/s]65it [00:01, 44.77it/s]71it [00:01, 44.54it/s]93it [00:01, 76.16it/s]100it [00:02, 49.73it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_6_500k/prop_examples_6_1100_1200_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]4it [00:00, 19.33it/s]11it [00:00, 11.23it/s]22it [00:01, 25.08it/s]36it [00:01, 24.94it/s]54it [00:01, 41.16it/s]62it [00:11,  3.25it/s]76it [00:11,  5.07it/s]86it [00:14,  4.54it/s]99it [00:14,  6.65it/s]100it [00:14,  6.84it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_6_500k/prop_examples_6_1200_1300_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]27it [00:00, 124.09it/s]40it [00:00, 71.87it/s] 63it [00:00, 106.11it/s]92it [00:00, 148.42it/s]100it [00:00, 114.89it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_6_500k/prop_examples_6_1300_1400_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]4it [00:02,  1.57it/s]22it [00:02, 10.46it/s]28it [00:02, 13.38it/s]47it [00:03, 22.64it/s]59it [00:03, 31.13it/s]94it [00:03, 65.20it/s]100it [00:03, 28.37it/s]
+/n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_6_500k/prop_examples_6_1400_1500_heldout_fixed_new.jsonl
+0it [00:00, ?it/s]3it [00:00, 15.97it/s]5it [00:06,  1.37s/it]
+Traceback (most recent call last):
+  File "/n/home09/yeh803/workspace/Reasoning/external/questbench/SimpleLogic/make_data_new.py", line 539, in <module>
+    main(parser.parse_args())
+  File "/n/home09/yeh803/workspace/Reasoning/external/questbench/SimpleLogic/make_data_new.py", line 308, in main
+    rulesets.append(orjson.loads(line))
+                    ^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
