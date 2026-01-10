@@ -4,7 +4,7 @@
 #SBATCH --error=logs/%x-%j.err
 #SBATCH --partition=kempner_h100
 #SBATCH --account=kempner_mzitnik_lab
-#SBATCH --time=6:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mem=160G
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=2
@@ -46,11 +46,11 @@ singularity exec --nv --cleanenv \
             --reasoning-parser deepseek_r1 \
             --host ${HOST} \
             --port ${PORT} \
-            --max-model-len 32768 \
+            --max-model-len 65536 \
             --gpu-memory-utilization 0.95 \
             --enable-prefix-caching \
             --enable-chunked-prefill \
-            --max-num-batched-tokens 16384 \
+            --max-num-batched-tokens 65536 \
             --max-num-seqs 64 \
             --kv-cache-dtype fp8 \
             > ${PROJECT_DIR}/logs_evaluation/vllm_server_${SLURM_JOB_ID}.log 2>&1 &
@@ -62,7 +62,7 @@ singularity exec --nv --cleanenv \
         
         # Wait for server to be ready
         echo 'Waiting for vLLM to load Qwen3-30B...'
-        MAX_RETRIES=10
+        MAX_RETRIES=60
         COUNTER=0
         
         while ! curl -s http://${HOST}:${PORT}/health > /dev/null 2>&1; do
@@ -85,16 +85,16 @@ singularity exec --nv --cleanenv \
         cd ${PROJECT_DIR}
         
         echo 'Starting at_most_K config...'
-        python mc_eval.py \
+        /n/home09/yeh803/workspace/Reasoning/.venv_vllm/bin/python mc_eval.py \
             --model_name Qwen/Qwen3-30B-A3B-Thinking-2507-FP8 \
             --domain_name SL \
             --eval_mode mc \
-            --data_dir /n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k \
-            --data_file /n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/new_11_500k/simplelogic_heldout_k_sufficient_data_new_sampled.csv \
-            --results_dir ./results/mc/at_most_K/qwen_30b/ \
+            --data_dir /n/netscratch/mzitnik_lab/Everyone/yeh803/Reasoning/logic_q_data/new_11_500k \
+            --data_file /n/holylfs06/LABS/mzitnik_lab/Lab/yeh803/Reasoning/benchmark_data/questbench_data/Logic-Q/RP/RP/simplelogic_heldout_k_sufficient_data_new_sampled.csv \
+            --results_dir ./results \
             --prompt_mode at_most_K \
             --batch_size 64 \
-            > ${PROJECT_DIR}/logs_evaluation/qwen-30b_logicq_mc_at-most-K_${SLURM_JOB_ID}.log 2>&1
+            > ${PROJECT_DIR}/logs_evaluation/qwen-at-most-K_${SLURM_JOB_ID}.log 2>&1
 
         EXIT_1=\$?
         echo 'Script finished with exit code: '\$EXIT_1

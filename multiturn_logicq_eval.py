@@ -213,18 +213,32 @@ def oracle_answer(clauses: List[Set[Tuple[str, bool]]],
 # ============ Data Loading ============
 
 def parse_rules_to_nl(rules: List[List[str]]) -> str:
-    """Parse rules into natural language format."""
+    """Parse rules into natural language format.
+    
+    Handles both original rules (negated premises -> positive conclusion) 
+    and flipped rules (positive premises -> negated conclusion).
+    """
     rules_nl = []
     for rule in rules:
         negated_words = [
             word.split("not ")[-1] for word in rule if word.startswith("not ")
         ]
         positive_words = [word for word in rule if not word.startswith("not ")]
-        if len(positive_words) != 1:
-            continue
-        premises = " and ".join(negated_words)
-        conclusion_word = positive_words[0]
-        rules_nl.append(f"If Alice is {premises}, then Alice is {conclusion_word}.")
+        
+        # Original format: multiple negated premises, one positive conclusion
+        # e.g., ['c', 'not a', 'not b'] means: if a and b then c
+        if len(positive_words) == 1 and negated_words:
+            premises = " and ".join(negated_words)
+            conclusion_word = positive_words[0]
+            rules_nl.append(f"If Alice is {premises}, then Alice is {conclusion_word}.")
+        
+        # Flipped format: multiple positive premises, one negated conclusion  
+        # e.g., ['not c', 'a', 'b'] means: if not a and not b then not c
+        elif len(negated_words) == 1 and positive_words:
+            premises = " and ".join([f"not {w}" for w in positive_words])
+            conclusion_word = f"not {negated_words[0]}"
+            rules_nl.append(f"If Alice is {premises}, then Alice is {conclusion_word}.")
+    
     return "\n".join(sorted(rules_nl))
 
 
